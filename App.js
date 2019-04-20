@@ -57,14 +57,7 @@ export default class App extends React.Component {
       //0.00000898311175 lat to 1 m
       //0.000000024953213 lng to 1 m
       selectedMarker:null,
-      ghostMarker: {
-        coordinate: {
-          latitude: null,
-          longitude: null
-        },
-        cost: null,
-        address: null
-      },
+      ghostMarker: [],
       mapRegion: {
         latitude: null,
         latitudeDelta: null,
@@ -221,14 +214,6 @@ export default class App extends React.Component {
 
   onLongPressMap = info => {
     let data = info.nativeEvent.coordinate
-    let tempMarker = {
-      coordinate: {
-        latitude: data.latitude,
-        longitude: data.longitude
-      },
-      cost: 0,
-      address: 'ghost'
-    }
     // this.setState(ghostMarker: )
     this.addNewLocation(data.latitude, data.longitude);
     // if (!this.state.pressStatus) {
@@ -281,8 +266,11 @@ export default class App extends React.Component {
   }
 
   toggleTab(markerAddress) {
-    
-    if(this.state.selectedMarker !== markerAddress) {        
+    console.log("tab toggled");
+    if(!Object.keys(this.state.markers_).includes(markerAddress)) {
+      this.hideTab();
+    }
+    else if(this.state.selectedMarker !== markerAddress) {        
       console.log('tabval ',this.state.tabVal);
       console.log(1);
       if (!this.state.tabVal) {
@@ -292,7 +280,6 @@ export default class App extends React.Component {
           friction: 200,
           duration: 500
         }).start();
-        // this.setState({tabVal: true});
         this.setState(previousState => (
           { tabVal: !previousState.tabVal 
           }
@@ -306,6 +293,10 @@ export default class App extends React.Component {
     else{
       console.log(3);
       this.hideTab();
+      // if (!Object.keys(this.state.markers_).includes(markerAddress)) {
+      //   let newGhostMarker = [];
+      //   this.setState({ghostMarker: newGhostMarker});
+      // }
       console.log('selectedMarker ', this.state.selectedMarker);
     }
     
@@ -330,6 +321,8 @@ export default class App extends React.Component {
       { tabVal: !previousState.tabVal }
     ))
     this.setState({selectedMarker: null});
+    var deleteGhost = []
+    this.setState({ghostMarker: deleteGhost});
   }
 
   handlePress() {
@@ -359,8 +352,9 @@ export default class App extends React.Component {
     // var updated = false;
     var uniqueId = Constants.installationId;
     // var time = new Date();
-    var ref = db.collection('locations').doc(address).collection('votes').doc(uniqueId);
-    return ref.get()
+    if (Object.keys(this.state.markers_).includes(address)) {
+      var ref = db.collection('locations').doc(address).collection('votes').doc(uniqueId);
+      return ref.get()
       .then( voteDoc => {
         if (voteDoc.data().newVote !== 1) {
           console.log(voteDoc.data().newVote);
@@ -374,6 +368,28 @@ export default class App extends React.Component {
           })
         }
       })
+    } else {
+      var time = new Date();
+      var ref = db.collection('locations').doc(address);
+      console.log(address);
+      ref.get()
+        .then( doc => {
+          if (!doc.exists) {
+            ref.set({
+              count: 0,
+              timeCreated: time,
+              latitude:  coords.lat,
+              longitude: coords.lng
+            })
+            ref.collection('votes').doc(uniqueId).set({
+              voteTime: time,
+              oldVote: 0,
+              newVote: 1
+            })
+          }
+        })
+        this.hideTab();
+    }
     
     // var transaction = db.runTransaction(t = (event) => {
     //     return event.get(ref)
@@ -397,22 +413,44 @@ export default class App extends React.Component {
   deleteLit(address) {
     // var updated = false;
     var uniqueId = Constants.installationId;
-    // var time = new Date();
-    var ref = db.collection('locations').doc(address).collection('votes').doc(uniqueId);
-    return ref.get()
-      .then( voteDoc => {
-        if (voteDoc.data().newVote !== -1) {
-          console.log(voteDoc.data().newVote);
-          var time = new Date();
-          var oldVote = voteDoc.data().newVote;
-          var newVote = oldVote - 1;
-          ref.set({
-            voteTime: time,
-            oldVote: oldVote,
-            newVote: newVote
-          })
-        }
-      })
+    if (Object.keys(this.state.markers_).includes(address)) {
+      var ref = db.collection('locations').doc(address).collection('votes').doc(uniqueId);
+      return ref.get()
+        .then( voteDoc => {
+          if (voteDoc.data().newVote !== -1) {
+            console.log(voteDoc.data().newVote);
+            var time = new Date();
+            var oldVote = voteDoc.data().newVote;
+            var newVote = oldVote - 1;
+            ref.set({
+              voteTime: time,
+              oldVote: oldVote,
+              newVote: newVote
+            })
+          }
+        })
+    }else {
+      var time = new Date();
+      var ref = db.collection('locations').doc(address);
+      console.log(address);
+      ref.get()
+        .then( doc => {
+          if (!doc.exists) {
+            ref.set({
+              count: 0,
+              timeCreated: time,
+              latitude:  coords.lat,
+              longitude: coords.lng
+            })
+            ref.collection('votes').doc(uniqueId).set({
+              voteTime: time,
+              oldVote: 0,
+              newVote: -1
+            })
+          }
+        })
+      this.hideTab();
+    }
     // var transaction = db.runTransaction(t = (event) => {
     //     return event.get(ref)
     //     .then(doc => {
@@ -443,25 +481,25 @@ export default class App extends React.Component {
                 .then((response_) => response_.json())
                 .then((responseJson) => {
                   coords = JSON.parse(JSON.stringify(responseJson)).results[0].geometry.location
-                  var time = new Date();
-                  var ref = db.collection('locations').doc(address_);
-                  console.log(address_);
-                  ref.get()
-                    .then( doc => {
-                      if (!doc.exists) {
-                        ref.set({
-                          count: 0,
-                          timeCreated: time,
-                          latitude:  coords.lat,
-                          longitude: coords.lng
-                        })
-                        ref.collection('votes').doc(uniqueId).set({
-                          voteTime: time,
-                          oldVote: 0,
-                          newVote: 0
-                        })
+                  console.log("lat ",coords.lat)
+                  let newGhostMarker = [];
+                  newGhostMarker.push({
+                      coordinate: {
+                        latitude: coords.lat,
+                        longitude: coords.lng
+                      }                    
+                    });
+                    Animated.timing(this.state.animatedTab, {
+                      toValue: 370,
+                      friction: 200,
+                      duration: 500
+                    }).start();
+                    this.setState(previousState => (
+                      { tabVal: !previousState.tabVal 
                       }
-                    })
+                    ))
+                  this.setState({selectedMarker: address_});
+                  this.setState({ghostMarker: newGhostMarker});
                 })
           })
     }
@@ -495,7 +533,7 @@ export default class App extends React.Component {
 
   render() {
     return (
-
+      
       <View style = {styles.bigContainer}>        
         <MapView
           ref={ref => { this.map = ref; } } 
@@ -536,14 +574,34 @@ export default class App extends React.Component {
               </MapView.Marker>
             )
           })}
+          {this.state.ghostMarker.map( (marker) => {
+            return (
+              <MapView.Marker 
+              {...marker} 
+              // onPress={this.handlePress}
+              onPress =  {() => this.toggleTab(marker.address)} 
+              >
+                <View style={styles.ghostMarker} >
+                    <Text style={styles.text}>{0}</Text>
+                </View>
+                  {/* <MapView.Callout tooltip style={styles.test}>
+                    <Button style={styles.marker} title = '💩' onPress = {()=>this.deleteLit(marker.address)} />
+                    <Button style={styles.marker} title = '🔥' onPress = {()=>this.addLit(marker.address)} />
+                    <Text>|</Text>
+                    <Button style={styles.marker} title = 'ⓘ' onPress={this.toggleInfoPage} />
+                  </MapView.Callout> */}
+
+              </MapView.Marker>
+            )
+          })}
             <MapView.Marker 
-              {...this.state.ghostMarker} 
+              // {...this.state.ghostMarker} 
               // onPress={this.handlePress}
               // onPress =  {() => this.toggleTab(marker.address)} 
               >
-                <View style={styles.marker} >
+                {/* <View style={styles.marker} >
                     <Text style={styles.text}>{this.state.ghostMarker.cost}</Text>
-                </View>
+                </View> */}
 
                   {/* <MapView.Callout tooltip style={styles.test}>
                     <Button style={styles.marker} title = '💩' onPress = {()=>this.deleteLit(marker.address)} />
@@ -688,7 +746,7 @@ const styles = StyleSheet.create({
   ghostMarker: {
     padding: 5,
     borderRadius: 5,
-    backgroundColor:"light-grey",
+    backgroundColor:"grey",
     flexDirection:"column",
     justifyContent: "center"
 
