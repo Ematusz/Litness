@@ -57,6 +57,7 @@ export default class App extends React.Component {
       //0.00000898311175 lat to 1 m
       //0.000000024953213 lng to 1 m
       selectedMarker:null,
+      infoPageMarker:null,
       ghostMarker: [],
       mapRegion: {
         latitude: null,
@@ -259,10 +260,17 @@ export default class App extends React.Component {
         duration: 200
       }).start();
     }
+    if (this.state.infoPage) {
+      this.toggleTab(this.state.infoPageMarker);
+      this.setState({infoPageMarker: null})
+    }
+    else {
+      this.setState({infoPageMarker: this.state.selectedMarker});
+      this.hideTab();
+    }
     this.setState(previousState => (
       { infoPage: !previousState.infoPage }
     ))
-
   }
 
   toggleTab(markerAddress) {
@@ -388,7 +396,7 @@ export default class App extends React.Component {
             })
           }
         })
-        this.hideTab();
+        this.hideTab(false);
     }
     
     // var transaction = db.runTransaction(t = (event) => {
@@ -449,7 +457,7 @@ export default class App extends React.Component {
             })
           }
         })
-      this.hideTab();
+      this.hideTab(false);
     }
     // var transaction = db.runTransaction(t = (event) => {
     //     return event.get(ref)
@@ -476,31 +484,33 @@ export default class App extends React.Component {
         .then((response) => response.json())
         .then((responseJson) => {
             address_ = JSON.parse(JSON.stringify(responseJson)).results[0].formatted_address;
-            // console.log(JSON.parse(JSON.stringify(responseJson)).results[0]);
-            fetch('https://maps.googleapis.com/maps/api/geocode/json?address=' + address_ + '&key=' + myApiKey)
-                .then((response_) => response_.json())
-                .then((responseJson) => {
-                  coords = JSON.parse(JSON.stringify(responseJson)).results[0].geometry.location
-                  console.log("lat ",coords.lat)
-                  let newGhostMarker = [];
-                  newGhostMarker.push({
-                      coordinate: {
-                        latitude: coords.lat,
-                        longitude: coords.lng
-                      }                    
-                    });
-                    Animated.timing(this.state.animatedTab, {
-                      toValue: 370,
-                      friction: 200,
-                      duration: 500
-                    }).start();
-                    this.setState(previousState => (
-                      { tabVal: !previousState.tabVal 
-                      }
-                    ))
-                  this.setState({selectedMarker: address_});
-                  this.setState({ghostMarker: newGhostMarker});
-                })
+            if (!Object.keys(this.state.markers_).includes(address_)) {
+              // console.log(JSON.parse(JSON.stringify(responseJson)).results[0]);
+              fetch('https://maps.googleapis.com/maps/api/geocode/json?address=' + address_ + '&key=' + myApiKey)
+              .then((response_) => response_.json())
+              .then((responseJson) => {
+                coords = JSON.parse(JSON.stringify(responseJson)).results[0].geometry.location
+                console.log("lat ",coords.lat)
+                let newGhostMarker = [];
+                newGhostMarker.push({
+                    coordinate: {
+                      latitude: coords.lat,
+                      longitude: coords.lng
+                    }                    
+                  });
+                  Animated.timing(this.state.animatedTab, {
+                    toValue: 370,
+                    friction: 200,
+                    duration: 500
+                  }).start();
+                  this.setState(previousState => (
+                    { tabVal: !previousState.tabVal 
+                    }
+                  ))
+                this.setState({selectedMarker: address_});
+                this.setState({ghostMarker: newGhostMarker});
+              })
+            }
           })
     }
 
@@ -616,7 +626,12 @@ export default class App extends React.Component {
 
           <Animated.View style={{...styles.infoPage,top:this.state.animatedTop}}>
             <Button style={styles.marker} title = 'X' onPress={this.toggleInfoPage} />
-            <Text>Analytics</Text>
+            <Text style = {{...styles.locationText}}>
+              Analytics
+            </Text>
+            <Text style = {{...styles.locationText}}>
+              {this.state.infoPageMarker}
+            </Text>
           </Animated.View>
 
           <Animated.View style={{...styles.tab,left:this.state.animatedTab}}> 
