@@ -599,8 +599,9 @@ export default class App extends React.Component {
       
       <View style = {styles.bigContainer}>        
         <MapView
-          ref={ref => { this.map = ref; } } 
-                     
+          ref={ref => { this.map = ref; } }  
+          minZoomLevel = {16.5}
+          maxZoomLevel = {19}          
           zoomEnabled = {true}
           provider = {PROVIDER_GOOGLE}
           showsUserLocation = {true}
