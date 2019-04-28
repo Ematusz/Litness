@@ -10,7 +10,7 @@ admin.initializeApp(functions.config().firebase)
 //  response.send("Hello from Firebase!");
 // });
 
-//deploy to firebase using -firebase deploy --only functions-
+//deploy to firebase using "firebase deploy --only functions"
 const ref = admin.firestore()
 
 exports.DBupdate = functions.https.onRequest((req, res) => {
@@ -61,7 +61,6 @@ exports.replenishCounts = functions.https.onRequest((req, res) => {
 
 exports.updateLocationCount = functions.firestore.document('locations/{address}/votes/{voterID}')
     .onWrite((change,context) => {
-        console.log('you got here');
         if (change.type !== 'delete') {
             //value of the new vote for this location
             var newVote = change.after.data().newVote;
@@ -77,10 +76,32 @@ exports.updateLocationCount = functions.firestore.document('locations/{address}/
                 return transaction.get(locationRef).then(locationDoc => {
                     //compute new count
                     var currentCount = locationDoc.data().count - oldVote + newVote;
+                    //compute upVotes if the new vote is an up vote
+                    var upVotes_ = locationDoc.data().upVotes;
+
+                    if(newVote === 1) {
+                        upVotes_ += 1;
+                    }
+                    if(oldVote === 1) {
+                        upVotes_ -= 1;
+                    }
+                    //compute downVotes
+                    var downVotes_ = locationDoc.data().downVotes;
+                    if(newVote === -1) {
+                        downVotes_ += 1;
+                    }
+                    if(oldVote === -1) {
+                        downVotes_ -= 1;
+                    }
+                    //compute percentVotesLastThirty
+
+                    //compute percentVotesLastHour
 
                     //update location info
                     return transaction.update(locationRef, {
-                        count: currentCount
+                        count: currentCount,
+                        upVotes: upVotes_,
+                        downVotes: downVotes_,
                     });
                 });
             });

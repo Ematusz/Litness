@@ -94,6 +94,8 @@ export default class App extends React.Component {
     this.toggleTab = this.toggleTab.bind(this);
     this.toggleTabMapPress = this.toggleTabMapPress.bind(this);
     this.hideTab = this.hideTab.bind(this);
+    this.returnUpVotes = this.returnUpVotes.bind(this);
+    this.returnDownVotes = this.returnDownVotes.bind(this);
   }
 
   // addMarker(region) {
@@ -364,11 +366,11 @@ export default class App extends React.Component {
       var ref = db.collection('locations').doc(address).collection('votes').doc(uniqueId);
       return ref.get()
       .then( voteDoc => {
-        if (voteDoc.data().newVote !== 1) {
+        if (voteDoc.data().newVote != 1) {
           console.log(voteDoc.data().newVote);
           var time = new Date();
           var oldVote = voteDoc.data().newVote;
-          var newVote = oldVote + 1;
+          var newVote = 1;
           ref.set({
             voteTime: time,
             oldVote: oldVote,
@@ -385,6 +387,10 @@ export default class App extends React.Component {
           if (!doc.exists) {
             ref.set({
               count: 0,
+              upVotes: 0,
+              downVotes: 0,
+              percentVotesLastThirty: 0,
+              percentVotesLastHour: 0,
               timeCreated: time,
               latitude:  coords.lat,
               longitude: coords.lng
@@ -429,7 +435,7 @@ export default class App extends React.Component {
             console.log(voteDoc.data().newVote);
             var time = new Date();
             var oldVote = voteDoc.data().newVote;
-            var newVote = oldVote - 1;
+            var newVote = -1;
             ref.set({
               voteTime: time,
               oldVote: oldVote,
@@ -446,6 +452,10 @@ export default class App extends React.Component {
           if (!doc.exists) {
             ref.set({
               count: 0,
+              upVotes: 0,
+              downVotes: 0,
+              percentVotesLastThirty: 0,
+              percentVotesLastHour:0,
               timeCreated: time,
               latitude:  coords.lat,
               longitude: coords.lng
@@ -483,35 +493,44 @@ export default class App extends React.Component {
     fetch('https://maps.googleapis.com/maps/api/geocode/json?address=' + latitude_ + ',' + longitude_ + '&key=' + myApiKey)
         .then((response) => response.json())
         .then((responseJson) => {
-            address_ = JSON.parse(JSON.stringify(responseJson)).results[0].formatted_address;
-            if (!Object.keys(this.state.markers_).includes(address_)) {
-              // console.log(JSON.parse(JSON.stringify(responseJson)).results[0]);
-              fetch('https://maps.googleapis.com/maps/api/geocode/json?address=' + address_ + '&key=' + myApiKey)
-              .then((response_) => response_.json())
-              .then((responseJson) => {
-                coords = JSON.parse(JSON.stringify(responseJson)).results[0].geometry.location
-                console.log("lat ",coords.lat)
-                let newGhostMarker = [];
-                newGhostMarker.push({
-                    coordinate: {
-                      latitude: coords.lat,
-                      longitude: coords.lng
-                    }                    
-                  });
-                  Animated.timing(this.state.animatedTab, {
-                    toValue: 370,
-                    friction: 200,
-                    duration: 500
-                  }).start();
-                  this.setState(previousState => (
-                    { tabVal: !previousState.tabVal 
-                    }
-                  ))
-                this.setState({selectedMarker: address_});
-                this.setState({ghostMarker: newGhostMarker});
-              })
+          var len = JSON.parse(JSON.stringify(responseJson)).results.length
+          var i = 0;
+          var minDist = -1;
+          for (indx = 0; indx < len; indx++) {
+            var dist = math.sqrt(math.square(latitude_-JSON.parse(JSON.stringify(responseJson)).results[indx].geometry.location.lat)+math.square(longitude_-JSON.parse(JSON.stringify(responseJson)).results[indx].geometry.location.lng));
+            if (minDist == -1) {
+              minDist = dist;
             }
-          })
+            else if (dist < minDist) {
+              minDist = dist;
+              i = indx;
+            }
+          }
+          address_ = JSON.parse(JSON.stringify(responseJson)).results[i].formatted_address;
+          coords = JSON.parse(JSON.stringify(responseJson)).results[i].geometry.location;
+          if (!Object.keys(this.state.markers_).includes(address_)) {
+            // console.log(JSON.parse(JSON.stringify(responseJson)).results[0]);
+              console.log("lat ",coords.lat)
+              let newGhostMarker = [];
+              newGhostMarker.push({
+                  coordinate: {
+                    latitude: coords.lat,
+                    longitude: coords.lng
+                  }                    
+                });
+                Animated.timing(this.state.animatedTab, {
+                  toValue: 370,
+                  friction: 200,
+                  duration: 500
+                }).start();
+                this.setState(previousState => (
+                  { tabVal: !previousState.tabVal 
+                  }
+                ))
+              this.setState({selectedMarker: address_});
+              this.setState({ghostMarker: newGhostMarker});
+          }
+        })
     }
 
   onPressMap() {
@@ -540,7 +559,23 @@ export default class App extends React.Component {
     // ))
   }
 
+  returnUpVotes(address) {
+    if (this.state.markers_[address] != null) {
+      return this.state.markers_[address].upVotes;
+    }
+    else {
+      return null;
+    }
+  }
 
+  returnDownVotes(address) {
+    if (this.state.markers_[address] != null) {
+      return this.state.markers_[address].downVotes;
+    }
+    else {
+      return null;
+    }
+  }
   render() {
     return (
       
@@ -632,6 +667,12 @@ export default class App extends React.Component {
             <Text style = {{...styles.locationText}}>
               {this.state.infoPageMarker}
             </Text>
+            <Text style = {{...styles.locationText}}>
+              🔥 = {this.returnUpVotes(this.state.infoPageMarker)}
+            </Text>
+            <Text style = {{...styles.locationText}}>
+              💩 = {this.returnDownVotes(this.state.infoPageMarker)}
+            </Text>
           </Animated.View>
 
           <Animated.View style={{...styles.tab,left:this.state.animatedTab}}> 
@@ -662,6 +703,8 @@ export default class App extends React.Component {
             },
             cost: change.doc.data().count,
             address: change.doc.id,
+            upVotes: change.doc.data().upVotes,
+            downVotes: change.doc.data().downVotes
         }
         let votableMarkers_ = [...this.state.votableMarkers];
         // console.log(1)
@@ -689,6 +732,8 @@ export default class App extends React.Component {
         console.log('modified');
         let newDictionary = {...this.state.markers_};
         newDictionary[change.doc.id].cost = change.doc.data().count;
+        newDictionary[change.doc.id].upVotes = change.doc.data().upVotes;
+        newDictionary[change.doc.id].downVotes = change.doc.data().downVotes;
         this.setState({markers_: newDictionary});
       }
       else if(change.type == 'removed') {
