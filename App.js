@@ -361,25 +361,34 @@ export default class App extends React.Component {
   addLit(address) {
     // var updated = false;
     var uniqueId = Constants.installationId;
+    var time = new Date();
     // var time = new Date();
     if (Object.keys(this.state.markers_).includes(address)) {
       var ref = db.collection('locations').doc(address).collection('votes').doc(uniqueId);
       return ref.get()
       .then( voteDoc => {
-        if (voteDoc.data().newVote != 1) {
-          console.log(voteDoc.data().newVote);
-          var time = new Date();
-          var oldVote = voteDoc.data().newVote;
-          var newVote = 1;
-          ref.set({
+        console.log('here')
+        if (voteDoc.exists()) {
+          if (voteDoc.data().newVote != 1) {
+            console.log(voteDoc.data().newVote);
+            var oldVote = voteDoc.data().newVote;
+            var newVote = 1;
+            ref.set({
+              voteTime: time,
+              oldVote: oldVote,
+              newVote: newVote
+            })
+          }
+        }
+        else {
+          db.collection('locations').doc(address).collection('votes').doc(uniqueId).set({
             voteTime: time,
-            oldVote: oldVote,
-            newVote: newVote
+            oldVote: 0,
+            newVote: 1
           })
         }
       })
     } else {
-      var time = new Date();
       var ref = db.collection('locations').doc(address);
       console.log(address);
       ref.get()
@@ -427,24 +436,33 @@ export default class App extends React.Component {
   deleteLit(address) {
     // var updated = false;
     var uniqueId = Constants.installationId;
+    var time = new Date();
     if (Object.keys(this.state.markers_).includes(address)) {
       var ref = db.collection('locations').doc(address).collection('votes').doc(uniqueId);
       return ref.get()
         .then( voteDoc => {
-          if (voteDoc.data().newVote !== -1) {
-            console.log(voteDoc.data().newVote);
-            var time = new Date();
-            var oldVote = voteDoc.data().newVote;
-            var newVote = -1;
-            ref.set({
+          console.log('here')
+          if (voteDoc.exists) {
+            if (voteDoc.data().newVote !== -1) {
+              console.log(voteDoc.data().newVote);
+              var oldVote = voteDoc.data().newVote;
+              var newVote = -1;
+              ref.set({
+                voteTime: time,
+                oldVote: oldVote,
+                newVote: newVote
+              })
+            }
+          }
+          else {
+            db.collection('locations').doc(address).collection('votes').doc(uniqueId).set({
               voteTime: time,
-              oldVote: oldVote,
-              newVote: newVote
+              oldVote: 0,
+              newVote: -1
             })
           }
         })
     }else {
-      var time = new Date();
       var ref = db.collection('locations').doc(address);
       console.log(address);
       ref.get()
