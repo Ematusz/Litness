@@ -368,7 +368,7 @@ export default class App extends React.Component {
       return ref.get()
       .then( voteDoc => {
         console.log('here')
-        if (voteDoc.exists()) {
+        if (voteDoc.exists) {
           if (voteDoc.data().newVote != 1) {
             console.log(voteDoc.data().newVote);
             var oldVote = voteDoc.data().newVote;
@@ -601,7 +601,8 @@ export default class App extends React.Component {
         <MapView
           ref={ref => { this.map = ref; } }  
           minZoomLevel = {16.5}
-          maxZoomLevel = {19}          
+          maxZoomLevel = {19}
+          showsMyLocationButton = {true}          
           zoomEnabled = {true}
           provider = {PROVIDER_GOOGLE}
           showsUserLocation = {true}
