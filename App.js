@@ -85,7 +85,7 @@ export default class App extends React.Component {
     // this.onUserLocationChange = this.onUserLocationChange.bind(this);
     // this.onPressMap = this.onPressMap.bind(this);
     this.handlePress = this.handlePress.bind(this);
-    //this.componentDidMount = this.componentDidMount.bind(this);
+    this.componentDidMount = this.componentDidMount.bind(this);
     this._getLocationAsync = this._getLocationAsync.bind(this);
     this.closePopUp = this.closePopUp.bind(this);
     this.addLit = this.addLit.bind(this);
@@ -130,8 +130,7 @@ export default class App extends React.Component {
             latitude,
             longitude
           };
-          this.setState({userLocation: newCoordinate})
-          console.log(newCoordinate, "\n");
+          this.setState({userLocation: newCoordinate});
           // console.log(2)
           // console.log(newCoordinate.address)
           // console.log(newCoordinate.latitude, " ", newCoordinate.longitude);
@@ -148,15 +147,13 @@ export default class App extends React.Component {
             && newCoordinate.longitude > this.state.userLocation.longitude - 0.000000748596382) || (newCoordinate.address == this.state.userLocation.address)) {
               if (!votableMarkers_.includes(newCoordinate.address)) {
                 votableMarkers_.push[newCoordinate.address];
-                console.log(newCoordinate.address);
-                console.log(1);
               }
             }
           this.setState({votableMarkers: votableMarkers_});
         })
       }
     )
-  }
+}
   componentWillMount() {
     this._getLocationAsync();
     this._reverseLocationAsync();
@@ -188,7 +185,7 @@ export default class App extends React.Component {
     }
 
     this.map.animateToRegion(initialRegion, 1);
-    this.setState({region: initialRegion});
+    this.setState({mapRegion: initialRegion});
     this.setState(previousState => (
       { testMarker: {
         coordinate: initialPosition,
@@ -276,15 +273,11 @@ export default class App extends React.Component {
   }
 
   toggleTab(markerAddress) {
-    console.log("tab toggled");
     if(!Object.keys(this.state.markers_).includes(markerAddress)) {
       this.hideTab();
     }
     else if(this.state.selectedMarker !== markerAddress) {        
-      console.log('tabval ',this.state.tabVal);
-      console.log(1);
       if (!this.state.tabVal) {
-        console.log(2);
         Animated.timing(this.state.animatedTab, {
           toValue: 370,
           friction: 200,
@@ -294,20 +287,12 @@ export default class App extends React.Component {
           { tabVal: !previousState.tabVal 
           }
         ))
-        console.log('tabval ',this.state.tabVal);
       }
 
       this.setState({selectedMarker: markerAddress});
-      console.log('selectedMarker ', this.state.selectedMarker);
     } 
     else{
-      console.log(3);
       this.hideTab();
-      // if (!Object.keys(this.state.markers_).includes(markerAddress)) {
-      //   let newGhostMarker = [];
-      //   this.setState({ghostMarker: newGhostMarker});
-      // }
-      console.log('selectedMarker ', this.state.selectedMarker);
     }
     
     
@@ -315,7 +300,6 @@ export default class App extends React.Component {
 
   toggleTabMapPress = pressinfo => {
     if(pressinfo.nativeEvent.action !== "marker-press") {
-      console.log('mappress');
       this.hideTab();
     }
     
@@ -367,10 +351,8 @@ export default class App extends React.Component {
       var ref = db.collection('locations').doc(address).collection('votes').doc(uniqueId);
       return ref.get()
       .then( voteDoc => {
-        console.log('here')
         if (voteDoc.exists) {
           if (voteDoc.data().newVote != 1) {
-            console.log(voteDoc.data().newVote);
             var oldVote = voteDoc.data().newVote;
             var newVote = 1;
             ref.set({
@@ -390,7 +372,6 @@ export default class App extends React.Component {
       })
     } else {
       var ref = db.collection('locations').doc(address);
-      console.log(address);
       ref.get()
         .then( doc => {
           if (!doc.exists) {
@@ -441,7 +422,6 @@ export default class App extends React.Component {
       var ref = db.collection('locations').doc(address).collection('votes').doc(uniqueId);
       return ref.get()
         .then( voteDoc => {
-          console.log('here')
           if (voteDoc.exists) {
             if (voteDoc.data().newVote !== -1) {
               console.log(voteDoc.data().newVote);
@@ -464,7 +444,6 @@ export default class App extends React.Component {
         })
     }else {
       var ref = db.collection('locations').doc(address);
-      console.log(address);
       ref.get()
         .then( doc => {
           if (!doc.exists) {
@@ -528,7 +507,6 @@ export default class App extends React.Component {
           coords = JSON.parse(JSON.stringify(responseJson)).results[i].geometry.location;
           if (!Object.keys(this.state.markers_).includes(address_)) {
             // console.log(JSON.parse(JSON.stringify(responseJson)).results[0]);
-              console.log("lat ",coords.lat)
               let newGhostMarker = [];
               newGhostMarker.push({
                   coordinate: {
@@ -589,6 +567,15 @@ export default class App extends React.Component {
   returnDownVotes(address) {
     if (this.state.markers_[address] != null) {
       return this.state.markers_[address].downVotes;
+    }
+    else {
+      return null;
+    }
+  }
+
+  returnTimeCreated(addres) {
+    if (this.state.markers_[address] != null) {
+      return this.state.markers_[address].timeCreated;
     }
     else {
       return null;
@@ -714,7 +701,6 @@ export default class App extends React.Component {
     let changes = snapshot.docChanges();
     changes.forEach(change => {
       if(change.type == 'added' /*&& !this.state.markerIDs.includes(change.doc.id)*/){
-        console.log('added');
         let newDictionary = {...this.state.markers_};
         newDictionary[change.doc.id] = {
             coordinate: {
@@ -741,15 +727,12 @@ export default class App extends React.Component {
           && change.doc.data().longitude > this.state.userLocation.longitude - 0.000000748596382)  || (change.doc.id == this.state.userLocation.address)) {
             if (votableMarkers_.includes(change.doc.id)) {
               votableMarkers_.push[change.doc.id];
-              console.log(change.doc.id);
-              console.log(1);
             }
           }
         this.setState({votableMarkers: votableMarkers_});
         this.setState({markers_: newDictionary});
       } 
       else if(change.type == 'modified'){
-        console.log('modified');
         let newDictionary = {...this.state.markers_};
         newDictionary[change.doc.id].cost = change.doc.data().count;
         newDictionary[change.doc.id].upVotes = change.doc.data().upVotes;
@@ -757,7 +740,6 @@ export default class App extends React.Component {
         this.setState({markers_: newDictionary});
       }
       else if(change.type == 'removed') {
-        console.log('removed');
         let newDictionary = {...this.state.markers_};
         delete newDictionary[change.doc.id];
         this.setState({markers_: newDictionary});
