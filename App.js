@@ -98,24 +98,6 @@ export default class App extends React.Component {
     this.returnDownVotes = this.returnDownVotes.bind(this);
   }
 
-  // addMarker(region) {
-  //   let now = (new Date).getTime();
-
-  //   if (this.state.ladAddedMarker > now - 5000) {
-  //     return;
-  //   }
-    
-  //   this.setState({
-  //     markers: [
-  //       ...this.state.markers, {
-  //         coordinate: region,
-  //         key: id++
-  //       }
-  //     ],
-  //     ladAddedMarker: now
-  //   });
-  // }
-
   componentDidMount() {
     this.watchID = navigator.geolocation.watchPosition(
       position => {
@@ -131,13 +113,6 @@ export default class App extends React.Component {
             longitude
           };
           this.setState({userLocation: newCoordinate});
-          // console.log(2)
-          // console.log(newCoordinate.address)
-          // console.log(newCoordinate.latitude, " ", newCoordinate.longitude);
-          // console.log(newCoordinate.latitude < this.state.userLocation.latitude + 0.0002694933525);
-          // console.log(newCoordinate.latitude > this.state.userLocation.latitude - 0.0002694933525);
-          // console.log(newCoordinate.longitude < this.state.userLocation.longitude + 0.000000748596382);
-          // console.log(newCoordinate.longitude > this.state.userLocation.longitude - 0.000000748596382);
           let votableMarkers_ = [...this.state.votableMarkers];
           /*if within 30m of the last known user location or at the the marker
           is at the last known user address*/
@@ -214,30 +189,14 @@ export default class App extends React.Component {
 
   onLongPressMap = info => {
     let data = info.nativeEvent.coordinate
-    // this.setState(ghostMarker: )
     this.addNewLocation(data.latitude, data.longitude);
-    // if (!this.state.pressStatus) {
-    //   Animated.timing(this.state.animatedFlex, {
-    //     toValue: 1,
-    //     duration: 250
-    //   }).start();
-    // } else {
-    //   Animated.timing(this.state.animatedFlex, {
-    //     toValue: .5,
-    //     duration: 250
-    //   }).start();
-    // }
-    // this.setState(previousState => (
-    //   { pressStatus: !previousState.pressStatus }
-    // ))
-
   }
 
   onRegionChangeComplete = mapRegion => {
-    // console.log(region);
     this.setState({mapRegion}); 
   }
 
+  // keep for now
   // onUserLocationChange = locationInfo => {
   //   let userLocation = locationInfo.nativeEvent.coordinate;
   //   this.setState({userLocation});
@@ -245,7 +204,6 @@ export default class App extends React.Component {
   // }
 
   toggleInfoPage () {
-    // this.hideTab();
     if (!this.state.infoPage) {
       Animated.timing(this.state.animatedTop, {
         toValue: 50,
@@ -343,10 +301,8 @@ export default class App extends React.Component {
 
   //UPDATED THIS TO WORK WITH DATABASE
   addLit(address) {
-    // var updated = false;
     var uniqueId = Constants.installationId;
     var time = new Date();
-    // var time = new Date();
     if (Object.keys(this.state.markers_).includes(address)) {
       var ref = db.collection('locations').doc(address).collection('votes').doc(uniqueId);
       return ref.get()
@@ -394,23 +350,7 @@ export default class App extends React.Component {
         })
         this.hideTab(false);
     }
-    
-    // var transaction = db.runTransaction(t = (event) => {
-    //     return event.get(ref)
-    //     .then(doc => {
-    //       var newCount = doc.data().count +1;
-    //       event.update(ref, { count: newCount});
-    //       updated = true;
-    //       ref.collection('votes').doc(uniqueId).set({
-    //         voteTime: time,
-    //         currentCount: newCount
-    //       })
-    //     })
-    // })
-    // .catch(err => {
-    //         console.log('Error getting document', err);
-    // })
-    
+  
   }
 
   //UPDATED THIS TO WORK WITH DATBASE
@@ -424,7 +364,6 @@ export default class App extends React.Component {
         .then( voteDoc => {
           if (voteDoc.exists) {
             if (voteDoc.data().newVote !== -1) {
-              console.log(voteDoc.data().newVote);
               var oldVote = voteDoc.data().newVote;
               var newVote = -1;
               ref.set({
@@ -466,21 +405,6 @@ export default class App extends React.Component {
         })
       this.hideTab(false);
     }
-    // var transaction = db.runTransaction(t = (event) => {
-    //     return event.get(ref)
-    //     .then(doc => {
-    //       var newCount = doc.data().count - 1;
-    //       event.update(ref, { count: newCount});
-    //       updated = true;
-    //       ref.collection('votes').doc(uniqueId).set({
-    //         voteTime: time,
-    //         currentCount: newCount
-    //       })
-    //     })
-    // })
-    // .catch(err => {
-    //         console.log('Error getting document', err);
-    // })
   }
 
   addNewLocation = async(latitude_, longitude_) => {
@@ -528,32 +452,6 @@ export default class App extends React.Component {
           }
         })
     }
-
-  onPressMap() {
-    // navigator.geolocation.getCurrentPosition(location =>
-    //   this.setState(previousState => (
-    //   { testMarker: {
-    //     coordinate: {latitude:location.coords.latitude, longitude: location.coords.longitude},
-    //     cost: previousState.testMarker.cost,
-    //   }}
-    // )));
-    // console.log("asdad")
-    // myApiKey = 'AIzaSyBkwazID1O1ryFhdC6mgSR4hJY2-GdVPmE';
-    // fetch('https://maps.googleapis.com/maps/api/geocode/json?address=' + this.state.testMarker.coordinate.latitude + ',' + this.state.testMarker.coordinate.longitude + '&key=' + myApiKey)
-    //     .then((response) => response.json())
-    //     .then((responseJson) => {
-    //         console.log(JSON.parse(JSON.stringify(responseJson)).results[0].formatted_address);
-    //         this.setState({testString:JSON.parse(JSON.stringify(responseJson)).results[0].formatted_address});
-    //         alert('ADDRESS GEOCODE is BACK!! => ' + JSON.parse(JSON.stringify(responseJson)).results[0].formatted_address);
-    // })
-
-    // this.setState(previousState => (
-    //   { testMarker: {
-    //     coordinate: previousState.testMarker.coordinate,
-    //     cost: previousState.testMarker.cost+1.
-    //   }}
-    // ))
-  }
 
   returnUpVotes(address) {
     if (this.state.markers_[address] != null) {
@@ -609,19 +507,11 @@ export default class App extends React.Component {
             return (
               <MapView.Marker 
               {...marker} 
-              // onPress={this.handlePress}
               onPress =  {() => this.toggleTab(marker.address)} 
               >
                 <View style={styles.marker} >
                     <Text style={styles.text}>{marker.cost}</Text>
                 </View>
-
-                  {/* <MapView.Callout tooltip style={styles.test}>
-                    <Button style={styles.marker} title = '💩' onPress = {()=>this.deleteLit(marker.address)} />
-                    <Button style={styles.marker} title = '🔥' onPress = {()=>this.addLit(marker.address)} />
-                    <Text>|</Text>
-                    <Button style={styles.marker} title = 'ⓘ' onPress={this.toggleInfoPage} />
-                  </MapView.Callout> */}
 
               </MapView.Marker>
             )
@@ -630,39 +520,15 @@ export default class App extends React.Component {
             return (
               <MapView.Marker 
               {...marker} 
-              // onPress={this.handlePress}
               onPress =  {() => this.toggleTab(marker.address)} 
               >
                 <View style={styles.ghostMarker} >
                     <Text style={styles.text}>{0}</Text>
                 </View>
-                  {/* <MapView.Callout tooltip style={styles.test}>
-                    <Button style={styles.marker} title = '💩' onPress = {()=>this.deleteLit(marker.address)} />
-                    <Button style={styles.marker} title = '🔥' onPress = {()=>this.addLit(marker.address)} />
-                    <Text>|</Text>
-                    <Button style={styles.marker} title = 'ⓘ' onPress={this.toggleInfoPage} />
-                  </MapView.Callout> */}
 
               </MapView.Marker>
             )
           })}
-            <MapView.Marker 
-              // {...this.state.ghostMarker} 
-              // onPress={this.handlePress}
-              // onPress =  {() => this.toggleTab(marker.address)} 
-              >
-                {/* <View style={styles.marker} >
-                    <Text style={styles.text}>{this.state.ghostMarker.cost}</Text>
-                </View> */}
-
-                  {/* <MapView.Callout tooltip style={styles.test}>
-                    <Button style={styles.marker} title = '💩' onPress = {()=>this.deleteLit(marker.address)} />
-                    <Button style={styles.marker} title = '🔥' onPress = {()=>this.addLit(marker.address)} />
-                    <Text>|</Text>
-                    <Button style={styles.marker} title = 'ⓘ' onPress={this.toggleInfoPage} />
-                  </MapView.Callout> */}
-
-              </MapView.Marker>
           </MapView>
 
 
@@ -713,14 +579,6 @@ export default class App extends React.Component {
             downVotes: change.doc.data().downVotes
         }
         let votableMarkers_ = [...this.state.votableMarkers];
-        // console.log(1)
-        // console.log(change.doc.id)
-        // console.log(change.doc.data().latitude, " ", change.doc.data().longitude);
-        // console.log(change.doc.data().latitude < this.state.userLocation.latitude + 0.0002694933525);
-        // console.log(change.doc.data().latitude > this.state.userLocation.latitude - 0.0002694933525);
-        // console.log(change.doc.data().longitude < this.state.userLocation.longitude + 0.000000748596382);
-        // console.log(change.doc.data().longitude > this.state.userLocation.longitude - 0.000000748596382);
-        // console.log((change.doc.id == this.state.userLocation.address), "\n")
         if ((change.doc.data().latitude < this.state.userLocation.latitude + 0.0002694933525
           && change.doc.data().latitude > this.state.userLocation.latitude - 0.0002694933525
           && change.doc.data().longitude < this.state.userLocation.longitude + 0.000000748596382
