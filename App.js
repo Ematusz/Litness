@@ -99,23 +99,35 @@ export default class App extends React.Component {
   }
 
   componentDidMount() {
+    // currently this watches the users position. 
+    // It updates userLocation when the user moves significantly far away.
+    // The intention is to keep userLocation relatively up to date so they always know
+    // which markers are accessible. This function should also update the votableMarkers
+    // prop which will be a vector of markers that can be voted on from where they are
+    // I was thinking we could mark these with a different color highlight or something.
     this.watchID = navigator.geolocation.watchPosition(
       position => {
         const { latitude, longitude } = position.coords;
+        // Fetch curent location
         myApiKey = 'AIzaSyBkwazID1O1ryFhdC6mgSR4hJY2-GdVPmE';
         fetch('https://maps.googleapis.com/maps/api/geocode/json?address=' + latitude + ',' + longitude + '&key=' + myApiKey)
         .then((response) => response.json())
         .then((responseJson) => {
           var address = JSON.parse(JSON.stringify(responseJson)).results[0].formatted_address;
+          // saves address, latitude, and longitude in a coordinate object
           const newCoordinate = {
             address,
             latitude,
             longitude
           };
+          // sets new userLocation based on previously created coordinate object
           this.setState({userLocation: newCoordinate});
+          // copy in the current set of votableMarkers.
           let votableMarkers_ = [...this.state.votableMarkers];
           /*if within 30m of the last known user location or at the the marker
           is at the last known user address*/
+          // TODO: adds new set of votable markers, we would also need to remove old votable
+          // markers. This is not currently fully implemented and will need to be worked on
           if ((newCoordinate.latitude < this.state.userLocation.latitude + 0.0002694933525
             && newCoordinate.latitude > this.state.userLocation.latitude - 0.0002694933525
             && newCoordinate.longitude < this.state.userLocation.longitude + 0.000000748596382
@@ -130,11 +142,15 @@ export default class App extends React.Component {
     )
 }
   componentWillMount() {
+    // TODO: The getlocationAsync() and reverselocationAsync() may be unuseful now. Im leaving
+    // them in because you wrote them and I want a second opinon
     this._getLocationAsync();
     this._reverseLocationAsync();
     this._getDeviceInfoAsync();
   }
 
+
+  // You wrote this so im not fully sure
   _getLocationAsync = async() => {
     let{ status } = await Permissions.askAsync(Permissions.LOCATION);
     if (status !== 'granted') {
@@ -175,23 +191,29 @@ export default class App extends React.Component {
             this.setState({testString:JSON.parse(JSON.stringify(responseJson)).results[0].formatted_address});
     })
   };
-
+ // you wrote this
   _reverseLocationAsync = async() => {
     let regionName =  await Location.reverseGeocodeAsync({latitude:42.275863,longitude:-83.72695});
     this.setState({testtest:JSON.stringify(regionName)});
   }
 
+  // this gets the Id for the phone. TODO: update to device ID after ejecting project
+  // installationID will likely only work for expo
   _getDeviceInfoAsync = async() => {
     console.log('retrieving info')
     var uniqueId = Constants.installationId;
     console.log(uniqueId);
   }
 
+  // collects info from the map in "info" then reads it into addNewLocation.
   onLongPressMap = info => {
     let data = info.nativeEvent.coordinate
     this.addNewLocation(data.latitude, data.longitude);
   }
 
+  // keeps track of the bounds of the screen. Currently not helpful but could become
+  // so if I could find a way to properly limit the scope of the firestore listener.
+  // working on accomplishing this with the help of geotagging.
   onRegionChangeComplete = mapRegion => {
     this.setState({mapRegion}); 
   }
@@ -203,7 +225,9 @@ export default class App extends React.Component {
   //   console.log(this.state.userLocation);
   // }
 
+  // Toggles the info page on a hub
   toggleInfoPage () {
+    // if infoPage is currently listed as false, open the page. Otherwise close it.
     if (!this.state.infoPage) {
       Animated.timing(this.state.animatedTop, {
         toValue: 50,
@@ -217,23 +241,33 @@ export default class App extends React.Component {
         duration: 200
       }).start();
     }
+    // closes the vote tab when the info page is up so that its not distracting.
     if (this.state.infoPage) {
       this.toggleTab(this.state.infoPageMarker);
       this.setState({infoPageMarker: null})
     }
+    // re opens the tab when the info page closes
     else {
       this.setState({infoPageMarker: this.state.selectedMarker});
       this.hideTab();
     }
+    // switches the infoPage state to on or off
     this.setState(previousState => (
       { infoPage: !previousState.infoPage }
     ))
   }
 
   toggleTab(markerAddress) {
+    // Checks to see if the marker is in the array of active markers. This is a trigger
+    // to see if youre working with a ghost marker. If the marker is a ghost marker
+    // and you click it again, it will just hide the tab without adding a new marker 
+    // the array.
     if(!Object.keys(this.state.markers_).includes(markerAddress)) {
       this.hideTab();
     }
+    // checks to see if the marker you clicked on is the one currently stored as
+    // selectedMarker. If not, this should change the selected address to the one
+    // youre clickig on now.
     else if(this.state.selectedMarker !== markerAddress) {        
       if (!this.state.tabVal) {
         Animated.timing(this.state.animatedTab, {
@@ -249,6 +283,8 @@ export default class App extends React.Component {
 
       this.setState({selectedMarker: markerAddress});
     } 
+    // if the marker you're clicking on is neither a ghost marker, nor a new marker, it must
+    // be the same one so we just close it.
     else{
       this.hideTab();
     }
@@ -256,6 +292,7 @@ export default class App extends React.Component {
     
   }
 
+  // any time the map is pressed and its not on a marker, just hide the tab.
   toggleTabMapPress = pressinfo => {
     if(pressinfo.nativeEvent.action !== "marker-press") {
       this.hideTab();
@@ -263,6 +300,8 @@ export default class App extends React.Component {
     
   }
 
+  // hides the vodting tab and switches the state back to false. Also clears out ghostMarker
+  // if necessary.
   hideTab() {
     Animated.timing(this.state.animatedTab, {
       toValue: 1000,
@@ -277,6 +316,7 @@ export default class App extends React.Component {
     this.setState({ghostMarker: deleteGhost});
   }
 
+  // TODO, I dont think this does anything, if you agree we should get rid.
   handlePress() {
       if (!this.state.showStatus) {
         Animated.spring(this.state.animatedHeight, {
@@ -300,14 +340,24 @@ export default class App extends React.Component {
   }
 
   //UPDATED THIS TO WORK WITH DATABASE
+  // Adds one vote for lit at the current marker.
   addLit(address) {
+    // recieve the ID from the user
     var uniqueId = Constants.installationId;
+    // collect timestamp.
     var time = new Date();
+    // if the marker is in the markers vector then it is already in the database and
+    // we just need to update the votes.
     if (Object.keys(this.state.markers_).includes(address)) {
+      // gets a reference to the document at the address.
       var ref = db.collection('locations').doc(address).collection('votes').doc(uniqueId);
       return ref.get()
       .then( voteDoc => {
+        // if there is a document at this address in the votes collection with the users
+        // unique ID then they can only update their vote
         if (voteDoc.exists) {
+          // if the user had not previously up voted this location then change their vote to
+          // an upVote.
           if (voteDoc.data().newVote != 1) {
             var oldVote = voteDoc.data().newVote;
             var newVote = 1;
@@ -318,6 +368,8 @@ export default class App extends React.Component {
             })
           }
         }
+        // if there is not yet a vote with uniqueID, then the user has not yet voted on this
+        // hub. Therefore, we must add a new upVote with their uniqueID as the key
         else {
           db.collection('locations').doc(address).collection('votes').doc(uniqueId).set({
             voteTime: time,
@@ -326,10 +378,18 @@ export default class App extends React.Component {
           })
         }
       })
+    // TODO: if the marker is not in the markers_ array, then it means that either the address
+    // of the marker is not currently in the database, or somehow, the address is in the
+    // database but was not loaded into the local dictionary of markers. This is something
+    // that I am only now considering and should fix. Although if it were in the database
+    // and you can click on it, it should be in the markers database. This is supposed to
+    // be used to turn a ghost marker into a regular marker.
     } else {
+      // get a reference to the document at this address in the database.
       var ref = db.collection('locations').doc(address);
       ref.get()
         .then( doc => {
+          // if the document doesnt yet exist, add a new one with base stats.
           if (!doc.exists) {
             ref.set({
               count: 0,
@@ -341,6 +401,7 @@ export default class App extends React.Component {
               latitude:  coords.lat,
               longitude: coords.lng
             })
+            // add a new vote to the votes on this document with the users uniqueID.
             ref.collection('votes').doc(uniqueId).set({
               voteTime: time,
               oldVote: 0,
@@ -348,14 +409,17 @@ export default class App extends React.Component {
             })
           }
         })
-        this.hideTab(false);
+        // assuming it was a ghost marker, that marker can now be hidden.
+        this.hideTab(); 
     }
   
   }
 
   //UPDATED THIS TO WORK WITH DATBASE
+  // TODO: This is very similar to add lit however its for deleting a lit from the db. See 
+  // above comments, however, this just adds downvotes instead. This could probably
+  // be condensed into one function actually 
   deleteLit(address) {
-    // var updated = false;
     var uniqueId = Constants.installationId;
     var time = new Date();
     if (Object.keys(this.state.markers_).includes(address)) {
@@ -407,9 +471,11 @@ export default class App extends React.Component {
     }
   }
 
+  // This funcion adds a new ghost marker which will eventually be used
+  // to the database and is triggered in longPressMap.
   addNewLocation = async(latitude_, longitude_) => {
     var address_ = null;
-    var uniqueId = Constants.installationId;
+    // fetch the address of the place you are passing in the coordinates of.
     myApiKey = 'AIzaSyBkwazID1O1ryFhdC6mgSR4hJY2-GdVPmE';
     fetch('https://maps.googleapis.com/maps/api/geocode/json?address=' + latitude_ + ',' + longitude_ + '&key=' + myApiKey)
         .then((response) => response.json())
@@ -417,6 +483,12 @@ export default class App extends React.Component {
           var len = JSON.parse(JSON.stringify(responseJson)).results.length
           var i = 0;
           var minDist = -1;
+          // this loop checks to see which of the possible results returned from the
+          // fetch is closest to the latitude and longitude click that are actually passed
+          // in. This used to just take the first result, however, sometimes it is not sorted
+          // in a fashion of closest so this was causing problems particularly when adding
+          // markers to building with multiple sub buildings attached. For example mason,
+          // Angel, or Tisch halls.
           for (indx = 0; indx < len; indx++) {
             var dist = math.sqrt(math.square(latitude_-JSON.parse(JSON.stringify(responseJson)).results[indx].geometry.location.lat)+math.square(longitude_-JSON.parse(JSON.stringify(responseJson)).results[indx].geometry.location.lng));
             if (minDist == -1) {
@@ -427,32 +499,39 @@ export default class App extends React.Component {
               i = indx;
             }
           }
+          // saves the data of the json result that is closest to the latitude and longitude 
+          // passed into the funciton.
           address_ = JSON.parse(JSON.stringify(responseJson)).results[i].formatted_address;
           coords = JSON.parse(JSON.stringify(responseJson)).results[i].geometry.location;
+          // checks to make sure that the new location is not already part of the markers
+          // dictionary. This would mean that the marker is already in the database. May need 
+          // to query the actual database though instead... Look into this.
           if (!Object.keys(this.state.markers_).includes(address_)) {
-            // console.log(JSON.parse(JSON.stringify(responseJson)).results[0]);
-              let newGhostMarker = [];
-              newGhostMarker.push({
-                  coordinate: {
-                    latitude: coords.lat,
-                    longitude: coords.lng
-                  }                    
-                });
-                Animated.timing(this.state.animatedTab, {
-                  toValue: 370,
-                  friction: 200,
-                  duration: 500
-                }).start();
-                this.setState(previousState => (
-                  { tabVal: !previousState.tabVal 
-                  }
-                ))
-              this.setState({selectedMarker: address_});
-              this.setState({ghostMarker: newGhostMarker});
+            // creates the new ghost marker with the information of this location.
+            let newGhostMarker = [];
+            newGhostMarker.push({
+                coordinate: {
+                  latitude: coords.lat,
+                  longitude: coords.lng
+                }                    
+              });
+            // Opens the voting tab for the user.  
+            Animated.timing(this.state.animatedTab, {
+              toValue: 370,
+              friction: 200,
+              duration: 500
+            }).start();
+            this.setState(previousState => (
+              { tabVal: !previousState.tabVal 
+              }
+            ))
+            this.setState({selectedMarker: address_});
+            this.setState({ghostMarker: newGhostMarker});
           }
         })
     }
-
+  // This is being used to get upVotes for the info page, this is because some of this
+  // does not have a default value so it needs a function to call it.
   returnUpVotes(address) {
     if (this.state.markers_[address] != null) {
       return this.state.markers_[address].upVotes;
@@ -462,6 +541,7 @@ export default class App extends React.Component {
     }
   }
 
+  // see returnUpVotes but this works for downVotes
   returnDownVotes(address) {
     if (this.state.markers_[address] != null) {
       return this.state.markers_[address].downVotes;
@@ -471,6 +551,7 @@ export default class App extends React.Component {
     }
   }
 
+  // see return upVotes but this is for timeCreated
   returnTimeCreated(addres) {
     if (this.state.markers_[address] != null) {
       return this.state.markers_[address].timeCreated;
@@ -479,11 +560,13 @@ export default class App extends React.Component {
       return null;
     }
   }
+
+  // renders the onscreen info
   render() {
     return (
-      
       <View style = {styles.bigContainer}>        
         <MapView
+          // create the map with the map settings
           ref={ref => { this.map = ref; } }  
           minZoomLevel = {16.5}
           maxZoomLevel = {19}
@@ -504,9 +587,11 @@ export default class App extends React.Component {
           }}
         > 
           {Object.values(this.state.markers_).map( (marker) => {
+            // creates each marker in the primary markers_ dictionary.
             return (
               <MapView.Marker 
               {...marker} 
+              // on press should toggle the voter tab
               onPress =  {() => this.toggleTab(marker.address)} 
               >
                 <View style={styles.marker} >
@@ -517,9 +602,12 @@ export default class App extends React.Component {
             )
           })}
           {this.state.ghostMarker.map( (marker) => {
+            // creates the ghostMarker if needed.
             return (
               <MapView.Marker 
               {...marker} 
+              // on press should toggle the voter tab. This should only be relevant if pressing
+              // to close the tab
               onPress =  {() => this.toggleTab(marker.address)} 
               >
                 <View style={styles.ghostMarker} >
@@ -530,7 +618,6 @@ export default class App extends React.Component {
             )
           })}
           </MapView>
-
 
           <Animated.View style={{...styles.infoPage,top:this.state.animatedTop}}>
             <Button style={styles.marker} title = 'X' onPress={this.toggleInfoPage} />
@@ -558,6 +645,8 @@ export default class App extends React.Component {
     );
   }
   //ADDED THIS LISTENER FOR REAL TIME UPDATES
+  // this listener listens to the database for updates. I am working towards only making
+  // it listen to the data that is relevant for the map right now.
   listener = db.collection('locations')
     // .where('latitude', '>', /*this.state.region.latitude-this.state.region.latitudeDelta*/)
     // .where('latitude', '<', this.state.region.latitude+this.state.region.latitudeDelta)
@@ -566,7 +655,9 @@ export default class App extends React.Component {
     .onSnapshot(snapshot => {
     let changes = snapshot.docChanges();
     changes.forEach(change => {
-      if(change.type == 'added' /*&& !this.state.markerIDs.includes(change.doc.id)*/){
+      // if a new document is added to the listener. We have to create a location and
+      // add it to the markers dictionary.
+      if(change.type == 'added'){
         let newDictionary = {...this.state.markers_};
         newDictionary[change.doc.id] = {
             coordinate: {
@@ -579,6 +670,9 @@ export default class App extends React.Component {
             downVotes: change.doc.data().downVotes
         }
         let votableMarkers_ = [...this.state.votableMarkers];
+        // TODO: this checks to see if the new location should be added to the votable dictionary
+        // has not been fully implemented because for development purposes, i want to
+        // vote on all markers.
         if ((change.doc.data().latitude < this.state.userLocation.latitude + 0.0002694933525
           && change.doc.data().latitude > this.state.userLocation.latitude - 0.0002694933525
           && change.doc.data().longitude < this.state.userLocation.longitude + 0.000000748596382
@@ -590,6 +684,8 @@ export default class App extends React.Component {
         this.setState({votableMarkers: votableMarkers_});
         this.setState({markers_: newDictionary});
       } 
+      // if a document in the listener has been modified, it will just update the data in the
+      // markers_ dictionary.
       else if(change.type == 'modified'){
         let newDictionary = {...this.state.markers_};
         newDictionary[change.doc.id].cost = change.doc.data().count;
@@ -597,6 +693,8 @@ export default class App extends React.Component {
         newDictionary[change.doc.id].downVotes = change.doc.data().downVotes;
         this.setState({markers_: newDictionary});
       }
+      // if a document in the listener has been removed it will delete the location from
+      // the markers_ dictionary
       else if(change.type == 'removed') {
         let newDictionary = {...this.state.markers_};
         delete newDictionary[change.doc.id];
@@ -605,7 +703,7 @@ export default class App extends React.Component {
     })
   })
 }
-//this.marker.hideCallout();
+//this is just style stuff.
 const styles = StyleSheet.create({
 
   container: {
