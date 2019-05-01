@@ -3,7 +3,7 @@ import { TouchableOpacity,TouchableHighlight,Vibration,Animated,Alert, StyleShee
 import MapView,{ Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 // import { createSwitchNavigator, createStackNavigator, NavigationEvents } from 'react-navigation';
 import {Constants, Location, Permissions} from 'expo';
-import { white } from 'ansi-colors';
+import { white, black } from 'ansi-colors';
 import * as math from 'mathjs';
 import * as firebase from 'firebase';
 import 'firebase/firestore';
@@ -57,6 +57,7 @@ export default class App extends React.Component {
       //0.00000898311175 lat to 1 m
       //0.000000024953213 lng to 1 m
       selectedMarker:null,
+      markerBorderColor: "black",
       infoPageMarker:null,
       ghostMarker: [],
       mapRegion: {
@@ -226,7 +227,7 @@ export default class App extends React.Component {
   // }
 
   // Toggles the info page on a hub
-  toggleInfoPage () {
+  toggleInfoPage (markerAddress) {
     // if infoPage is currently listed as false, open the page. Otherwise close it.
     if (!this.state.infoPage) {
       Animated.timing(this.state.animatedTop, {
@@ -262,6 +263,8 @@ export default class App extends React.Component {
     // to see if youre working with a ghost marker. If the marker is a ghost marker
     // and you click it again, it will just hide the tab without adding a new marker 
     // the array.
+
+    this.state.markers_[markerAddress].borderColor = "#e8b923"
     if(!Object.keys(this.state.markers_).includes(markerAddress)) {
       this.hideTab();
     }
@@ -282,10 +285,12 @@ export default class App extends React.Component {
       }
 
       this.setState({selectedMarker: markerAddress});
+      console.log(markerAddress)
     } 
     // if the marker you're clicking on is neither a ghost marker, nor a new marker, it must
     // be the same one so we just close it.
     else{
+      this.state.markers_[markerAddress].borderColor = "black"
       this.hideTab();
     }
     
@@ -594,7 +599,7 @@ export default class App extends React.Component {
               // on press should toggle the voter tab
               onPress =  {() => this.toggleTab(marker.address)} 
               >
-                <View style={styles.marker} >
+                <View style={{...styles.marker,borderColor:marker.borderColor}} >
                     <Text style={styles.text}>{marker.cost}</Text>
                 </View>
 
@@ -667,7 +672,8 @@ export default class App extends React.Component {
             cost: change.doc.data().count,
             address: change.doc.id,
             upVotes: change.doc.data().upVotes,
-            downVotes: change.doc.data().downVotes
+            downVotes: change.doc.data().downVotes,
+            borderColor: "black"
         }
         let votableMarkers_ = [...this.state.votableMarkers];
         // TODO: this checks to see if the new location should be added to the votable dictionary
@@ -755,11 +761,11 @@ const styles = StyleSheet.create({
   marker: {
     padding: 5,
     borderRadius: 5,
+    borderWidth: 2,
+    borderColor: "black",
     backgroundColor:"red",
     flexDirection:"column",
     justifyContent: "center"
-
-
   },
   ghostMarker: {
     padding: 5,
