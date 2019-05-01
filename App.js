@@ -271,7 +271,10 @@ export default class App extends React.Component {
     // checks to see if the marker you clicked on is the one currently stored as
     // selectedMarker. If not, this should change the selected address to the one
     // youre clickig on now.
-    else if(this.state.selectedMarker !== markerAddress) {        
+    else if(this.state.selectedMarker !== markerAddress) {
+      if (this.state.selectedMarker) {
+        this.state.markers_[this.state.selectedMarker].borderColor = "black"
+      }        
       if (!this.state.tabVal) {
         Animated.timing(this.state.animatedTab, {
           toValue: 370,
