@@ -59,17 +59,19 @@ exports.replenishCounts = functions.https.onRequest((req, res) => {
     })
 });
 
-exports.updateLocationCount = functions.firestore.document('locations/{address}/votes/{voterID}')
+exports.updatedVote = functions.firestore.document('locations/{address}/votes/{voterID}')
     .onWrite((change,context) => {
         if (change.type !== 'delete') {
             //value of the new vote for this location
-            var newVote = change.after.data().newVote;
-
-            //value of the last vote for this location
-            // var oldVote = change.after.data().oldVote;
-
-            var oldVote = change.before.data().newVote;
-
+            var newVote = change.after.data().vote;
+            var oldVote = null;
+            // Updates the old vote for this location
+            // should ouptut an error if it stays null. Need to learn how
+            if (change.before.data() === undefined) {
+                oldVote = 0;
+            } else {
+                oldVote = change.before.data().vote;
+            }
             //reference to the current location
             var locationRef = ref.collection('locations').doc(context.params.address);
 
