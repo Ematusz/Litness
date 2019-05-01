@@ -367,11 +367,9 @@ export default class App extends React.Component {
           // if the user had not previously up voted this location then change their vote to
           // an upVote.
           if (voteDoc.data().newVote != 1) {
-            var oldVote = voteDoc.data().newVote;
             var newVote = 1;
             ref.set({
               voteTime: time,
-              oldVote: oldVote,
               newVote: newVote
             })
           }
@@ -381,7 +379,6 @@ export default class App extends React.Component {
         else {
           db.collection('locations').doc(address).collection('votes').doc(uniqueId).set({
             voteTime: time,
-            oldVote: 0,
             newVote: 1
           })
         }
@@ -412,7 +409,6 @@ export default class App extends React.Component {
             // add a new vote to the votes on this document with the users uniqueID.
             ref.collection('votes').doc(uniqueId).set({
               voteTime: time,
-              oldVote: 0,
               newVote: 1
             })
           }
@@ -436,11 +432,9 @@ export default class App extends React.Component {
         .then( voteDoc => {
           if (voteDoc.exists) {
             if (voteDoc.data().newVote !== -1) {
-              var oldVote = voteDoc.data().newVote;
               var newVote = -1;
               ref.set({
                 voteTime: time,
-                oldVote: oldVote,
                 newVote: newVote
               })
             }
@@ -448,7 +442,6 @@ export default class App extends React.Component {
           else {
             db.collection('locations').doc(address).collection('votes').doc(uniqueId).set({
               voteTime: time,
-              oldVote: 0,
               newVote: -1
             })
           }
@@ -470,7 +463,6 @@ export default class App extends React.Component {
             })
             ref.collection('votes').doc(uniqueId).set({
               voteTime: time,
-              oldVote: 0,
               newVote: -1
             })
           }

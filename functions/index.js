@@ -66,7 +66,9 @@ exports.updateLocationCount = functions.firestore.document('locations/{address}/
             var newVote = change.after.data().newVote;
 
             //value of the last vote for this location
-            var oldVote = change.after.data().oldVote;
+            // var oldVote = change.after.data().oldVote;
+
+            var oldVote = change.before.data().newVote;
 
             //reference to the current location
             var locationRef = ref.collection('locations').doc(context.params.address);
