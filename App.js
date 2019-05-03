@@ -3,11 +3,10 @@ import { TouchableOpacity,TouchableHighlight,Vibration,Animated,Alert, StyleShee
 import MapView,{ Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 // import { createSwitchNavigator, createStackNavigator, NavigationEvents } from 'react-navigation';
 import {Constants, Location, Permissions} from 'expo';
-import { white, black } from 'ansi-colors';
+import g from 'ngeohash'
 import * as math from 'mathjs';
 import * as firebase from 'firebase';
 import 'firebase/firestore';
-// import DeviceInfo from 'react-native-device-info';
 
 
 // Initialize Firebase
@@ -60,12 +59,13 @@ export default class App extends React.Component {
       markerBorderColor: "black",
       infoPageMarker:null,
       ghostMarker: [],
-      mapRegion: {
-        latitude: null,
-        latitudeDelta: null,
-        longitude: null,
-        longitudeDelta: null
-      },
+      // mapRegion: {
+      //   latitude: null,
+      //   latitudeDelta: null,
+      //   longitude: null,
+      //   longitudeDelta: null
+      // },
+      // currentGeohash: 26591405,
       userLocation: {
         formattedAddress: null,
         latitude: null,
@@ -123,21 +123,21 @@ export default class App extends React.Component {
           };
           // sets new userLocation based on previously created coordinate object
           this.setState({userLocation: newCoordinate});
-          // copy in the current set of votableMarkers.
-          let votableMarkers_ = [...this.state.votableMarkers];
-          /*if within 30m of the last known user location or at the the marker
-          is at the last known user address*/
-          // TODO: adds new set of votable markers, we would also need to remove old votable
-          // markers. This is not currently fully implemented and will need to be worked on
-          if ((newCoordinate.latitude < this.state.userLocation.latitude + 0.0002694933525
-            && newCoordinate.latitude > this.state.userLocation.latitude - 0.0002694933525
-            && newCoordinate.longitude < this.state.userLocation.longitude + 0.000000748596382
-            && newCoordinate.longitude > this.state.userLocation.longitude - 0.000000748596382) || (newCoordinate.address == this.state.userLocation.address)) {
-              if (!votableMarkers_.includes(newCoordinate.address)) {
-                votableMarkers_.push[newCoordinate.address];
-              }
-            }
-          this.setState({votableMarkers: votableMarkers_});
+
+          /*if the marker is not within xm of the last known user location or at the 
+          the user address at the last known user address, the marker's votable property
+          will be set to false*/
+          // TODO: must test to see if this actually works when walking around
+          this.state.markers_.forEach( marker => {
+            if (!(marker.latitude < this.state.userLocation.latitude + 0.02694933525
+              && marker.latitude > this.state.userLocation.latitude - 0.02694933525
+              && marker.longitude < this.state.userLocation.longitude + 0.0000748596382
+              && marker.longitude > this.state.userLocation.longitude - 0.0000748596382)
+              || !(marker.address == this.state.userLocation.address)) {
+              marker.votable = false;
+              console.log(this.state.markers_);
+            } 
+          })
         })
       }
     )
@@ -175,6 +175,9 @@ export default class App extends React.Component {
       latitudeDelta: 0.005,
       longitudeDelta: 0.005,
     }
+
+    this.setState({mapRegion: initialRegion})
+    this.setState({currentGeohash: g.encode_int(initialPosition.latitude, initialPosition.longitude, 26)});
 
     this.map.animateToRegion(initialRegion, 1);
     this.setState({mapRegion: initialRegion});
@@ -216,7 +219,70 @@ export default class App extends React.Component {
   // so if I could find a way to properly limit the scope of the firestore listener.
   // working on accomplishing this with the help of geotagging.
   onRegionChangeComplete = mapRegion => {
-    this.setState({mapRegion}); 
+    // this.setState({mapRegion}); 
+    // console.log(mapRegion);
+    // var minlat = mapRegion.latitude-mapRegion.latitudeDelta;
+    // var minlon = mapRegion.longitude-mapRegion.longitudeDelta;
+    // var maxlat = mapRegion.latitude+mapRegion.latitudeDelta;
+    // var maxlon = mapRegion.longitude+mapRegion.longitudeDelta;
+    // var geohashes = g.bboxes_int(minlat, minlon, maxlat, maxlon, 26);
+    // this.setState({visibleGeohashes: geohashes});
+    // console.log(this.state.visibleGeohashes);
+    var currentGeohash = g.encode_int(mapRegion.latitude,mapRegion.longitude,26);
+    //ADDED THIS LISTENER FOR REAL TIME UPDATES
+    // this listener listens to the database for updates. I am working towards only making
+    // it listen to the data that is relevant for the map right now.
+    listener = db.collection('locations')
+    .where("geohash", "array-contains", currentGeohash)
+    .onSnapshot(snapshot => {
+      let changes = snapshot.docChanges();
+      changes.forEach(change => {
+        // if a new document is added to the listener. We have to create a location and
+        // add it to the markers dictionary.
+        if(change.type == 'added'){
+          let newDictionary = {...this.state.markers_};
+          newDictionary[change.doc.id] = {
+              coordinate: {
+                latitude: change.doc.data().latitude,
+                longitude: change.doc.data().longitude
+              },
+              cost: change.doc.data().count,
+              address: change.doc.id,
+              upVotes: change.doc.data().upVotes,
+              downVotes: change.doc.data().downVotes,
+              borderColor: "black",
+              votable: false
+          }
+          
+          //checks to see if the new location is within a votable range of the user, if
+          //so, it changes the votable attribute to true
+          if ((change.doc.data().latitude < this.state.userLocation.latitude + 0.02694933525
+            && change.doc.data().latitude > this.state.userLocation.latitude - 0.02694933525
+            && change.doc.data().longitude < this.state.userLocation.longitude + 0.0000748596382
+            && change.doc.data().longitude > this.state.userLocation.longitude - 0.0000748596382)
+            || (change.doc.id == this.state.userLocation.address)) {
+            newDictionary[change.doc.id].votable = true;
+          }
+          this.setState({markers_: newDictionary});
+        } 
+        // if a document in the listener has been modified, it will just update the data in the
+        // markers_ dictionary.
+        else if(change.type == 'modified'){
+          let newDictionary = {...this.state.markers_};
+          newDictionary[change.doc.id].cost = change.doc.data().count;
+          newDictionary[change.doc.id].upVotes = change.doc.data().upVotes;
+          newDictionary[change.doc.id].downVotes = change.doc.data().downVotes;
+          this.setState({markers_: newDictionary});
+        }
+        // if a document in the listener has been removed it will delete the location from
+        // the markers_ dictionary
+        else if(change.type == 'removed') {
+          let newDictionary = {...this.state.markers_};
+          delete newDictionary[change.doc.id];
+          this.setState({markers_: newDictionary});
+        }
+      })
+    })
   }
 
   // keep for now
@@ -390,6 +456,8 @@ export default class App extends React.Component {
     // and you can click on it, it should be in the markers database. This is supposed to
     // be used to turn a ghost marker into a regular marker.
     } else {
+      hashes = [g.encode_int(coords.lat,coords.lng,26)];
+      hashNeighbors = g.neighbors_int(hashes[0],26);
       // get a reference to the document at this address in the database.
       var ref = db.collection('locations').doc(address);
       ref.get()
@@ -404,7 +472,8 @@ export default class App extends React.Component {
               percentVotesLastHour: 0,
               timeCreated: time,
               latitude:  coords.lat,
-              longitude: coords.lng
+              longitude: coords.lng,
+              geohash: hashes.concat(hashNeighbors),
             })
             // add a new vote to the votes on this document with the users uniqueID.
             ref.collection('votes').doc(uniqueId).set({
@@ -447,6 +516,8 @@ export default class App extends React.Component {
           }
         })
     }else {
+      hashes = [g.encode_int(coords.lat,coords.lng,26)];
+      hashNeighbors = g.neighbors_int(hashes[0],26);
       var ref = db.collection('locations').doc(address);
       ref.get()
         .then( doc => {
@@ -459,7 +530,8 @@ export default class App extends React.Component {
               percentVotesLastHour:0,
               timeCreated: time,
               latitude:  coords.lat,
-              longitude: coords.lng
+              longitude: coords.lng,
+              geohash: hashes.concat(hashNeighbors)
             })
             ref.collection('votes').doc(uniqueId).set({
               voteTime: time,
@@ -644,65 +716,61 @@ export default class App extends React.Component {
         </View>
     );
   }
-  //ADDED THIS LISTENER FOR REAL TIME UPDATES
-  // this listener listens to the database for updates. I am working towards only making
-  // it listen to the data that is relevant for the map right now.
-  listener = db.collection('locations')
-    // .where('latitude', '>', /*this.state.region.latitude-this.state.region.latitudeDelta*/)
-    // .where('latitude', '<', this.state.region.latitude+this.state.region.latitudeDelta)
-    // .where('longitude', '>', this.state.region.longitude-this.state.region.longitudeDelta)
-    // .where('longitude', '<', this.state.region.longitude+this.state.region.longitudeDelta)
-    .onSnapshot(snapshot => {
-    let changes = snapshot.docChanges();
-    changes.forEach(change => {
-      // if a new document is added to the listener. We have to create a location and
-      // add it to the markers dictionary.
-      if(change.type == 'added'){
-        let newDictionary = {...this.state.markers_};
-        newDictionary[change.doc.id] = {
-            coordinate: {
-              latitude: change.doc.data().latitude,
-              longitude: change.doc.data().longitude
-            },
-            cost: change.doc.data().count,
-            address: change.doc.id,
-            upVotes: change.doc.data().upVotes,
-            downVotes: change.doc.data().downVotes,
-            borderColor: "black"
-        }
-        let votableMarkers_ = [...this.state.votableMarkers];
-        // TODO: this checks to see if the new location should be added to the votable dictionary
-        // has not been fully implemented because for development purposes, i want to
-        // vote on all markers.
-        if ((change.doc.data().latitude < this.state.userLocation.latitude + 0.0002694933525
-          && change.doc.data().latitude > this.state.userLocation.latitude - 0.0002694933525
-          && change.doc.data().longitude < this.state.userLocation.longitude + 0.000000748596382
-          && change.doc.data().longitude > this.state.userLocation.longitude - 0.000000748596382)  || (change.doc.id == this.state.userLocation.address)) {
-            if (votableMarkers_.includes(change.doc.id)) {
-              votableMarkers_.push[change.doc.id];
-            }
-          }
-        this.setState({votableMarkers: votableMarkers_});
-        this.setState({markers_: newDictionary});
-      } 
-      // if a document in the listener has been modified, it will just update the data in the
-      // markers_ dictionary.
-      else if(change.type == 'modified'){
-        let newDictionary = {...this.state.markers_};
-        newDictionary[change.doc.id].cost = change.doc.data().count;
-        newDictionary[change.doc.id].upVotes = change.doc.data().upVotes;
-        newDictionary[change.doc.id].downVotes = change.doc.data().downVotes;
-        this.setState({markers_: newDictionary});
-      }
-      // if a document in the listener has been removed it will delete the location from
-      // the markers_ dictionary
-      else if(change.type == 'removed') {
-        let newDictionary = {...this.state.markers_};
-        delete newDictionary[change.doc.id];
-        this.setState({markers_: newDictionary});
-      }
-    })
-  })
+  // //ADDED THIS LISTENER FOR REAL TIME UPDATES
+  // // this listener listens to the database for updates. I am working towards only making
+  // // it listen to the data that is relevant for the map right now.
+  // listener = db.collection('locations')
+  //   .onSnapshot(snapshot => {
+  //   let changes = snapshot.docChanges();
+  //   changes.forEach(change => {
+  //     // if a new document is added to the listener. We have to create a location and
+  //     // add it to the markers dictionary.
+  //     if(change.type == 'added'){
+  //       let newDictionary = {...this.state.markers_};
+  //       newDictionary[change.doc.id] = {
+  //           coordinate: {
+  //             latitude: change.doc.data().latitude,
+  //             longitude: change.doc.data().longitude
+  //           },
+  //           cost: change.doc.data().count,
+  //           address: change.doc.id,
+  //           upVotes: change.doc.data().upVotes,
+  //           downVotes: change.doc.data().downVotes,
+  //           borderColor: "black"
+  //       }
+  //       let votableMarkers_ = [...this.state.votableMarkers];
+  //       // TODO: this checks to see if the new location should be added to the votable dictionary
+  //       // has not been fully implemented because for development purposes, i want to
+  //       // vote on all markers.
+  //       if ((change.doc.data().latitude < this.state.userLocation.latitude + 0.0002694933525
+  //         && change.doc.data().latitude > this.state.userLocation.latitude - 0.0002694933525
+  //         && change.doc.data().longitude < this.state.userLocation.longitude + 0.000000748596382
+  //         && change.doc.data().longitude > this.state.userLocation.longitude - 0.000000748596382)  || (change.doc.id == this.state.userLocation.address)) {
+  //           if (votableMarkers_.includes(change.doc.id)) {
+  //             votableMarkers_.push[change.doc.id];
+  //           }
+  //         }
+  //       this.setState({votableMarkers: votableMarkers_});
+  //       this.setState({markers_: newDictionary});
+  //     } 
+  //     // if a document in the listener has been modified, it will just update the data in the
+  //     // markers_ dictionary.
+  //     else if(change.type == 'modified'){
+  //       let newDictionary = {...this.state.markers_};
+  //       newDictionary[change.doc.id].cost = change.doc.data().count;
+  //       newDictionary[change.doc.id].upVotes = change.doc.data().upVotes;
+  //       newDictionary[change.doc.id].downVotes = change.doc.data().downVotes;
+  //       this.setState({markers_: newDictionary});
+  //     }
+  //     // if a document in the listener has been removed it will delete the location from
+  //     // the markers_ dictionary
+  //     else if(change.type == 'removed') {
+  //       let newDictionary = {...this.state.markers_};
+  //       delete newDictionary[change.doc.id];
+  //       this.setState({markers_: newDictionary});
+  //     }
+  //   })
+  // })
 }
 //this is just style stuff.
 const styles = StyleSheet.create({
