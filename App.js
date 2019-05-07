@@ -255,20 +255,8 @@ export default class App extends React.Component {
               upVotes: change.doc.data().upVotes,
               downVotes: change.doc.data().downVotes,
               borderColor: "black",
-              votable: false,
               key: change.doc.id
           }
-          
-          //checks to see if the new location is within a votable range of the user, if
-          //so, it changes the votable attribute to true
-          if ((change.doc.data().latitude < this.state.userLocation.latitude + 0.02694933525
-            && change.doc.data().latitude > this.state.userLocation.latitude - 0.02694933525
-            && change.doc.data().longitude < this.state.userLocation.longitude + 0.0000748596382
-            && change.doc.data().longitude > this.state.userLocation.longitude - 0.0000748596382)
-            || (change.doc.id == this.state.userLocation.address)) {
-            newDictionary[change.doc.id].votable = true;
-          }
-          this.setState({markers_: newDictionary});
         } 
         // if a document in the listener has been modified, it will just update the data in the
         // markers_ dictionary.
@@ -378,6 +366,15 @@ export default class App extends React.Component {
     // selectedMarker. If not, this should change the selected address to the one
     // youre clickig on now.
     else if(this.state.selectedMarker !== markerAddress) {
+      if ((this.state.markers_[markerAddress].latitude < this.state.userLocation.latitude + 0.02694933525
+            && this.state.markers_[markerAddress].latitude > this.state.userLocation.latitude - 0.02694933525
+            && this.state.markers_[markerAddress].latitude < this.state.userLocation.longitude + 0.0000748596382
+            && this.state.markers_[markerAddress].latitude > this.state.userLocation.longitude - 0.0000748596382)
+            || (markerAddress == this.state.userLocation.address)) {
+            console.log(true);
+      } else {
+        console.log(false);
+      }
 
       if (this.state.markers_[this.state.selectedMarker]) {
         this.state.markers_[this.state.selectedMarker].borderColor = "black"
@@ -621,6 +618,16 @@ export default class App extends React.Component {
           // passed into the funciton.
           address_ = JSON.parse(JSON.stringify(responseJson)).results[i].formatted_address;
           coords = JSON.parse(JSON.stringify(responseJson)).results[i].geometry.location;
+          if ((coords.lat < this.state.userLocation.latitude + 0.02694933525
+            && coords.lat > this.state.userLocation.latitude - 0.02694933525
+            && coords.lng < this.state.userLocation.longitude + 0.0000748596382
+            && coords.lng > this.state.userLocation.longitude - 0.0000748596382)
+            || (address_ == this.state.userLocation.address)) {
+            console.log(true);
+          } else {
+            console.log(false);
+          }
+
           // checks to make sure that the new location is not already part of the markers
           // dictionary. This would mean that the marker is already in the database. May need 
           // to query the actual database though instead... Look into this.
