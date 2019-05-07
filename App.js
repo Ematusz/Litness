@@ -1,5 +1,5 @@
 import React from 'react';
-import { TouchableOpacity,TouchableHighlight,Vibration,Animated,Alert, StyleSheet, Text, View, Dimensions, Button, Image } from 'react-native';
+import { TouchableOpacity,TouchableHighlight,Vibration,FlatList,Animated,Alert, StyleSheet, Text, View, Dimensions, Button, Image } from 'react-native';
 import MapView,{ Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 // import { createSwitchNavigator, createStackNavigator, NavigationEvents } from 'react-navigation';
 import {Constants, Location, Permissions} from 'expo';
@@ -44,10 +44,13 @@ export default class App extends React.Component {
       pressStatus: false,
       showStatus: false,
       infoPage: false,
+      leaderBoard: false,
       tabVal: false,
       animatedFlex: new Animated.Value(.5),
       animatedHeight: new Animated.Value(30),
       animatedTop: new Animated.Value(1000),
+      animatedLeaderboard: new Animated.Value(1000),
+      animatedLeaderboardButton: new Animated.Value(-3),
       animatedTab:  new Animated.Value(500),
       locationResult:null,
       testtest:null,
@@ -91,6 +94,7 @@ export default class App extends React.Component {
     this.closePopUp = this.closePopUp.bind(this);
     this.addLit = this.addLit.bind(this);
     this.toggleInfoPage = this.toggleInfoPage.bind(this);
+    this.toggleLeaderBoard = this.toggleLeaderBoard.bind(this);
     this.addNewLocation = this.addNewLocation.bind(this);
     this.toggleTab = this.toggleTab.bind(this);
     this.toggleTabMapPress = this.toggleTabMapPress.bind(this);
@@ -251,7 +255,8 @@ export default class App extends React.Component {
               upVotes: change.doc.data().upVotes,
               downVotes: change.doc.data().downVotes,
               borderColor: "black",
-              votable: false
+              votable: false,
+              key: change.doc.id
           }
           
           //checks to see if the new location is within a votable range of the user, if
@@ -324,6 +329,41 @@ export default class App extends React.Component {
     ))
   }
 
+  toggleLeaderBoard() {
+    console.log(this.state.leaderBoard)
+    if (!this.state.leaderBoard) {
+      Animated.timing(this.state.animatedLeaderboard, {
+        toValue: 50,
+        friction: 100,
+        duration: 300
+      }).start();
+
+      Animated.timing(this.state.animatedLeaderboardButton, {
+        toValue: -50,
+        friction: 100,
+        duration: 300
+      }).start();
+
+    } else {
+
+      Animated.timing(this.state.animatedLeaderboard, {
+        toValue: 1000,
+        friction: 100,
+        duration: 200
+      }).start();
+
+      Animated.timing(this.state.animatedLeaderboardButton, {
+        toValue: -3,
+        friction: 100,
+        duration: 200
+      }).start();
+    }
+    // switches the infoPage state to on or off
+    this.setState(previousState => (
+      { leaderBoard: !previousState.leaderBoard }
+    ))
+  }
+
   toggleTab(markerAddress) {
     // Checks to see if the marker is in the array of active markers. This is a trigger
     // to see if youre working with a ghost marker. If the marker is a ghost marker
@@ -338,9 +378,11 @@ export default class App extends React.Component {
     // selectedMarker. If not, this should change the selected address to the one
     // youre clickig on now.
     else if(this.state.selectedMarker !== markerAddress) {
-      if (this.state.selectedMarker) {
+
+      if (this.state.markers_[this.state.selectedMarker]) {
         this.state.markers_[this.state.selectedMarker].borderColor = "black"
-      }        
+      }
+
       if (!this.state.tabVal) {
         Animated.timing(this.state.animatedTab, {
           toValue: 370,
@@ -385,6 +427,10 @@ export default class App extends React.Component {
     this.setState(previousState => (
       { tabVal: !previousState.tabVal }
     ))
+
+    if (this.state.markers_[this.state.selectedMarker] != undefined) {
+      this.state.markers_[this.state.selectedMarker].borderColor = "black"
+    }
     this.setState({selectedMarker: null});
     var deleteGhost = []
     this.setState({ghostMarker: deleteGhost});
@@ -707,11 +753,35 @@ export default class App extends React.Component {
             </Text>
           </Animated.View>
 
+          <Animated.View style={{...styles.infoPage,top:this.state.animatedLeaderboard}}>
+            <Button style={styles.marker} title = 'X' onPress={this.toggleLeaderBoard} />
+            <Text style = {{...styles.locationText}}>
+              Leaderboard
+            </Text>
+            <FlatList
+              data={[
+              {key: 'Devin'},
+              {key: 'Jackson'},
+              {key: 'James'},
+              {key: 'Joel'},
+              {key: 'John'},
+              {key: 'Jillian'},
+              {key: 'Jimmy'},
+              {key: 'Julie'},
+              ]}
+              renderItem={({item}) => <Text style={styles.item}>{item.key}</Text>}
+            />
+          </Animated.View>
+
           <Animated.View style={{...styles.tab,left:this.state.animatedTab}}> 
             <Button style={styles.marker} title = '💩' onPress = {()=>this.deleteLit(this.state.selectedMarker)} />
             <Button style={styles.marker} title = '🔥' onPress = {()=>this.addLit(this.state.selectedMarker)} />
             <Button style={styles.marker} title = 'ⓘ' onPress={this.toggleInfoPage} />
-            <Button style={styles.marker} color="red" title = 'X' onPress={()=>this.toggleTab(this.state.selectedMarker)} />
+            <Button style={styles.marker} color="red" title = 'X' onPress={()=>this.hideTab()} />
+          </Animated.View>
+
+          <Animated.View style= {{...styles.leaderBoardButton,right:this.state.animatedLeaderboardButton}}>
+            <Button style={styles.marker} title = 'L' color="black" onPress={()=>this.toggleLeaderBoard()} />
           </Animated.View>
         </View>
     );
@@ -896,15 +966,13 @@ const styles = StyleSheet.create({
     backgroundColor:"white",
     borderColor:'black',
     borderWidth: 2,
-    borderRadius: 10,
     position: 'absolute',
     flex:1,
-    left: 1,
-    top: '40%',
-    flexDirection:'column',
+    right: 0,
+    top: '10%',
     // justifyContent: 'space-evenly',
     // alignItems:"center",
-    width: 40,
-    height: 40,
+    // width: 120,
+    // height: 40,
   }
 });
