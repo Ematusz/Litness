@@ -761,9 +761,9 @@ export default class App extends React.Component {
     } else {
       return <Image
        style = {{flex:1,
-         height: 50,
+         height: 60,
          resizeMode: 'contain',
-         width: 50,}}
+         width: 60,}}
        source={require('./assets/forestfire.png')}
      />;
     }
@@ -1002,7 +1002,7 @@ const styles = StyleSheet.create({
   },
 
   testtext: {
-    color: "black",
+    color: "white",
     fontWeight: "bold",
     fontSize: 15,
     position: 'absolute',
