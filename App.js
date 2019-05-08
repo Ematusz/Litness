@@ -895,11 +895,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     flex:1
   },
-  findMeButton: {
-    alignSelf: 'flex-start',
-    position: 'absolute',
-    top:0,
-  },
   infoPage: {
     height: '90%',
     width: '90%',
@@ -914,12 +909,6 @@ const styles = StyleSheet.create({
     flexDirection:'column',
     justifyContent:'flex-start',
     alignItems:'center'
-  },
-  touch: {
-    backgroundColor: 'yellow',
-    flex: 1,
-    width: 100,
-    height: 900
   },
   animView: {
     backgroundColor:'blue',
@@ -965,16 +954,6 @@ const styles = StyleSheet.create({
     backgroundColor:"grey",
     flexDirection:"column",
     justifyContent: "center"
-
-
-  },
-  marker2: {
-    backgroundColor: "green",
-    borderRadius: 5,
-    height:30,
-    width: 60,
-    // flexDirection: 'row',
-    // justifyContent: 'space-between',
   },
   test: {
     flex:1,
@@ -987,13 +966,6 @@ const styles = StyleSheet.create({
     borderColor:'black',
     borderWidth: 2,
     borderRadius: 10
-  },
-  markerContainer: {
-    flex:1,
-    flexDirection:'row',
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-    backgroundColor:"red"
   },
   text: {
     color: "#FFF",
@@ -1022,10 +994,6 @@ const styles = StyleSheet.create({
     alignItems:"center",
     width: 40,
     height: 120,
-  },
-
-  closeTab: {
-    color:"red"
   },
 
   leaderBoardButton: {
