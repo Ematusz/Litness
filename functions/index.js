@@ -14,40 +14,23 @@ admin.initializeApp(functions.config().firebase)
 const ref = admin.firestore()
 
 exports.DBupdate = functions.https.onRequest((req, res) => {
-    var stuff = [];
     ref.collection('locations').get().then(snapshot => {
-        snapshot.forEach(doc => {
-            var twoHoursAgo = Date.now() + 1 * 60 * 60 * 1000;
-            
-            ref.collection('locations').doc(doc.id).collection('votes').where("vote", "=", 1).get().then(snapshot => {
-                snapshot.forEach( vote => {
-                    console.log('succesfully deleted', vote.id, " ", twoHoursAgo);
-                    ref.collection('locations').doc(doc.id).collection('votes').doc(vote.id).delete();
+        var twoHoursAgo = Date.now() + (2 * 60 * 60 * 1000);
+        var twoHoursAgo_ = new Date(twoHoursAgo);
+        snapshot.forEach( address => {
+            ref.collection('locations').doc(address.id).collection('votes').where('vote', '>', twoHoursAgo_).get()
+                .then( snapshot_ => {
+                    snapshot_.forEach( vote => {
+                        ref.collection('locations').doc(address.id).collection('votes').doc(vote.id).delete();
+                    })
+                    return "";
+                }).catch( reason_ => {
+                    res.send(reason_);
                 })
-                return "";
-            }).catch(reason => {
-                res.send(reason)
-            });
-
-            var newelement = {
-                "id": doc.id,
-                // "count": math.floor(doc.data().count-doc.data().count*0.2),
-                "timeCreated": doc.data().timeCreated,
-                "votes": votes_
-            }
-            stuff = stuff.concat(newelement);
-            // if (newelement.count > 0) {
-            //     ref.collection('locations').doc(newelement.id).update({
-            //         count: newelement.count
-            //     });
-            // } else {
-            //     ref.collection('locations').doc(newelement.id).delete();
-            // }
-
-        });
-        res.send(stuff)
+        })
+        res.send("success!");
         return "";
-    }).catch(reason => {
+    }).catch( reason => {
         res.send(reason)
     })
 });
