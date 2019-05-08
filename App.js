@@ -335,10 +335,10 @@ export default class App extends React.Component {
       db.collection('locations').orderBy('count', 'desc').limit(10).get()
         .then( snapshot => {
           snapshot.forEach( doc => {
-            console.log(doc.id);
+            // console.log(doc.id);
             leaderBoard_.push();
           })
-          console.log(leaderBoard_);
+          // console.log(leaderBoard_);
         this.setState({leaderBoard_});
         })
       Animated.timing(this.state.animatedLeaderboard, {
