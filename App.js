@@ -1,5 +1,5 @@
 import React from 'react';
-import { TouchableOpacity,TouchableHighlight,Vibration,FlatList,Animated,Alert, StyleSheet, Text, View, Dimensions, Button, Image } from 'react-native';
+import { TouchableOpacity,TouchableHighlight,Vibration,FlatList,Animated,Alert,StyleSheet, Text, View, Dimensions, Button, Image } from 'react-native';
 import MapView,{ Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 // import { createSwitchNavigator, createStackNavigator, NavigationEvents } from 'react-navigation';
 import {Constants, Location, Permissions} from 'expo';
@@ -45,6 +45,7 @@ export default class App extends React.Component {
       showStatus: false,
       infoPage: false,
       leaderBoard: false,
+      leaderBoardButton:true,
       tabVal: false,
       animatedFlex: new Animated.Value(.5),
       animatedHeight: new Animated.Value(30),
@@ -59,7 +60,7 @@ export default class App extends React.Component {
       //0.00000898311175 lat to 1 m
       //0.000000024953213 lng to 1 m
       selectedMarker:null,
-      markerBorderColor: "black",
+      markerBorderColor: "transparent",
       infoPageMarker:null,
       ghostMarker: [],
       // mapRegion: {
@@ -101,6 +102,7 @@ export default class App extends React.Component {
     this.hideTab = this.hideTab.bind(this);
     this.returnUpVotes = this.returnUpVotes.bind(this);
     this.returnDownVotes = this.returnDownVotes.bind(this);
+    this.renderImage = this.renderImage.bind(this);
   }
 
   componentDidMount() {
@@ -254,8 +256,9 @@ export default class App extends React.Component {
               address: change.doc.id,
               upVotes: change.doc.data().upVotes,
               downVotes: change.doc.data().downVotes,
-              borderColor: "black",
-              key: change.doc.id
+              borderColor: "transparent",
+              votable: false,
+              key: change.doc.id,
           }
           this.setState({markers_: newDictionary});
         } 
@@ -288,9 +291,23 @@ export default class App extends React.Component {
         friction: 100,
         duration: 300
       }).start();
+
+      Animated.timing(this.state.animatedLeaderboardButton, {
+        toValue: -50,
+        friction: 100,
+        duration: 300
+      }).start();
+
     } else {
       Animated.timing(this.state.animatedTop, {
         toValue: 1000,
+        friction: 100,
+        duration: 200
+      }).start();
+
+
+      Animated.timing(this.state.animatedLeaderboardButton, {
+        toValue: -3,
         friction: 100,
         duration: 200
       }).start();
@@ -336,6 +353,14 @@ export default class App extends React.Component {
         duration: 300
       }).start();
 
+      if (this.state.tabVal) {
+        Animated.timing(this.state.animatedTab, {
+          toValue: 1000,
+          friction: 100,
+          duration: 200
+        }).start();
+      }
+
     } else {
 
       Animated.timing(this.state.animatedLeaderboard, {
@@ -349,6 +374,14 @@ export default class App extends React.Component {
         friction: 100,
         duration: 200
       }).start();
+
+      if (this.state.tabVal) {
+        Animated.timing(this.state.animatedTab, {
+          toValue: 370,
+          friction: 100,
+          duration: 200
+        }).start();
+      }
     }
     // switches the infoPage state to on or off
     this.setState(previousState => (
@@ -381,14 +414,14 @@ export default class App extends React.Component {
       }
 
       if (this.state.markers_[this.state.selectedMarker]) {
-        this.state.markers_[this.state.selectedMarker].borderColor = "black"
+        this.state.markers_[this.state.selectedMarker].borderColor = "transparent"
       }
 
       if (!this.state.tabVal) {
         Animated.timing(this.state.animatedTab, {
           toValue: 370,
-          friction: 200,
-          duration: 500
+          friction: 100,
+          duration: 200
         }).start();
         this.setState(previousState => (
           { tabVal: !previousState.tabVal 
@@ -402,7 +435,7 @@ export default class App extends React.Component {
     // if the marker you're clicking on is neither a ghost marker, nor a new marker, it must
     // be the same one so we just close it.
     else{
-      this.state.markers_[markerAddress].borderColor = "black"
+      this.state.markers_[markerAddress].borderColor = "transparent"
       this.hideTab();
     }
     
@@ -430,7 +463,7 @@ export default class App extends React.Component {
     ))
 
     if (this.state.markers_[this.state.selectedMarker] != undefined) {
-      this.state.markers_[this.state.selectedMarker].borderColor = "black"
+      this.state.markers_[this.state.selectedMarker].borderColor = "transparent"
     }
     this.setState({selectedMarker: null});
     var deleteGhost = []
@@ -464,7 +497,8 @@ export default class App extends React.Component {
   // Adds one vote for lit at the current marker.
   addLit(address) {
     // recieve the ID from the user
-    var uniqueId = Constants.installationId;
+    // var uniqueId = Constants.installationId;
+    var uniqueId = Math.random().toString();
     // collect timestamp.
     var time = new Date();
     // if the marker is in the markers vector then it is already in the database and
@@ -521,6 +555,8 @@ export default class App extends React.Component {
               latitude:  coords.lat,
               longitude: coords.lng,
               geohash: hashes.concat(hashNeighbors),
+              imagePath: './assets/logs.png',
+              key: Math.random()
             })
             // add a new vote to the votes on this document with the users uniqueID.
             ref.collection('votes').doc(uniqueId).set({
@@ -540,7 +576,8 @@ export default class App extends React.Component {
   // above comments, however, this just adds downvotes instead. This could probably
   // be condensed into one function actually 
   deleteLit(address) {
-    var uniqueId = Constants.installationId;
+    // var uniqueId = Constants.installationId;
+    var uniqueId = Math.random().toString();
     var time = new Date();
     if (Object.keys(this.state.markers_).includes(address)) {
       var ref = db.collection('locations').doc(address).collection('votes').doc(uniqueId);
@@ -578,7 +615,9 @@ export default class App extends React.Component {
               timeCreated: time,
               latitude:  coords.lat,
               longitude: coords.lng,
-              geohash: hashes.concat(hashNeighbors)
+              geohash: hashes.concat(hashNeighbors),
+              imagePath: './assets/logs.png',
+              key: Math.random()
             })
             ref.collection('votes').doc(uniqueId).set({
               voteTime: time,
@@ -645,7 +684,8 @@ export default class App extends React.Component {
                 coordinate: {
                   latitude: coords.lat,
                   longitude: coords.lng
-                }                    
+                },
+                key: Math.random()                    
               });
             // Opens the voting tab for the user.  
             Animated.timing(this.state.animatedTab, {
@@ -693,6 +733,42 @@ export default class App extends React.Component {
     }
   }
 
+  renderImage(markerCost){
+    if(markerCost < 10) {
+       return <Image
+       style = {{flex:1,
+         height: 50,
+         resizeMode: 'contain',
+         width: 50,}}
+       source={require('./assets/logs.png')}
+     />;
+    } else if (markerCost < 50) {
+      return <Image
+       style = {{flex:1,
+         height: 50,
+         resizeMode: 'contain',
+         width: 50,}}
+       source={require('./assets/logsfire.png')}
+     />;
+    } else if (markerCost < 100) {
+      return <Image
+       style = {{flex:1,
+         height: 50,
+         resizeMode: 'contain',
+         width: 50,}}
+       source={require('./assets/logsfire2.png')}
+     />;
+    } else {
+      return <Image
+       style = {{flex:1,
+         height: 50,
+         resizeMode: 'contain',
+         width: 50,}}
+       source={require('./assets/forestfire.png')}
+     />;
+    }
+ }
+
   // renders the onscreen info
   render() {
     return (
@@ -727,7 +803,8 @@ export default class App extends React.Component {
               onPress =  {() => this.toggleTab(marker.address)} 
               >
                 <View style={{...styles.marker,borderColor:marker.borderColor}} >
-                    <Text style={styles.text}>{marker.cost}</Text>
+                  {this.renderImage(marker.cost)}
+                  <Text style={styles.testtext}>{marker.cost}</Text>
                 </View>
 
               </MapView.Marker>
@@ -789,14 +866,23 @@ export default class App extends React.Component {
           </Animated.View>
 
           <Animated.View style={{...styles.tab,left:this.state.animatedTab}}> 
-            <Button style={styles.marker} title = '💩' onPress = {()=>this.deleteLit(this.state.selectedMarker)} />
-            <Button style={styles.marker} title = '🔥' onPress = {()=>this.addLit(this.state.selectedMarker)} />
-            <Button style={styles.marker} title = 'ⓘ' onPress={this.toggleInfoPage} />
-            <Button style={styles.marker} color="red" title = 'X' onPress={()=>this.hideTab()} />
+            <Button style={styles.tabStyle} title = '💩' onPress = {()=>this.deleteLit(this.state.selectedMarker)} />
+            <Button style={styles.tabStyle} title = '🔥' onPress = {()=>this.addLit(this.state.selectedMarker)} />
+            <Button style={styles.tabStyle} title = 'ⓘ' onPress={this.toggleInfoPage} />
+            {/* <Button style={styles.marker} color="red" title = 'X' onPress={()=>this.hideTab()} /> */}
           </Animated.View>
 
           <Animated.View style= {{...styles.leaderBoardButton,right:this.state.animatedLeaderboardButton}}>
-            <Button style={styles.marker} title = 'L' color="black" onPress={()=>this.toggleLeaderBoard()} />
+            {/* <Button style={styles.marker} title = 'L' color="black" onPress={()=>this.toggleLeaderBoard()} /> */}
+            <TouchableOpacity onPress={()=>this.toggleLeaderBoard()}>
+              <Image
+                style = {{flex:1,
+                          height: 30,
+                          resizeMode: 'contain',
+                          width: 30,}}
+                source={require('./assets/medal.png')}
+              />
+            </TouchableOpacity>
           </Animated.View>
         </View>
     );
@@ -852,13 +938,26 @@ const styles = StyleSheet.create({
     fontSize: 20,
   },
   marker: {
-    padding: 5,
+    // padding: 5,
     borderRadius: 5,
     borderWidth: 2,
-    borderColor: "black",
-    backgroundColor:"red",
-    flexDirection:"column",
-    justifyContent: "center"
+    // backgroundColor:"red",
+    borderColor: "transparent",
+    position: 'absolute',
+    alignItems:'center',
+    justifyContent:'center',
+    // flexDirection:"column",
+    // justifyContent: "center",
+  },
+  tabStyle: {
+    borderRadius: 5,
+    borderWidth: 2,
+    // backgroundColor:"red",
+    borderColor: "transparent",
+    position: 'absolute',
+    alignItems:'center',
+    justifyContent:'center',
+    fontSize: 10,
   },
   ghostMarker: {
     padding: 5,
@@ -900,6 +999,13 @@ const styles = StyleSheet.create({
     color: "#FFF",
     fontWeight: "bold",
     fontSize: 20
+  },
+
+  testtext: {
+    color: "black",
+    fontWeight: "bold",
+    fontSize: 15,
+    position: 'absolute',
   },
 
   tab: {
