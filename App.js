@@ -335,10 +335,10 @@ export default class App extends React.Component {
       db.collection('locations').orderBy('count', 'desc').limit(10).get()
         .then( snapshot => {
           snapshot.forEach( doc => {
-            // console.log(doc.id);
+            console.log(doc.id);
             leaderBoard_.push();
           })
-          // console.log(leaderBoard_);
+          console.log(leaderBoard_);
         this.setState({leaderBoard_});
         })
       Animated.timing(this.state.animatedLeaderboard, {
@@ -661,7 +661,7 @@ export default class App extends React.Component {
           // passed into the funciton.
           address_ = JSON.parse(JSON.stringify(responseJson)).results[i].formatted_address;
           coords = JSON.parse(JSON.stringify(responseJson)).results[i].geometry.location;
-
+          console.log(JSON.parse(JSON.stringify(responseJson)).results[i]);
           // checks to see if the users last known location is close enough to the hub to vote
           // on it
           if ((coords.lat < this.state.userLocation.latitude + 0.02694933525
