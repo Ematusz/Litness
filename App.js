@@ -55,7 +55,7 @@ export default class App extends React.Component {
       locationResult:null,
       testtest:null,
       markers_: {},
-      votableMarkers: [],
+      leaderBoard_: [],
       //0.00000898311175 lat to 1 m
       //0.000000024953213 lng to 1 m
       selectedMarker:null,
@@ -257,6 +257,7 @@ export default class App extends React.Component {
               borderColor: "black",
               key: change.doc.id
           }
+          this.setState({markers_: newDictionary});
         } 
         // if a document in the listener has been modified, it will just update the data in the
         // markers_ dictionary.
@@ -277,13 +278,6 @@ export default class App extends React.Component {
       })
     })
   }
-
-  // keep for now
-  // onUserLocationChange = locationInfo => {
-  //   let userLocation = locationInfo.nativeEvent.coordinate;
-  //   this.setState({userLocation});
-  //   console.log(this.state.userLocation);
-  // }
 
   // Toggles the info page on a hub
   toggleInfoPage (markerAddress) {
@@ -320,6 +314,16 @@ export default class App extends React.Component {
   toggleLeaderBoard() {
     console.log(this.state.leaderBoard)
     if (!this.state.leaderBoard) {
+      var leaderBoard_ = [];
+      db.collection('locations').orderBy('count', 'desc').limit(10).get()
+        .then( snapshot => {
+          snapshot.forEach( doc => {
+            console.log(doc.id);
+            leaderBoard_.push();
+          })
+          console.log(leaderBoard_);
+        this.setState({leaderBoard_});
+        })
       Animated.timing(this.state.animatedLeaderboard, {
         toValue: 50,
         friction: 100,
@@ -618,6 +622,9 @@ export default class App extends React.Component {
           // passed into the funciton.
           address_ = JSON.parse(JSON.stringify(responseJson)).results[i].formatted_address;
           coords = JSON.parse(JSON.stringify(responseJson)).results[i].geometry.location;
+
+          // checks to see if the users last known location is close enough to the hub to vote
+          // on it
           if ((coords.lat < this.state.userLocation.latitude + 0.02694933525
             && coords.lat > this.state.userLocation.latitude - 0.02694933525
             && coords.lng < this.state.userLocation.longitude + 0.0000748596382
@@ -766,16 +773,17 @@ export default class App extends React.Component {
               Leaderboard
             </Text>
             <FlatList
-              data={[
-              {key: 'Devin'},
-              {key: 'Jackson'},
-              {key: 'James'},
-              {key: 'Joel'},
-              {key: 'John'},
-              {key: 'Jillian'},
-              {key: 'Jimmy'},
-              {key: 'Julie'},
-              ]}
+              // data={[
+              // {key: 'Devin'},
+              // {key: 'Jackson'},
+              // {key: 'James'},
+              // {key: 'Joel'},
+              // {key: 'John'},
+              // {key: 'Jillian'},
+              // {key: 'Jimmy'},
+              // {key: 'Julie'},
+              // ]}
+              data = {this.state.leaderBoard_}
               renderItem={({item}) => <Text style={styles.item}>{item.key}</Text>}
             />
           </Animated.View>
@@ -793,61 +801,6 @@ export default class App extends React.Component {
         </View>
     );
   }
-  // //ADDED THIS LISTENER FOR REAL TIME UPDATES
-  // // this listener listens to the database for updates. I am working towards only making
-  // // it listen to the data that is relevant for the map right now.
-  // listener = db.collection('locations')
-  //   .onSnapshot(snapshot => {
-  //   let changes = snapshot.docChanges();
-  //   changes.forEach(change => {
-  //     // if a new document is added to the listener. We have to create a location and
-  //     // add it to the markers dictionary.
-  //     if(change.type == 'added'){
-  //       let newDictionary = {...this.state.markers_};
-  //       newDictionary[change.doc.id] = {
-  //           coordinate: {
-  //             latitude: change.doc.data().latitude,
-  //             longitude: change.doc.data().longitude
-  //           },
-  //           cost: change.doc.data().count,
-  //           address: change.doc.id,
-  //           upVotes: change.doc.data().upVotes,
-  //           downVotes: change.doc.data().downVotes,
-  //           borderColor: "black"
-  //       }
-  //       let votableMarkers_ = [...this.state.votableMarkers];
-  //       // TODO: this checks to see if the new location should be added to the votable dictionary
-  //       // has not been fully implemented because for development purposes, i want to
-  //       // vote on all markers.
-  //       if ((change.doc.data().latitude < this.state.userLocation.latitude + 0.0002694933525
-  //         && change.doc.data().latitude > this.state.userLocation.latitude - 0.0002694933525
-  //         && change.doc.data().longitude < this.state.userLocation.longitude + 0.000000748596382
-  //         && change.doc.data().longitude > this.state.userLocation.longitude - 0.000000748596382)  || (change.doc.id == this.state.userLocation.address)) {
-  //           if (votableMarkers_.includes(change.doc.id)) {
-  //             votableMarkers_.push[change.doc.id];
-  //           }
-  //         }
-  //       this.setState({votableMarkers: votableMarkers_});
-  //       this.setState({markers_: newDictionary});
-  //     } 
-  //     // if a document in the listener has been modified, it will just update the data in the
-  //     // markers_ dictionary.
-  //     else if(change.type == 'modified'){
-  //       let newDictionary = {...this.state.markers_};
-  //       newDictionary[change.doc.id].cost = change.doc.data().count;
-  //       newDictionary[change.doc.id].upVotes = change.doc.data().upVotes;
-  //       newDictionary[change.doc.id].downVotes = change.doc.data().downVotes;
-  //       this.setState({markers_: newDictionary});
-  //     }
-  //     // if a document in the listener has been removed it will delete the location from
-  //     // the markers_ dictionary
-  //     else if(change.type == 'removed') {
-  //       let newDictionary = {...this.state.markers_};
-  //       delete newDictionary[change.doc.id];
-  //       this.setState({markers_: newDictionary});
-  //     }
-  //   })
-  // })
 }
 //this is just style stuff.
 const styles = StyleSheet.create({
