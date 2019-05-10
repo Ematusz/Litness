@@ -812,9 +812,9 @@ export default class App extends React.Component {
     } else {
       return <Image
        style = {{flex:1,
-         height: 50,
+         height: 60,
          resizeMode: 'contain',
-         width: 50,}}
+         width: 60,}}
        source={require('./assets/forestfire.png')}
      />;
     }
@@ -946,11 +946,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     flex:1
   },
-  findMeButton: {
-    alignSelf: 'flex-start',
-    position: 'absolute',
-    top:0,
-  },
   infoPage: {
     height: '90%',
     width: '90%',
@@ -965,12 +960,6 @@ const styles = StyleSheet.create({
     flexDirection:'column',
     justifyContent:'flex-start',
     alignItems:'center'
-  },
-  touch: {
-    backgroundColor: 'yellow',
-    flex: 1,
-    width: 100,
-    height: 900
   },
   animView: {
     backgroundColor:'blue',
@@ -1016,16 +1005,6 @@ const styles = StyleSheet.create({
     backgroundColor:"grey",
     flexDirection:"column",
     justifyContent: "center"
-
-
-  },
-  marker2: {
-    backgroundColor: "green",
-    borderRadius: 5,
-    height:30,
-    width: 60,
-    // flexDirection: 'row',
-    // justifyContent: 'space-between',
   },
   test: {
     flex:1,
@@ -1039,13 +1018,6 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderRadius: 10
   },
-  markerContainer: {
-    flex:1,
-    flexDirection:'row',
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-    backgroundColor:"red"
-  },
   text: {
     color: "#FFF",
     fontWeight: "bold",
@@ -1053,7 +1025,7 @@ const styles = StyleSheet.create({
   },
 
   testtext: {
-    color: "black",
+    color: "white",
     fontWeight: "bold",
     fontSize: 15,
     position: 'absolute',
@@ -1073,10 +1045,6 @@ const styles = StyleSheet.create({
     alignItems:"center",
     width: 40,
     height: 120,
-  },
-
-  closeTab: {
-    color:"red"
   },
 
   leaderBoardButton: {
