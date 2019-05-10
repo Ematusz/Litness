@@ -339,14 +339,14 @@ export default class App extends React.Component {
         }
       })
     })
-    let cleanGrid = {...this.state.geoHashGrid}
+    
     Object.keys(this.state.geoHashGrid).map( geohash => {
-      if (!(geohash in currentGrid)) {
+      if (!currentGrid.includes(Number(geohash))) {
+        let cleanGrid = {...this.state.geoHashGrid}
         delete cleanGrid[geohash];
+        this.setState({geoHashGrid: cleanGrid});
       }
     })
-    this.setState({geoHashGrid: cleanGrid});
-    console.log("cleanGrid ", Object.keys(this.state.geoHashGrid));
   }
 
   // Toggles the info page on a hub
@@ -579,42 +579,14 @@ export default class App extends React.Component {
     var uniqueId = Math.random().toString();
     // collect timestamp.
     var time = new Date();
-    // if the marker is in the markers vector then it is already in the database and
-    // we just need to update the votes.
-    if (Object.keys(this.state.geoHashGrid[geohash]).includes(address)) {
-      // gets a reference to the document at the address.
-      var ref = db.collection('locations').doc(address).collection('votes').doc(uniqueId);
-      return ref.get()
-      .then( voteDoc => {
-        // if there is a document at this address in the votes collection with the users
-        // unique ID then they can only update their vote
-        if (voteDoc.exists) {
-          // if the user had not previously up voted this location then change their vote to
-          // an upVote.
-          if (voteDoc.data().vote != 1) {
-            var newVote = 1;
-            ref.set({
-              voteTime: time,
-              vote: newVote,
-            })
-          }
-        }
-        // if there is not yet a vote with uniqueID, then the user has not yet voted on this
-        // hub. Therefore, we must add a new upVote with their uniqueID as the key
-        else {
-          db.collection('locations').doc(address).collection('votes').doc(uniqueId).set({
-            voteTime: time,
-            vote: 1,
-          })
-        }
-      })
+    
     // TODO: if the marker is not in the markers_ array, then it means that either the address
     // of the marker is not currently in the database, or somehow, the address is in the
     // database but was not loaded into the local dictionary of markers. This is something
     // that I am only now considering and should fix. Although if it were in the database
     // and you can click on it, it should be in the markers database. This is supposed to
-    // be used to turn a ghost marker into a regular marker.
-    } else {
+    // be used to turn a ghost marker into a regular marker. 
+    if (this.state.geoHashGrid[geohash] == undefined || !Object.keys(this.state.geoHashGrid[geohash]).includes(address)){
       var latitude = this.state.ghostMarker[0].coordinate.latitude;
       var longitude = this.state.ghostMarker[0].coordinate.longitude;
       var city = this.state.ghostMarker[0].city;
@@ -648,6 +620,36 @@ export default class App extends React.Component {
         })
         // assuming it was a ghost marker, that marker can now be hidden.
         this.hideTab(); 
+
+    // if the marker is in the markers vector then it is already in the database and
+    // we just need to update the votes.
+    } else {
+      // gets a reference to the document at the address.
+      var ref = db.collection('locations').doc(address).collection('votes').doc(uniqueId);
+      return ref.get()
+      .then( voteDoc => {
+        // if there is a document at this address in the votes collection with the users
+        // unique ID then they can only update their vote
+        if (voteDoc.exists) {
+          // if the user had not previously up voted this location then change their vote to
+          // an upVote.
+          if (voteDoc.data().vote != 1) {
+            var newVote = 1;
+            ref.set({
+              voteTime: time,
+              vote: newVote,
+            })
+          }
+        }
+        // if there is not yet a vote with uniqueID, then the user has not yet voted on this
+        // hub. Therefore, we must add a new upVote with their uniqueID as the key
+        else {
+          db.collection('locations').doc(address).collection('votes').doc(uniqueId).set({
+            voteTime: time,
+            vote: 1,
+          })
+        }
+      })
     }
   
   }
@@ -660,27 +662,7 @@ export default class App extends React.Component {
     // var uniqueId = Constants.installationId;
     var uniqueId = Math.random().toString();
     var time = new Date();
-    if (Object.keys(this.state.geoHashGrid[geohash]).includes(address)) {
-      var ref = db.collection('locations').doc(address).collection('votes').doc(uniqueId);
-      return ref.get()
-        .then( voteDoc => {
-          if (voteDoc.exists) {
-            if (voteDoc.data().vote !== -1) {
-              var newVote = -1;
-              ref.set({
-                voteTime: time,
-                vote: newVote
-              })
-            }
-          }
-          else {
-            db.collection('locations').doc(address).collection('votes').doc(uniqueId).set({
-              voteTime: time,
-              vote: -1,
-            })
-          }
-        })
-    }else {
+    if (this.state.geoHashGrid[geohash] == undefined || !Object.keys(this.state.geoHashGrid[geohash]).includes(address)) {
       var latitude = this.state.ghostMarker[0].coordinate.latitude;
       var longitude = this.state.ghostMarker[0].coordinate.longitude;
       var city = this.state.ghostMarker[0].city;
@@ -710,7 +692,27 @@ export default class App extends React.Component {
           }
         })
       this.hideTab();
-    }
+    } else {
+      var ref = db.collection('locations').doc(address).collection('votes').doc(uniqueId);
+      return ref.get()
+        .then( voteDoc => {
+          if (voteDoc.exists) {
+            if (voteDoc.data().vote !== -1) {
+              var newVote = -1;
+              ref.set({
+                voteTime: time,
+                vote: newVote
+              })
+            }
+          }
+          else {
+            db.collection('locations').doc(address).collection('votes').doc(uniqueId).set({
+              voteTime: time,
+              vote: -1,
+            })
+          }
+        })
+      }
   }
 
   // This funcion adds a new ghost marker which will eventually be used
@@ -777,8 +779,9 @@ export default class App extends React.Component {
           // checks to make sure that the new location is not already part of the markers
           // dictionary. This would mean that the marker is already in the database. May need 
           // to query the actual database though instead... Look into this.
-          if (!Object.keys(this.state.geoHashGrid[ghostGeohash]).includes(address_)) {
+          if (this.state.geoHashGrid[ghostGeohash] == undefined || !Object.keys(this.state.geoHashGrid[ghostGeohash]).includes(address_)) {
             // creates the new ghost marker with the information of this location.
+            console.log('here')
             let newGhostMarker = [];
             newGhostMarker.push({
                 coordinate: {
