@@ -120,13 +120,46 @@ export default class App extends React.Component {
         fetch('https://maps.googleapis.com/maps/api/geocode/json?address=' + latitude + ',' + longitude + '&key=' + myApiKey)
         .then((response) => response.json())
         .then((responseJson) => {
-          var address = JSON.parse(JSON.stringify(responseJson)).results[0].formatted_address;
+          var len = JSON.parse(JSON.stringify(responseJson)).results.length
+          var i = 0;
+          var minDist = -1;
+          // this loop checks to see which of the possible results returned from the
+          // fetch is closest to the latitude and longitude click that are actually passed
+          // in. This used to just take the first result, however, sometimes it is not sorted
+          // in a fashion of closest so this was causing problems particularly when adding
+          // markers to building with multiple sub buildings attached. For example mason,
+          // Angel, or Tisch halls.
+          for (indx = 0; indx < len; indx++) {
+            var dist = math.sqrt(math.square(latitude-JSON.parse(JSON.stringify(responseJson)).results[indx].geometry.location.lat)+math.square(longitude-JSON.parse(JSON.stringify(responseJson)).results[indx].geometry.location.lng));
+            if (minDist == -1) {
+              minDist = dist;
+            }
+            else if (dist < minDist) {
+              minDist = dist;
+              i = indx;
+            }
+          }
+          var results = JSON.parse(JSON.stringify(responseJson)).results[i]
+          var userAddress = results.formatted_address;
+          len = results.address_components.length;
+          var userCity = null;
+          var l = null;
+          for (j = 0; j < len; j++) {
+            l = results.address_components[j].types.length;
+            for (k = 0; k < l; k++) {
+              if (results.address_components[j].types[k] == "locality") {
+                userCity = results.address_components[j].long_name;
+              }
+            }
+          }
           // saves address, latitude, and longitude in a coordinate object
           const newCoordinate = {
-            address,
+            userCity,
+            userAddress,
             latitude,
             longitude
           };
+          console.log("userCity ", userCity);
           // sets new userLocation based on previously created coordinate object
           this.setState({userLocation: newCoordinate});
 
@@ -225,15 +258,6 @@ export default class App extends React.Component {
   // so if I could find a way to properly limit the scope of the firestore listener.
   // working on accomplishing this with the help of geotagging.
   onRegionChangeComplete = mapRegion => {
-    // this.setState({mapRegion}); 
-    // console.log(mapRegion);
-    // var minlat = mapRegion.latitude-mapRegion.latitudeDelta;
-    // var minlon = mapRegion.longitude-mapRegion.longitudeDelta;
-    // var maxlat = mapRegion.latitude+mapRegion.latitudeDelta;
-    // var maxlon = mapRegion.longitude+mapRegion.longitudeDelta;
-    // var geohashes = g.bboxes_int(minlat, minlon, maxlat, maxlon, 26);
-    // this.setState({visibleGeohashes: geohashes});
-    // console.log(this.state.visibleGeohashes);
     var currentGeohash = g.encode_int(mapRegion.latitude,mapRegion.longitude,26);
     //ADDED THIS LISTENER FOR REAL TIME UPDATES
     // this listener listens to the database for updates. I am working towards only making
@@ -332,14 +356,19 @@ export default class App extends React.Component {
     console.log(this.state.leaderBoard)
     if (!this.state.leaderBoard) {
       var leaderBoard_ = [];
-      db.collection('locations').orderBy('count', 'desc').limit(10).get()
+      db.collection('locations').where("city", "==", this.state.userLocation.userCity).orderBy('count', 'desc').get()
         .then( snapshot => {
           snapshot.forEach( doc => {
-            console.log(doc.id);
-            leaderBoard_.push();
+            leaderBoard_.push({
+              address: doc.id,
+              count: doc.data().count,
+              key: Math.random()   
+            });
           })
           console.log(leaderBoard_);
         this.setState({leaderBoard_});
+        }).catch( error =>{
+          console.log(error)
         })
       Animated.timing(this.state.animatedLeaderboard, {
         toValue: 50,
@@ -537,7 +566,10 @@ export default class App extends React.Component {
     // and you can click on it, it should be in the markers database. This is supposed to
     // be used to turn a ghost marker into a regular marker.
     } else {
-      hashes = [g.encode_int(coords.lat,coords.lng,26)];
+      var latitude = this.state.ghostMarker[0].coordinate.latitude;
+      var longitude = this.state.ghostMarker[0].coordinate.longitude;
+      var city = this.state.ghostMarker[0].city;
+      hashes = [g.encode_int(latitude,longitude,26)];
       hashNeighbors = g.neighbors_int(hashes[0],26);
       // get a reference to the document at this address in the database.
       var ref = db.collection('locations').doc(address);
@@ -552,11 +584,11 @@ export default class App extends React.Component {
               percentVotesLastThirty: 0,
               percentVotesLastHour: 0,
               timeCreated: time,
-              latitude:  coords.lat,
-              longitude: coords.lng,
+              latitude:  latitude,
+              longitude: longitude,
               geohash: hashes.concat(hashNeighbors),
               imagePath: './assets/logs.png',
-              key: Math.random()
+              city: city
             })
             // add a new vote to the votes on this document with the users uniqueID.
             ref.collection('votes').doc(uniqueId).set({
@@ -600,7 +632,10 @@ export default class App extends React.Component {
           }
         })
     }else {
-      hashes = [g.encode_int(coords.lat,coords.lng,26)];
+      var latitude = this.state.ghostMarker[0].coordinate.latitude;
+      var longitude = this.state.ghostMarker[0].coordinate.longitude;
+      var city = this.state.ghostMarker[0].city;
+      hashes = [g.encode_int(latitude,longitude,26)];
       hashNeighbors = g.neighbors_int(hashes[0],26);
       var ref = db.collection('locations').doc(address);
       ref.get()
@@ -613,11 +648,11 @@ export default class App extends React.Component {
               percentVotesLastThirty: 0,
               percentVotesLastHour:0,
               timeCreated: time,
-              latitude:  coords.lat,
-              longitude: coords.lng,
+              latitude:  latitude,
+              longitude: longitude,
               geohash: hashes.concat(hashNeighbors),
               imagePath: './assets/logs.png',
-              key: Math.random()
+              city: city
             })
             ref.collection('votes').doc(uniqueId).set({
               voteTime: time,
@@ -625,7 +660,7 @@ export default class App extends React.Component {
             })
           }
         })
-      this.hideTab(false);
+      this.hideTab();
     }
   }
 
@@ -633,6 +668,9 @@ export default class App extends React.Component {
   // to the database and is triggered in longPressMap.
   addNewLocation = async(latitude_, longitude_) => {
     var address_ = null;
+    var results = null;
+    var coords = null;
+    var city = null;
     // fetch the address of the place you are passing in the coordinates of.
     myApiKey = 'AIzaSyBkwazID1O1ryFhdC6mgSR4hJY2-GdVPmE';
     fetch('https://maps.googleapis.com/maps/api/geocode/json?address=' + latitude_ + ',' + longitude_ + '&key=' + myApiKey)
@@ -659,9 +697,21 @@ export default class App extends React.Component {
           }
           // saves the data of the json result that is closest to the latitude and longitude 
           // passed into the funciton.
-          address_ = JSON.parse(JSON.stringify(responseJson)).results[i].formatted_address;
-          coords = JSON.parse(JSON.stringify(responseJson)).results[i].geometry.location;
-          console.log(JSON.parse(JSON.stringify(responseJson)).results[i]);
+          results = JSON.parse(JSON.stringify(responseJson)).results[i]
+          address_ = results.formatted_address;
+          coords = results.geometry.location;
+          len = results.address_components.length;
+          var l = null;
+          for (j = 0; j < len; j++) {
+            l = results.address_components[j].types.length;
+            for (k = 0; k < l; k++) {
+              if (results.address_components[j].types[k] == "locality") {
+                city = results.address_components[j].long_name;
+              }
+            }
+          }
+          console.log(city);
+          // console.log(JSON.parse(JSON.stringify(responseJson)).results[i]);
           // checks to see if the users last known location is close enough to the hub to vote
           // on it
           if ((coords.lat < this.state.userLocation.latitude + 0.02694933525
@@ -685,6 +735,7 @@ export default class App extends React.Component {
                   latitude: coords.lat,
                   longitude: coords.lng
                 },
+                city: city,
                 key: Math.random()                    
               });
             // Opens the voting tab for the user.  
@@ -861,7 +912,7 @@ export default class App extends React.Component {
               // {key: 'Julie'},
               // ]}
               data = {this.state.leaderBoard_}
-              renderItem={({item}) => <Text style={styles.item}>{item.key}</Text>}
+              renderItem={({item}) => <Text style={styles.item}>{item.address} {item.count}</Text>}
             />
           </Animated.View>
 
