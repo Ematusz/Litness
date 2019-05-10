@@ -55,13 +55,16 @@ export default class App extends React.Component {
       animatedTab:  new Animated.Value(500),
       locationResult:null,
       testtest:null,
+      geoHashGrid: {},
       markers_: {},
       leaderBoard_: [],
       //0.00000898311175 lat to 1 m
       //0.000000024953213 lng to 1 m
       selectedMarker:null,
+      selectedGeohash:null,
       markerBorderColor: "transparent",
       infoPageMarker:null,
+      infoPageGeohash:null,
       ghostMarker: [],
       // mapRegion: {
       //   latitude: null,
@@ -115,6 +118,7 @@ export default class App extends React.Component {
     this.watchID = navigator.geolocation.watchPosition(
       position => {
         const { latitude, longitude } = position.coords;
+
         // Fetch curent location
         myApiKey = 'AIzaSyBkwazID1O1ryFhdC6mgSR4hJY2-GdVPmE';
         fetch('https://maps.googleapis.com/maps/api/geocode/json?address=' + latitude + ',' + longitude + '&key=' + myApiKey)
@@ -162,21 +166,6 @@ export default class App extends React.Component {
           console.log("userCity ", userCity);
           // sets new userLocation based on previously created coordinate object
           this.setState({userLocation: newCoordinate});
-
-          /*if the marker is not within xm of the last known user location or at the 
-          the user address at the last known user address, the marker's votable property
-          will be set to false*/
-          // TODO: must test to see if this actually works when walking around
-          this.state.markers_.forEach( marker => {
-            if (!(marker.latitude < this.state.userLocation.latitude + 0.02694933525
-              && marker.latitude > this.state.userLocation.latitude - 0.02694933525
-              && marker.longitude < this.state.userLocation.longitude + 0.0000748596382
-              && marker.longitude > this.state.userLocation.longitude - 0.0000748596382)
-              || !(marker.address == this.state.userLocation.address)) {
-              marker.votable = false;
-              console.log(this.state.markers_);
-            } 
-          })
         })
       }
     )
@@ -258,52 +247,106 @@ export default class App extends React.Component {
   // so if I could find a way to properly limit the scope of the firestore listener.
   // working on accomplishing this with the help of geotagging.
   onRegionChangeComplete = mapRegion => {
-    var currentGeohash = g.encode_int(mapRegion.latitude,mapRegion.longitude,26);
+    var currentGeohash = [g.encode_int(mapRegion.latitude,mapRegion.longitude,26)];
+    var currentGrid = g.neighbors_int(currentGeohash[0],26);
+    currentGrid = currentGeohash.concat(currentGrid);
+    // console.log(currentGrid)
     //ADDED THIS LISTENER FOR REAL TIME UPDATES
     // this listener listens to the database for updates. I am working towards only making
     // it listen to the data that is relevant for the map right now.
     listener = db.collection('locations')
-    .where("geohash", "array-contains", currentGeohash)
+    .where("geohash", "array-contains", currentGeohash[0])
     .onSnapshot(snapshot => {
       let changes = snapshot.docChanges();
       changes.forEach(change => {
         // if a new document is added to the listener. We have to create a location and
         // add it to the markers dictionary.
         if(change.type == 'added'){
-          let newDictionary = {...this.state.markers_};
-          newDictionary[change.doc.id] = {
-              coordinate: {
-                latitude: change.doc.data().latitude,
-                longitude: change.doc.data().longitude
-              },
-              cost: change.doc.data().count,
-              address: change.doc.id,
-              upVotes: change.doc.data().upVotes,
-              downVotes: change.doc.data().downVotes,
-              borderColor: "transparent",
-              votable: false,
-              key: change.doc.id,
+          let newGrid = {...this.state.geoHashGrid};
+          if (change.doc.data().geohash[0] in newGrid) {
+            let newDictionary = {...newGrid[change.doc.data().geohash[0]]}
+            newDictionary[change.doc.id] = {
+                coordinate: {
+                  latitude: change.doc.data().latitude,
+                  longitude: change.doc.data().longitude
+                },
+                cost: change.doc.data().count,
+                address: change.doc.id,
+                geohash: change.doc.data().geohash[0],
+                upVotes: change.doc.data().upVotes,
+                downVotes: change.doc.data().downVotes,
+                borderColor: "transparent",
+                key: change.doc.id,
+            }
+            newGrid[change.doc.data().geohash[0]] = newDictionary
+            this.setState({geoHashGrid: newGrid})
+          } else {
+            let newDictionary = {};
+            newDictionary[change.doc.id] = {
+                coordinate: {
+                  latitude: change.doc.data().latitude,
+                  longitude: change.doc.data().longitude
+                },
+                cost: change.doc.data().count,
+                address: change.doc.id,
+                geohash: change.doc.data().geohash[0],
+                upVotes: change.doc.data().upVotes,
+                downVotes: change.doc.data().downVotes,
+                borderColor: "transparent",
+                key: change.doc.id,
+            }
+            newGrid[change.doc.data().geohash[0]] = newDictionary
+            this.setState({geoHashGrid: newGrid})
           }
-          this.setState({markers_: newDictionary});
         } 
         // if a document in the listener has been modified, it will just update the data in the
         // markers_ dictionary.
         else if(change.type == 'modified'){
-          let newDictionary = {...this.state.markers_};
-          newDictionary[change.doc.id].cost = change.doc.data().count;
-          newDictionary[change.doc.id].upVotes = change.doc.data().upVotes;
-          newDictionary[change.doc.id].downVotes = change.doc.data().downVotes;
-          this.setState({markers_: newDictionary});
+          let newGrid = {...this.state.geoHashGrid};
+          // this if statement may be redundant
+          if (change.doc.data().geohash[0] in newGrid) {
+            let newDictionary = newGrid[change.doc.data().geohash[0]];
+            newDictionary[change.doc.id].cost = change.doc.data().count;
+            newDictionary[change.doc.id].upVotes = change.doc.data().upVotes;
+            newDictionary[change.doc.id].downVotes = change.doc.data().downVotes;
+            newGrid[change.doc.data().geohash[0]] = newDictionary;
+            this.setState({geoHashGrid: newGrid});
+          } else {
+            let newDictionary = {};
+            newDictionary[change.doc.id].cost = change.doc.data().count;
+            newDictionary[change.doc.id].upVotes = change.doc.data().upVotes;
+            newDictionary[change.doc.id].downVotes = change.doc.data().downVotes;
+            newGrid[change.doc.data().geohash[0]] = newDictionary;
+            this.setState({geoHashGrid: newGrid});
+          }
         }
         // if a document in the listener has been removed it will delete the location from
         // the markers_ dictionary
         else if(change.type == 'removed') {
-          let newDictionary = {...this.state.markers_};
-          delete newDictionary[change.doc.id];
-          this.setState({markers_: newDictionary});
+          let newGrid = {...this.state.geoHashGrid};
+          // this if statement may be redundant
+          if (change.doc.data().geohash[0] in newGrid) {
+            let newDictionary = newGrid[change.data().geoHashGrid[0]];
+            delete newDictionary[change.doc.id];
+            newGrid[change.doc.data().geohash[0]] = newDictionary;
+            this.setState({geoHashGrid: newGrid})
+          } else {
+            let newDictionary = {};
+            delete newDictionary[change.doc.id];
+            newGrid[change.doc.data().geohash[0]] = newDictionary;
+            this.setState({geoHashGrid: newGrid})
+          }
         }
       })
     })
+    let cleanGrid = {...this.state.geoHashGrid}
+    Object.keys(this.state.geoHashGrid).map( geohash => {
+      if (!(geohash in currentGrid)) {
+        delete cleanGrid[geohash];
+      }
+    })
+    this.setState({geoHashGrid: cleanGrid});
+    console.log("cleanGrid ", Object.keys(this.state.geoHashGrid));
   }
 
   // Toggles the info page on a hub
@@ -338,12 +381,14 @@ export default class App extends React.Component {
     }
     // closes the vote tab when the info page is up so that its not distracting.
     if (this.state.infoPage) {
-      this.toggleTab(this.state.infoPageMarker);
-      this.setState({infoPageMarker: null})
+      this.toggleTab(this.state.infoPageMarker,this.state.selectedGeohash);
+      this.setState({infoPageMarker: null});
+      this.setState({infoPageGeohash: null});
     }
     // re opens the tab when the info page closes
     else {
       this.setState({infoPageMarker: this.state.selectedMarker});
+      this.setState({infoPageGeohash: this.state.selectedGeohash});
       this.hideTab();
     }
     // switches the infoPage state to on or off
@@ -418,32 +463,33 @@ export default class App extends React.Component {
     ))
   }
 
-  toggleTab(markerAddress) {
+  toggleTab(markerAddress,geohash) {
     // Checks to see if the marker is in the array of active markers. This is a trigger
     // to see if youre working with a ghost marker. If the marker is a ghost marker
     // and you click it again, it will just hide the tab without adding a new marker 
     // the array.
-
-    this.state.markers_[markerAddress].borderColor = "#e8b923"
-    if(!Object.keys(this.state.markers_).includes(markerAddress)) {
+    // Markers overhaul
+    this.state.geoHashGrid[geohash][markerAddress].borderColor = "#e8b923"
+    if(!Object.keys(this.state.geoHashGrid[geohash]).includes(markerAddress)) {
       this.hideTab();
     }
     // checks to see if the marker you clicked on is the one currently stored as
     // selectedMarker. If not, this should change the selected address to the one
     // youre clickig on now.
     else if(this.state.selectedMarker !== markerAddress) {
-      if ((this.state.markers_[markerAddress].latitude < this.state.userLocation.latitude + 0.02694933525
-            && this.state.markers_[markerAddress].latitude > this.state.userLocation.latitude - 0.02694933525
-            && this.state.markers_[markerAddress].latitude < this.state.userLocation.longitude + 0.0000748596382
-            && this.state.markers_[markerAddress].latitude > this.state.userLocation.longitude - 0.0000748596382)
+      // Markers overhaul
+      if ((this.state.geoHashGrid[geohash][markerAddress].latitude < this.state.userLocation.latitude + 0.02694933525
+            && this.state.geoHashGrid[geohash][markerAddress].latitude > this.state.userLocation.latitude - 0.02694933525
+            && this.state.geoHashGrid[geohash][markerAddress].latitude < this.state.userLocation.longitude + 0.0000748596382
+            && this.state.geoHashGrid[geohash][markerAddress].latitude > this.state.userLocation.longitude - 0.0000748596382)
             || (markerAddress == this.state.userLocation.address)) {
             console.log(true);
       } else {
         console.log(false);
       }
-
-      if (this.state.markers_[this.state.selectedMarker]) {
-        this.state.markers_[this.state.selectedMarker].borderColor = "transparent"
+      // Markers overhaul
+      if (this.state.geoHashGrid[geohash][this.state.selectedMarker]) {
+        this.state.geoHashGrid[geohash][this.state.selectedMarker].borderColor = "transparent"
       }
 
       if (!this.state.tabVal) {
@@ -457,14 +503,14 @@ export default class App extends React.Component {
           }
         ))
       }
-
+      this.setState({selectedGeohash: geohash});
       this.setState({selectedMarker: markerAddress});
-      console.log(markerAddress)
     } 
     // if the marker you're clicking on is neither a ghost marker, nor a new marker, it must
     // be the same one so we just close it.
     else{
-      this.state.markers_[markerAddress].borderColor = "transparent"
+      // Markers overhaul
+      this.state.geoHashGrid[geohash][markerAddress].borderColor = "transparent"
       this.hideTab();
     }
     
@@ -490,10 +536,13 @@ export default class App extends React.Component {
     this.setState(previousState => (
       { tabVal: !previousState.tabVal }
     ))
-
-    if (this.state.markers_[this.state.selectedMarker] != undefined) {
-      this.state.markers_[this.state.selectedMarker].borderColor = "transparent"
+    // Markers overhaul
+    if (this.state.geoHashGrid[this.state.selectedGeohash] != undefined) {
+      if (this.state.geoHashGrid[this.state.selectedGeohash][this.state.selectedMarker] != undefined) {
+        this.state.geoHashGrid[this.state.selectedGeohash][this.state.selectedMarker].borderColor = "transparent"
+      }
     }
+    
     this.setState({selectedMarker: null});
     var deleteGhost = []
     this.setState({ghostMarker: deleteGhost});
@@ -524,7 +573,7 @@ export default class App extends React.Component {
 
   //UPDATED THIS TO WORK WITH DATABASE
   // Adds one vote for lit at the current marker.
-  addLit(address) {
+  addLit(address,geohash) {
     // recieve the ID from the user
     // var uniqueId = Constants.installationId;
     var uniqueId = Math.random().toString();
@@ -532,7 +581,7 @@ export default class App extends React.Component {
     var time = new Date();
     // if the marker is in the markers vector then it is already in the database and
     // we just need to update the votes.
-    if (Object.keys(this.state.markers_).includes(address)) {
+    if (Object.keys(this.state.geoHashGrid[geohash]).includes(address)) {
       // gets a reference to the document at the address.
       var ref = db.collection('locations').doc(address).collection('votes').doc(uniqueId);
       return ref.get()
@@ -607,11 +656,11 @@ export default class App extends React.Component {
   // TODO: This is very similar to add lit however its for deleting a lit from the db. See 
   // above comments, however, this just adds downvotes instead. This could probably
   // be condensed into one function actually 
-  deleteLit(address) {
+  deleteLit(address, geohash) {
     // var uniqueId = Constants.installationId;
     var uniqueId = Math.random().toString();
     var time = new Date();
-    if (Object.keys(this.state.markers_).includes(address)) {
+    if (Object.keys(this.state.geoHashGrid[geohash]).includes(address)) {
       var ref = db.collection('locations').doc(address).collection('votes').doc(uniqueId);
       return ref.get()
         .then( voteDoc => {
@@ -667,6 +716,7 @@ export default class App extends React.Component {
   // This funcion adds a new ghost marker which will eventually be used
   // to the database and is triggered in longPressMap.
   addNewLocation = async(latitude_, longitude_) => {
+    var ghostGeohash = g.encode_int(latitude_,longitude_,26)
     var address_ = null;
     var results = null;
     var coords = null;
@@ -727,7 +777,7 @@ export default class App extends React.Component {
           // checks to make sure that the new location is not already part of the markers
           // dictionary. This would mean that the marker is already in the database. May need 
           // to query the actual database though instead... Look into this.
-          if (!Object.keys(this.state.markers_).includes(address_)) {
+          if (!Object.keys(this.state.geoHashGrid[ghostGeohash]).includes(address_)) {
             // creates the new ghost marker with the information of this location.
             let newGhostMarker = [];
             newGhostMarker.push({
@@ -738,6 +788,7 @@ export default class App extends React.Component {
                 city: city,
                 key: Math.random()                    
               });
+              console.log(newGhostMarker[0])
             // Opens the voting tab for the user.  
             Animated.timing(this.state.animatedTab, {
               toValue: 370,
@@ -749,38 +800,48 @@ export default class App extends React.Component {
               }
             ))
             this.setState({selectedMarker: address_});
+            this.setState({selectedGeohash: ghostGeohash});
             this.setState({ghostMarker: newGhostMarker});
           }
         })
     }
   // This is being used to get upVotes for the info page, this is because some of this
   // does not have a default value so it needs a function to call it.
-  returnUpVotes(address) {
-    if (this.state.markers_[address] != null) {
-      return this.state.markers_[address].upVotes;
-    }
-    else {
-      return null;
+  returnUpVotes(address,geohash) {
+    if (this.state.geoHashGrid[geohash] != null) {
+      if (this.state.geoHashGrid[geohash][address] != null) {
+        return this.state.geoHashGrid[geohash][address].upVotes;
+      } else {
+        return null;
+      }
+    } else {
+      return null
     }
   }
 
   // see returnUpVotes but this works for downVotes
-  returnDownVotes(address) {
-    if (this.state.markers_[address] != null) {
-      return this.state.markers_[address].downVotes;
-    }
-    else {
-      return null;
+  returnDownVotes(address,geohash) {
+    if (this.state.geoHashGrid[geohash] != null) {
+      if (this.state.geoHashGrid[geohash][address] != null) {
+        return this.state.geoHashGrid[geohash][address].downVotes;
+      } else {
+        return null;
+      }
+    } else {
+      return null
     }
   }
 
   // see return upVotes but this is for timeCreated
-  returnTimeCreated(addres) {
-    if (this.state.markers_[address] != null) {
-      return this.state.markers_[address].timeCreated;
-    }
-    else {
-      return null;
+  returnTimeCreated(address, geohash) {
+    if (this.state.geoHashGrid[geohash] != null) {
+      if (this.state.geoHashGrid[geohash][address] != null) {
+        return this.state.geoHashGrid[geohash][address].timeCreated;
+      } else {
+        return null;
+      }
+    } else {
+      return null
     }
   }
 
@@ -845,20 +906,24 @@ export default class App extends React.Component {
             longitudeDelta: 0.01,
           }}
         > 
-          {Object.values(this.state.markers_).map( (marker) => {
-            // creates each marker in the primary markers_ dictionary.
-            return (
-              <MapView.Marker 
-              {...marker} 
-              // on press should toggle the voter tab
-              onPress =  {() => this.toggleTab(marker.address)} 
-              >
-                <View style={{...styles.marker,borderColor:marker.borderColor}} >
-                  {this.renderImage(marker.cost)}
-                  <Text style={styles.testtext}>{marker.cost}</Text>
-                </View>
-
-              </MapView.Marker>
+          {Object.values(this.state.geoHashGrid).map(markerSet => {
+            return(
+              Object.values(markerSet).map( (marker) => {
+              // creates each marker in the primary markers_ dictionary.
+                return (
+                  <MapView.Marker 
+                  {...marker} 
+                  // on press should toggle the voter tab
+                  onPress = {() => this.toggleTab(marker.address,marker.geohash)} 
+                  >
+                    <View style={{...styles.marker,borderColor:marker.borderColor}} >
+                      {this.renderImage(marker.cost)}
+                      <Text style={styles.testtext}>{marker.cost}</Text>
+                    </View>
+    
+                  </MapView.Marker>
+                )
+              })
             )
           })}
           {this.state.ghostMarker.map( (marker) => {
@@ -888,10 +953,10 @@ export default class App extends React.Component {
               {this.state.infoPageMarker}
             </Text>
             <Text style = {{...styles.locationText}}>
-              🔥 = {this.returnUpVotes(this.state.infoPageMarker)}
+              🔥 = {this.returnUpVotes(this.state.infoPageMarker,this.state.infoPageGeohash)}
             </Text>
             <Text style = {{...styles.locationText}}>
-              💩 = {this.returnDownVotes(this.state.infoPageMarker)}
+              💩 = {this.returnDownVotes(this.state.infoPageMarker,this.state.infoPageGeohash)}
             </Text>
           </Animated.View>
 
@@ -917,8 +982,8 @@ export default class App extends React.Component {
           </Animated.View>
 
           <Animated.View style={{...styles.tab,left:this.state.animatedTab}}> 
-            <Button style={styles.tabStyle} title = '💩' onPress = {()=>this.deleteLit(this.state.selectedMarker)} />
-            <Button style={styles.tabStyle} title = '🔥' onPress = {()=>this.addLit(this.state.selectedMarker)} />
+            <Button style={styles.tabStyle} title = '💩' onPress = {()=>this.deleteLit(this.state.selectedMarker,this.state.selectedGeohash)} />
+            <Button style={styles.tabStyle} title = '🔥' onPress = {()=>this.addLit(this.state.selectedMarker,this.state.selectedGeohash)} />
             <Button style={styles.tabStyle} title = 'ⓘ' onPress={this.toggleInfoPage} />
             {/* <Button style={styles.marker} color="red" title = 'X' onPress={()=>this.hideTab()} /> */}
           </Animated.View>
