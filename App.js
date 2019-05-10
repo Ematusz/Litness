@@ -66,13 +66,13 @@ export default class App extends React.Component {
       infoPageMarker:null,
       infoPageGeohash:null,
       ghostMarker: [],
-      // mapRegion: {
-      //   latitude: null,
-      //   latitudeDelta: null,
-      //   longitude: null,
-      //   longitudeDelta: null
-      // },
-      // currentGeohash: 26591405,
+      mapRegion: {
+        latitude: null,
+        latitudeDelta: null,
+        longitude: null,
+        longitudeDelta: null
+      },
+      currentGrid: [],
       userLocation: {
         formattedAddress: null,
         latitude: null,
@@ -205,7 +205,10 @@ export default class App extends React.Component {
     }
 
     this.setState({mapRegion: initialRegion})
-    this.setState({currentGeohash: g.encode_int(initialPosition.latitude, initialPosition.longitude, 26)});
+    var currentGeohash = [g.encode_int(initialRegion.latitude,initialRegion.longitude,26)];
+    var currentGrid = g.neighbors_int(currentGeohash[0],26);
+    currentGrid = currentGeohash.concat(currentGrid);
+    this.setState({currentGrid});
 
     this.map.animateToRegion(initialRegion, 1);
     this.setState({mapRegion: initialRegion});
@@ -216,46 +219,13 @@ export default class App extends React.Component {
       }}
     ));
 
-    myApiKey = 'AIzaSyBkwazID1O1ryFhdC6mgSR4hJY2-GdVPmE';
-    fetch('https://maps.googleapis.com/maps/api/geocode/json?address=' + this.state.testMarker.coordinate.latitude + ',' + this.state.testMarker.coordinate.longitude + '&key=' + myApiKey)
-        .then((response) => response.json())
-        .then((responseJson) => {
-            this.setState({testString:JSON.parse(JSON.stringify(responseJson)).results[0].formatted_address});
-    })
-  };
- // you wrote this
-  _reverseLocationAsync = async() => {
-    let regionName =  await Location.reverseGeocodeAsync({latitude:42.275863,longitude:-83.72695});
-    this.setState({testtest:JSON.stringify(regionName)});
-  }
+    
 
-  // this gets the Id for the phone. TODO: update to device ID after ejecting project
-  // installationID will likely only work for expo
-  _getDeviceInfoAsync = async() => {
-    console.log('retrieving info')
-    var uniqueId = Constants.installationId;
-    console.log(uniqueId);
-  }
-
-  // collects info from the map in "info" then reads it into addNewLocation.
-  onLongPressMap = info => {
-    let data = info.nativeEvent.coordinate
-    this.addNewLocation(data.latitude, data.longitude);
-  }
-
-  // keeps track of the bounds of the screen. Currently not helpful but could become
-  // so if I could find a way to properly limit the scope of the firestore listener.
-  // working on accomplishing this with the help of geotagging.
-  onRegionChangeComplete = mapRegion => {
-    var currentGeohash = [g.encode_int(mapRegion.latitude,mapRegion.longitude,26)];
-    var currentGrid = g.neighbors_int(currentGeohash[0],26);
-    currentGrid = currentGeohash.concat(currentGrid);
-    // console.log(currentGrid)
     //ADDED THIS LISTENER FOR REAL TIME UPDATES
     // this listener listens to the database for updates. I am working towards only making
     // it listen to the data that is relevant for the map right now.
     listener = db.collection('locations')
-    .where("geohash", "array-contains", currentGeohash[0])
+    .where("geohash", "array-contains", await this.state.currentGrid[0])
     .onSnapshot(snapshot => {
       let changes = snapshot.docChanges();
       changes.forEach(change => {
@@ -304,49 +274,146 @@ export default class App extends React.Component {
         else if(change.type == 'modified'){
           let newGrid = {...this.state.geoHashGrid};
           // this if statement may be redundant
-          if (change.doc.data().geohash[0] in newGrid) {
-            let newDictionary = newGrid[change.doc.data().geohash[0]];
-            newDictionary[change.doc.id].cost = change.doc.data().count;
-            newDictionary[change.doc.id].upVotes = change.doc.data().upVotes;
-            newDictionary[change.doc.id].downVotes = change.doc.data().downVotes;
-            newGrid[change.doc.data().geohash[0]] = newDictionary;
-            this.setState({geoHashGrid: newGrid});
-          } else {
-            let newDictionary = {};
-            newDictionary[change.doc.id].cost = change.doc.data().count;
-            newDictionary[change.doc.id].upVotes = change.doc.data().upVotes;
-            newDictionary[change.doc.id].downVotes = change.doc.data().downVotes;
-            newGrid[change.doc.data().geohash[0]] = newDictionary;
-            this.setState({geoHashGrid: newGrid});
-          }
+          let newDictionary = newGrid[change.doc.data().geohash[0]];
+          newDictionary[change.doc.id].cost = change.doc.data().count;
+          newDictionary[change.doc.id].upVotes = change.doc.data().upVotes;
+          newDictionary[change.doc.id].downVotes = change.doc.data().downVotes;
+          newGrid[change.doc.data().geohash[0]] = newDictionary;
+          this.setState({geoHashGrid: newGrid});
         }
         // if a document in the listener has been removed it will delete the location from
         // the markers_ dictionary
         else if(change.type == 'removed') {
           let newGrid = {...this.state.geoHashGrid};
           // this if statement may be redundant
-          if (change.doc.data().geohash[0] in newGrid) {
-            let newDictionary = newGrid[change.data().geoHashGrid[0]];
-            delete newDictionary[change.doc.id];
-            newGrid[change.doc.data().geohash[0]] = newDictionary;
-            this.setState({geoHashGrid: newGrid})
-          } else {
-            let newDictionary = {};
-            delete newDictionary[change.doc.id];
-            newGrid[change.doc.data().geohash[0]] = newDictionary;
-            this.setState({geoHashGrid: newGrid})
-          }
+          let newDictionary = newGrid[change.data().geoHashGrid[0]];
+          delete newDictionary[change.doc.id];
+          newGrid[change.doc.data().geohash[0]] = newDictionary;
+          this.setState({geoHashGrid: newGrid})
         }
       })
     })
-    
+
+    // myApiKey = 'AIzaSyBkwazID1O1ryFhdC6mgSR4hJY2-GdVPmE';
+    // fetch('https://maps.googleapis.com/maps/api/geocode/json?address=' + this.state.testMarker.coordinate.latitude + ',' + this.state.testMarker.coordinate.longitude + '&key=' + myApiKey)
+    //     .then((response) => response.json())
+    //     .then((responseJson) => {
+    //         this.setState({testString:JSON.parse(JSON.stringify(responseJson)).results[0].formatted_address});
+    // })
+  };
+ // you wrote this
+  _reverseLocationAsync = async() => {
+    let regionName =  await Location.reverseGeocodeAsync({latitude:42.275863,longitude:-83.72695});
+    this.setState({testtest:JSON.stringify(regionName)});
+  }
+
+  // this gets the Id for the phone. TODO: update to device ID after ejecting project
+  // installationID will likely only work for expo
+  _getDeviceInfoAsync = async() => {
+    console.log('retrieving info')
+    var uniqueId = Constants.installationId;
+    console.log(uniqueId);
+  }
+
+  // collects info from the map in "info" then reads it into addNewLocation.
+  onLongPressMap = info => {
+    let data = info.nativeEvent.coordinate
+    this.addNewLocation(data.latitude, data.longitude);
+  }
+
+  // keeps track of the bounds of the screen. Currently not helpful but could become
+  // so if I could find a way to properly limit the scope of the firestore listener.
+  // working on accomplishing this with the help of geotagging.
+  onRegionChangeComplete = mapRegion => {
+    var currentGeohash = [g.encode_int(mapRegion.latitude,mapRegion.longitude,26)];
+    var currentGrid = g.neighbors_int(currentGeohash[0],26);
+    currentGrid = currentGeohash.concat(currentGrid);
+    // console.log(currentGrid)
+    // //ADDED THIS LISTENER FOR REAL TIME UPDATES
+    // // this listener listens to the database for updates. I am working towards only making
+    // // it listen to the data that is relevant for the map right now.
+    // listener = db.collection('locations')
+    // .where("geohash", "array-contains", currentGeohash[0])
+    // .onSnapshot(snapshot => {
+    //   let changes = snapshot.docChanges();
+    //   changes.forEach(change => {
+    //     // if a new document is added to the listener. We have to create a location and
+    //     // add it to the markers dictionary.
+    //     if(change.type == 'added'){
+    //       console.log("added");
+    //       let newGrid = {...this.state.geoHashGrid};
+    //       if (change.doc.data().geohash[0] in newGrid) {
+    //         let newDictionary = {...newGrid[change.doc.data().geohash[0]]}
+    //         newDictionary[change.doc.id] = {
+    //             coordinate: {
+    //               latitude: change.doc.data().latitude,
+    //               longitude: change.doc.data().longitude
+    //             },
+    //             cost: change.doc.data().count,
+    //             address: change.doc.id,
+    //             geohash: change.doc.data().geohash[0],
+    //             upVotes: change.doc.data().upVotes,
+    //             downVotes: change.doc.data().downVotes,
+    //             borderColor: "transparent",
+    //             key: change.doc.id,
+    //         }
+    //         newGrid[change.doc.data().geohash[0]] = newDictionary
+    //         this.setState({geoHashGrid: newGrid})
+    //       } else {
+    //         let newDictionary = {};
+    //         newDictionary[change.doc.id] = {
+    //             coordinate: {
+    //               latitude: change.doc.data().latitude,
+    //               longitude: change.doc.data().longitude
+    //             },
+    //             cost: change.doc.data().count,
+    //             address: change.doc.id,
+    //             geohash: change.doc.data().geohash[0],
+    //             upVotes: change.doc.data().upVotes,
+    //             downVotes: change.doc.data().downVotes,
+    //             borderColor: "transparent",
+    //             key: change.doc.id,
+    //         }
+    //         newGrid[change.doc.data().geohash[0]] = newDictionary
+    //         this.setState({geoHashGrid: newGrid})
+    //       }
+    //     } 
+    //     // if a document in the listener has been modified, it will just update the data in the
+    //     // markers_ dictionary.
+    //     else if(change.type == 'modified'){
+    //       let newGrid = {...this.state.geoHashGrid};
+    //       // this if statement may be redundant
+    //       let newDictionary = newGrid[change.doc.data().geohash[0]];
+    //       newDictionary[change.doc.id].cost = change.doc.data().count;
+    //       newDictionary[change.doc.id].upVotes = change.doc.data().upVotes;
+    //       newDictionary[change.doc.id].downVotes = change.doc.data().downVotes;
+    //       newGrid[change.doc.data().geohash[0]] = newDictionary;
+    //       this.setState({geoHashGrid: newGrid});
+    //     }
+    //     // if a document in the listener has been removed it will delete the location from
+    //     // the markers_ dictionary
+    //     else if(change.type == 'removed') {
+    //       let newGrid = {...this.state.geoHashGrid};
+    //       // this if statement may be redundant
+    //       let newDictionary = newGrid[change.data().geoHashGrid[0]];
+    //       delete newDictionary[change.doc.id];
+    //       newGrid[change.doc.data().geohash[0]] = newDictionary;
+    //       this.setState({geoHashGrid: newGrid})
+    //     }
+    //   })
+    // })
+    let cleanGrid = null;
     Object.keys(this.state.geoHashGrid).map( geohash => {
       if (!currentGrid.includes(Number(geohash))) {
-        let cleanGrid = {...this.state.geoHashGrid}
+        if (cleanGrid === null) {
+          cleanGrid = {...this.state.geoHashGrid};
+        }
         delete cleanGrid[geohash];
-        this.setState({geoHashGrid: cleanGrid});
       }
     })
+    if (cleanGrid !== null) {
+      this.setState({geoHashGrid: cleanGrid});
+    }
   }
 
   // Toggles the info page on a hub
@@ -401,7 +468,7 @@ export default class App extends React.Component {
     console.log(this.state.leaderBoard)
     if (!this.state.leaderBoard) {
       var leaderBoard_ = [];
-      db.collection('locations').where("city", "==", this.state.userLocation.userCity).orderBy('count', 'desc').get()
+      db.collection('locations').where("city", "==", this.state.userLocation.userCity).orderBy('count', 'desc').limit(10).get()
         .then( snapshot => {
           snapshot.forEach( doc => {
             leaderBoard_.push({
