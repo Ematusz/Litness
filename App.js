@@ -472,7 +472,8 @@ export default class App extends React.Component {
         .then( snapshot => {
           snapshot.forEach( doc => {
             leaderBoard_.push({
-              address: doc.id,
+              number: doc.data().number,
+              street: doc.data().street,
               count: doc.data().count,
               key: Math.random()   
             });
@@ -657,6 +658,8 @@ export default class App extends React.Component {
       var latitude = this.state.ghostMarker[0].coordinate.latitude;
       var longitude = this.state.ghostMarker[0].coordinate.longitude;
       var city = this.state.ghostMarker[0].city;
+      var street = this.state.ghostMarker[0].street;
+      var number = this.state.ghostMarker[0].number;
       hashes = [g.encode_int(latitude,longitude,26)];
       hashNeighbors = g.neighbors_int(hashes[0],26);
       // get a reference to the document at this address in the database.
@@ -676,7 +679,9 @@ export default class App extends React.Component {
               longitude: longitude,
               geohash: hashes.concat(hashNeighbors),
               imagePath: './assets/logs.png',
-              city: city
+              city: city,
+              street: street,
+              number: number
             })
             // add a new vote to the votes on this document with the users uniqueID.
             ref.collection('votes').doc(uniqueId).set({
@@ -733,6 +738,8 @@ export default class App extends React.Component {
       var latitude = this.state.ghostMarker[0].coordinate.latitude;
       var longitude = this.state.ghostMarker[0].coordinate.longitude;
       var city = this.state.ghostMarker[0].city;
+      var street = this.state.ghostMarker[0].street;
+      var number = this.state.ghostMarker[0].number;
       hashes = [g.encode_int(latitude,longitude,26)];
       hashNeighbors = g.neighbors_int(hashes[0],26);
       var ref = db.collection('locations').doc(address);
@@ -741,6 +748,8 @@ export default class App extends React.Component {
           if (!doc.exists) {
             ref.set({
               count: 0,
+              street: street,
+              number: number,
               upVotes: 0,
               downVotes: 0,
               percentVotesLastThirty: 0,
@@ -790,6 +799,8 @@ export default class App extends React.Component {
     var results = null;
     var coords = null;
     var city = null;
+    var street = null;
+    var number = null;
     // fetch the address of the place you are passing in the coordinates of.
     myApiKey = 'AIzaSyBkwazID1O1ryFhdC6mgSR4hJY2-GdVPmE';
     fetch('https://maps.googleapis.com/maps/api/geocode/json?address=' + latitude_ + ',' + longitude_ + '&key=' + myApiKey)
@@ -827,6 +838,12 @@ export default class App extends React.Component {
               if (results.address_components[j].types[k] == "locality") {
                 city = results.address_components[j].long_name;
               }
+              if (results.address_components[j].types[k] == "route") {
+                street = results.address_components[j].short_name;
+              }
+              if (results.address_components[j].types[k] == "street_number") {
+                number = results.address_components[j].long_name;
+              }
             }
           }
           console.log(city);
@@ -856,6 +873,8 @@ export default class App extends React.Component {
                   longitude: coords.lng
                 },
                 city: city,
+                street: street,
+                number: number,
                 key: Math.random()                    
               });
               console.log(newGhostMarker[0])
@@ -1047,7 +1066,7 @@ export default class App extends React.Component {
               // {key: 'Julie'},
               // ]}
               data = {this.state.leaderBoard_}
-              renderItem={({item}) => <Text style={styles.item}>{item.address} {item.count}</Text>}
+              renderItem={({item}) => <Text style={styles.item}>{item.number} {item.street} {item.count}</Text>}
             />
           </Animated.View>
 
