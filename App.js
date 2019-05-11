@@ -124,9 +124,11 @@ export default class App extends React.Component {
         fetch('https://maps.googleapis.com/maps/api/geocode/json?address=' + latitude + ',' + longitude + '&key=' + myApiKey)
         .then((response) => response.json())
         .then((responseJson) => {
-          var len = JSON.parse(JSON.stringify(responseJson)).results.length
+          var results = JSON.parse(JSON.stringify(responseJson)).results
+          var len = results.length
           var i = 0;
           var minDist = -1;
+          var userAddressDictionary = {}
           // this loop checks to see which of the possible results returned from the
           // fetch is closest to the latitude and longitude click that are actually passed
           // in. This used to just take the first result, however, sometimes it is not sorted
@@ -134,7 +136,10 @@ export default class App extends React.Component {
           // markers to building with multiple sub buildings attached. For example mason,
           // Angel, or Tisch halls.
           for (indx = 0; indx < len; indx++) {
-            var dist = math.sqrt(math.square(latitude-JSON.parse(JSON.stringify(responseJson)).results[indx].geometry.location.lat)+math.square(longitude-JSON.parse(JSON.stringify(responseJson)).results[indx].geometry.location.lng));
+            if (!isNaN(parseInt(results[indx].formatted_address[0]))) {
+              userAddressDictionary[results[indx].formatted_address] = true;
+            }
+            var dist = math.sqrt(math.square(latitude-results[indx].geometry.location.lat)+math.square(longitude-results[indx].geometry.location.lng));
             if (minDist == -1) {
               minDist = dist;
             }
@@ -143,16 +148,16 @@ export default class App extends React.Component {
               i = indx;
             }
           }
-          var results = JSON.parse(JSON.stringify(responseJson)).results[i]
-          var userAddress = results.formatted_address;
-          len = results.address_components.length;
+          var finalResult = results[i]
+          var userAddress = finalResult.formatted_address;
+          len = finalResult.address_components.length;
           var userCity = null;
           var l = null;
           for (j = 0; j < len; j++) {
-            l = results.address_components[j].types.length;
+            l = finalResult.address_components[j].types.length;
             for (k = 0; k < l; k++) {
-              if (results.address_components[j].types[k] == "locality") {
-                userCity = results.address_components[j].long_name;
+              if (finalResult.address_components[j].types[k] == "locality") {
+                userCity = finalResult.address_components[j].long_name;
               }
             }
           }
@@ -160,10 +165,11 @@ export default class App extends React.Component {
           const newCoordinate = {
             userCity,
             userAddress,
+            userAddressDictionary,
             latitude,
             longitude
           };
-          console.log("userCity ", userCity);
+          console.log("coordinate ", newCoordinate);
           // sets new userLocation based on previously created coordinate object
           this.setState({userLocation: newCoordinate});
         })
@@ -546,10 +552,17 @@ export default class App extends React.Component {
     // youre clickig on now.
     else if(this.state.selectedMarker !== markerAddress) {
       // Markers overhaul
-      if ((this.state.geoHashGrid[geohash][markerAddress].latitude < this.state.userLocation.latitude + 0.02694933525
-            && this.state.geoHashGrid[geohash][markerAddress].latitude > this.state.userLocation.latitude - 0.02694933525
-            && this.state.geoHashGrid[geohash][markerAddress].latitude < this.state.userLocation.longitude + 0.0000748596382
-            && this.state.geoHashGrid[geohash][markerAddress].latitude > this.state.userLocation.longitude - 0.0000748596382)
+      console.log(this.state.geoHashGrid[geohash][markerAddress].latitude)
+      console.log(this.state.geoHashGrid[geohash][markerAddress].longitude)
+      console.log(this.state.userLocation.latitude)
+      console.log(this.state.userLocation.longitude)
+      console.log(this.state.userLocation.userAddress)
+      console.log(markerAddress)
+      console.log((markerAddress === this.state.userLocation.address))
+      if ((this.state.geoHashGrid[geohash][markerAddress].latitude < this.state.userLocation.latitude + 0.05694933525
+            && this.state.geoHashGrid[geohash][markerAddress].latitude > this.state.userLocation.latitude - 0.05694933525
+            && this.state.geoHashGrid[geohash][markerAddress].latitude < this.state.userLocation.longitude + 0.0100748596382
+            && this.state.geoHashGrid[geohash][markerAddress].latitude > this.state.userLocation.longitude - 0.0100748596382)
             || (markerAddress == this.state.userLocation.address)) {
             console.log(true);
       } else {
