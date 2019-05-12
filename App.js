@@ -58,6 +58,7 @@ export default class App extends React.Component {
       geoHashGrid: {},
       markers_: {},
       leaderBoard_: [],
+      showVotingButtons: true,
       //0.00000898311175 lat to 1 m
       //0.000000024953213 lng to 1 m
       selectedMarker:null,
@@ -552,21 +553,24 @@ export default class App extends React.Component {
     // youre clickig on now.
     else if(this.state.selectedMarker !== markerAddress) {
       // Markers overhaul
-      console.log(this.state.geoHashGrid[geohash][markerAddress].latitude)
-      console.log(this.state.geoHashGrid[geohash][markerAddress].longitude)
-      console.log(this.state.userLocation.latitude)
-      console.log(this.state.userLocation.longitude)
-      console.log(this.state.userLocation.userAddress)
-      console.log(markerAddress)
-      console.log((markerAddress === this.state.userLocation.address))
-      if ((this.state.geoHashGrid[geohash][markerAddress].latitude < this.state.userLocation.latitude + 0.05694933525
-            && this.state.geoHashGrid[geohash][markerAddress].latitude > this.state.userLocation.latitude - 0.05694933525
-            && this.state.geoHashGrid[geohash][markerAddress].latitude < this.state.userLocation.longitude + 0.0100748596382
-            && this.state.geoHashGrid[geohash][markerAddress].latitude > this.state.userLocation.longitude - 0.0100748596382)
-            || (markerAddress == this.state.userLocation.address)) {
-            console.log(true);
+      // console.log(this.state.geoHashGrid[geohash][markerAddress].latitude)
+      // console.log(this.state.userLocation.userAddressDictionary)
+      // if ((this.state.geoHashGrid[geohash][markerAddress].latitude < this.state.userLocation.latitude + 0.05694933525
+      //       && this.state.geoHashGrid[geohash][markerAddress].latitude > this.state.userLocation.latitude - 0.05694933525
+      //       && this.state.geoHashGrid[geohash][markerAddress].latitude < this.state.userLocation.longitude + 0.0100748596382
+      //       && this.state.geoHashGrid[geohash][markerAddress].latitude > this.state.userLocation.longitude - 0.0100748596382)
+      //       || (markerAddress == this.state.userLocation.address)) {
+      //   console.log(true);
+      // } else {
+      //   console.log(false);
+      // }
+
+      if(markerAddress in this.state.userLocation.userAddressDictionary) {
+        console.log("YES")
+        this.setState({showVotingButtons: true})
       } else {
-        console.log(false);
+        console.log("NO")
+        this.setState({showVotingButtons: false})
       }
       // Markers overhaul
       if (this.state.geoHashGrid[geohash][this.state.selectedMarker]) {
@@ -948,39 +952,47 @@ export default class App extends React.Component {
   }
 
   renderImage(markerCost){
-    if(markerCost < 10) {
+    if (markerCost < 0) {
+      return <Image
+      style = {{flex:1,
+        height: 40,
+        resizeMode: 'contain',
+        width: 40,}}
+      source={require('./assets/poop.png')}
+    />;
+    } else if(markerCost < 10) {
        return <Image
        style = {{flex:1,
-         height: 50,
+         height: 40,
          resizeMode: 'contain',
-         width: 50,}}
+         width: 40,}}
        source={require('./assets/logs.png')}
      />;
     } else if (markerCost < 50) {
       return <Image
        style = {{flex:1,
-         height: 50,
+         height: 40,
          resizeMode: 'contain',
-         width: 50,}}
+         width: 40,}}
        source={require('./assets/logsfire.png')}
      />;
     } else if (markerCost < 100) {
       return <Image
        style = {{flex:1,
-         height: 50,
+         height: 40,
          resizeMode: 'contain',
-         width: 50,}}
+         width: 40,}}
        source={require('./assets/logsfire2.png')}
      />;
     } else {
       return <Image
        style = {{flex:1,
-         height: 60,
+         height: 40,
          resizeMode: 'contain',
-         width: 60,}}
+         width: 40,}}
        source={require('./assets/forestfire.png')}
      />;
-    }
+    } 
  }
 
   // renders the onscreen info
@@ -1038,7 +1050,14 @@ export default class App extends React.Component {
               onPress =  {() => this.toggleTab(marker.address)} 
               >
                 <View style={styles.ghostMarker} >
-                    <Text style={styles.text}>{0}</Text>
+                  <Image
+                    style = {{flex:1,
+                              height: 40,
+                              resizeMode: 'contain',
+                              width: 40,}}
+                    source={require('./assets/poo2.png')}
+                  />
+                  <Text style={styles.testtext}>?</Text>
                 </View>
 
               </MapView.Marker>
@@ -1084,8 +1103,8 @@ export default class App extends React.Component {
           </Animated.View>
 
           <Animated.View style={{...styles.tab,left:this.state.animatedTab}}> 
-            <Button style={styles.tabStyle} title = '💩' onPress = {()=>this.deleteLit(this.state.selectedMarker,this.state.selectedGeohash)} />
-            <Button style={styles.tabStyle} title = '🔥' onPress = {()=>this.addLit(this.state.selectedMarker,this.state.selectedGeohash)} />
+            {this.state.showVotingButtons && <Button style={styles.tabStyle} title = '🔥' onPress = {()=>this.addLit(this.state.selectedMarker,this.state.selectedGeohash)} />}
+            {this.state.showVotingButtons && <Button style={styles.tabStyle} title = '💩' onPress = {()=>this.deleteLit(this.state.selectedMarker,this.state.selectedGeohash)} />}
             <Button style={styles.tabStyle} title = 'ⓘ' onPress={this.toggleInfoPage} />
             {/* <Button style={styles.marker} color="red" title = 'X' onPress={()=>this.hideTab()} /> */}
           </Animated.View>
@@ -1170,8 +1189,9 @@ const styles = StyleSheet.create({
     padding: 5,
     borderRadius: 5,
     backgroundColor:"grey",
-    flexDirection:"column",
-    justifyContent: "center"
+    position: 'absolute',
+    alignItems:'center',
+    justifyContent:'center',
   },
   test: {
     flex:1,
@@ -1194,8 +1214,9 @@ const styles = StyleSheet.create({
   testtext: {
     color: "white",
     fontWeight: "bold",
-    fontSize: 15,
+    fontSize: 10,
     position: 'absolute',
+    // top:'40%'
   },
 
   tab: {
@@ -1210,8 +1231,6 @@ const styles = StyleSheet.create({
     flexDirection:'column',
     justifyContent: 'space-evenly',
     alignItems:"center",
-    width: 40,
-    height: 120,
   },
 
   leaderBoardButton: {
