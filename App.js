@@ -472,24 +472,27 @@ export default class App extends React.Component {
   }
 
   toggleLeaderBoard() {
-    console.log(this.state.leaderBoard)
     if (!this.state.leaderBoard) {
       var leaderBoard_ = [];
-      db.collection('locations').where("city", "==", this.state.userLocation.userCity).orderBy('count', 'desc').limit(10).get()
+      db.collection('locations').where("city", "==", this.state.userLocation.userCity).orderBy('count', 'desc').limit(25).get()
         .then( snapshot => {
+          let counter = 1;
           snapshot.forEach( doc => {
             leaderBoard_.push({
               number: doc.data().number,
               street: doc.data().street,
               count: doc.data().count,
-              key: Math.random()   
+              key: counter.toString()   
             });
+            counter = counter + 1;
           })
-          console.log(leaderBoard_);
+
         this.setState({leaderBoard_});
         }).catch( error =>{
           console.log(error)
         })
+        
+      console.log(this.state.leaderBoard_);
       Animated.timing(this.state.animatedLeaderboard, {
         toValue: 50,
         friction: 100,
@@ -544,7 +547,7 @@ export default class App extends React.Component {
     // and you click it again, it will just hide the tab without adding a new marker 
     // the array.
     // Markers overhaul
-    this.state.geoHashGrid[geohash][markerAddress].borderColor = "#e8b923"
+    // this.state.geoHashGrid[geohash][markerAddress].borderColor = "#e8b923"
     if(!Object.keys(this.state.geoHashGrid[geohash]).includes(markerAddress)) {
       this.hideTab();
     }
@@ -573,9 +576,9 @@ export default class App extends React.Component {
         this.setState({showVotingButtons: false})
       }
       // Markers overhaul
-      if (this.state.geoHashGrid[geohash][this.state.selectedMarker]) {
-        this.state.geoHashGrid[geohash][this.state.selectedMarker].borderColor = "transparent"
-      }
+      // if (this.state.geoHashGrid[geohash][this.state.selectedMarker]) {
+      //   this.state.geoHashGrid[geohash][this.state.selectedMarker].borderColor = "transparent"
+      // }
 
       if (!this.state.tabVal) {
         Animated.timing(this.state.animatedTab, {
@@ -590,6 +593,16 @@ export default class App extends React.Component {
       }
       this.setState({selectedGeohash: geohash});
       this.setState({selectedMarker: markerAddress});
+
+      this.state.geoHashGrid[geohash][markerAddress].borderColor = "#e8b923"
+
+      console.log(this.state.geoHashGrid[geohash][this.state.selectedMarker])
+      console.log(markerAddress)
+      if (this.state.geoHashGrid[geohash][this.state.selectedMarker]) {
+        this.state.geoHashGrid[geohash][this.state.selectedMarker].borderColor = "#e8b923"
+      }
+
+      this.setState({onLongPress: false});
     } 
     // if the marker you're clicking on is neither a ghost marker, nor a new marker, it must
     // be the same one so we just close it.
@@ -895,6 +908,7 @@ export default class App extends React.Component {
                 key: Math.random()                    
               });
               console.log(newGhostMarker[0])
+              this.setState({showVotingButtons: true})
             // Opens the voting tab for the user.  
             Animated.timing(this.state.animatedTab, {
               toValue: 370,
@@ -954,46 +968,79 @@ export default class App extends React.Component {
   renderImage(markerCost){
     if (markerCost < 0) {
       return <Image
-      style = {{flex:1,
+      style = {{
         height: 40,
         resizeMode: 'contain',
-        width: 40,}}
+        width: 40,
+        borderRadius: 20,
+        borderWidth: 2,
+        borderColor: 'black',
+        backgroundColor:'white'}}
       source={require('./assets/poop.png')}
     />;
     } else if(markerCost < 10) {
        return <Image
-       style = {{flex:1,
+       style = {{
          height: 40,
          resizeMode: 'contain',
-         width: 40,}}
+         width: 40,
+         borderRadius: 20,
+         borderWidth: 2,
+         borderColor: 'black',
+         backgroundColor:'white'}}
        source={require('./assets/logs.png')}
      />;
     } else if (markerCost < 50) {
       return <Image
-       style = {{flex:1,
+       style = {{
          height: 40,
          resizeMode: 'contain',
-         width: 40,}}
+         width: 40,
+         borderRadius: 20,
+         borderWidth: 2,
+         borderColor: 'black',
+         backgroundColor:'white'}}
        source={require('./assets/logsfire.png')}
      />;
     } else if (markerCost < 100) {
       return <Image
-       style = {{flex:1,
+       style = {{
          height: 40,
          resizeMode: 'contain',
-         width: 40,}}
+         width: 40,
+         borderRadius: 20,
+         borderWidth: 2,
+         borderColor: 'black',
+         backgroundColor:'white'}}
        source={require('./assets/logsfire2.png')}
      />;
     } else {
       return <Image
-       style = {{flex:1,
+       style = {{
          height: 40,
          resizeMode: 'contain',
-         width: 40,}}
+         width: 40,
+         borderRadius: 20,
+         borderWidth: 2,
+         borderColor: 'black',
+         backgroundColor:'white'}}
        source={require('./assets/forestfire.png')}
      />;
     } 
  }
+
+  renderLeaderboardCell =  ({item}) => {
+    return (
+      <View style = {styles.leaderBoardCell}>
+      <Text style = {{...styles.leaderboardText,fontWeight:'bold'}}> {item.key} </Text>
+      {this.renderImage(item.count)}
+      <Text style = {styles.leaderboardText}> {item.number} {item.street}</Text>
+      <View style = {styles.LBinnerBox}>
+          <Text style = {{color:'white',fontSize:20}}>{item.count}</Text>
+      </View>
+      </View>
+    )
+  }
 
   // renders the onscreen info
   render() {
@@ -1051,10 +1098,13 @@ export default class App extends React.Component {
               >
                 <View style={styles.ghostMarker} >
                   <Image
-                    style = {{flex:1,
-                              height: 40,
-                              resizeMode: 'contain',
-                              width: 40,}}
+                    style = {{height: 40,
+                      resizeMode: 'contain',
+                      width: 40,
+                      borderRadius: 20,
+                      borderWidth: 2,
+                      borderColor: 'black',
+                      backgroundColor:'white'}}
                     source={require('./assets/poo2.png')}
                   />
                   <Text style={styles.testtext}>?</Text>
@@ -1087,18 +1137,10 @@ export default class App extends React.Component {
               Leaderboard
             </Text>
             <FlatList
-              // data={[
-              // {key: 'Devin'},
-              // {key: 'Jackson'},
-              // {key: 'James'},
-              // {key: 'Joel'},
-              // {key: 'John'},
-              // {key: 'Jillian'},
-              // {key: 'Jimmy'},
-              // {key: 'Julie'},
-              // ]}
               data = {this.state.leaderBoard_}
-              renderItem={({item}) => <Text style={styles.item}>{item.number} {item.street} {item.count}</Text>}
+              // renderItem={({item}) => <Text style={styles.item}>{item.number} {item.street} {item.count}</Text>}
+              renderItem = {this.renderLeaderboardCell}
+              style={styles.flatListContainer}
             />
           </Animated.View>
 
@@ -1165,7 +1207,7 @@ const styles = StyleSheet.create({
   },
   marker: {
     // padding: 5,
-    borderRadius: 5,
+    borderRadius: 30,
     borderWidth: 2,
     // backgroundColor:"red",
     borderColor: "transparent",
@@ -1186,9 +1228,10 @@ const styles = StyleSheet.create({
     fontSize: 10,
   },
   ghostMarker: {
-    padding: 5,
-    borderRadius: 5,
-    backgroundColor:"grey",
+    borderRadius: 30,
+    borderWidth: 2,
+    borderColor: "transparent",
+    backgroundColor:"white",
     position: 'absolute',
     alignItems:'center',
     justifyContent:'center',
@@ -1245,5 +1288,38 @@ const styles = StyleSheet.create({
     // alignItems:"center",
     // width: 120,
     // height: 40,
+  },
+
+  leaderBoardCell: {
+    padding: 15,
+    marginTop: 5,
+    flex:1,
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    borderColor:'black',
+    borderWidth: 1,
+    borderRadius: 15
+  },
+
+  flatListContainer: {
+    flex: 1,
+    width: '95%',
+  },
+  LBinnerBox: {
+    height: 40,
+    width: 40,
+    borderWidth: 2,
+    borderColor: "#e8b923",
+    flexDirection:'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'absolute',
+    right:4,
+    borderRadius: 30,
+    backgroundColor:"#e8b923",
+  },
+  leaderboardText: {
+    fontSize: 20,
   }
 });
