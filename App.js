@@ -594,13 +594,17 @@ export default class App extends React.Component {
       this.setState({selectedGeohash: geohash});
       this.setState({selectedMarker: markerAddress});
 
+      if (this.state.geoHashGrid[geohash][this.state.selectedMarker]) {
+        this.state.geoHashGrid[geohash][this.state.selectedMarker].borderColor = "transparent"
+      }
       this.state.geoHashGrid[geohash][markerAddress].borderColor = "#e8b923"
 
       console.log(this.state.geoHashGrid[geohash][this.state.selectedMarker])
+      console.log(this.state.selectedMarker);
       console.log(markerAddress)
-      if (this.state.geoHashGrid[geohash][this.state.selectedMarker]) {
-        this.state.geoHashGrid[geohash][this.state.selectedMarker].borderColor = "#e8b923"
-      }
+      // if (this.state.geoHashGrid[geohash][this.state.selectedMarker]) {
+      //   this.state.geoHashGrid[geohash][this.state.selectedMarker].borderColor = "#e8b923"
+      // }
 
       this.setState({onLongPress: false});
     } 
