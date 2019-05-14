@@ -324,8 +324,15 @@ export default class App extends React.Component {
 
   // collects info from the map in "info" then reads it into addNewLocation.
   onLongPressMap = info => {
-    let data = info.nativeEvent.coordinate
-    this.addNewLocation(data.latitude, data.longitude);
+    if (!this.state.selectedMarker) {
+      let data = info.nativeEvent.coordinate
+      // console.log(data)
+      // console.log(this.state.userLocation)
+      let dist = math.sqrt(math.square(data.latitude - this.state.userLocation.latitude)+math.square(data.longitude - this.state.userLocation.longitude));
+      if (dist < 0.0003) {
+        this.addNewLocation(data.latitude, data.longitude); 
+      }
+    }
   }
 
   // keeps track of the bounds of the screen. Currently not helpful but could become
@@ -573,7 +580,7 @@ export default class App extends React.Component {
         this.setState({showVotingButtons: true})
       } else {
         console.log("NO")
-        this.setState({showVotingButtons: false})
+        this.setState({showVotingButtons: true})
       }
       // Markers overhaul
       // if (this.state.geoHashGrid[geohash][this.state.selectedMarker]) {
@@ -880,7 +887,7 @@ export default class App extends React.Component {
               }
             }
           }
-          console.log(city);
+          // console.log(city);
           // console.log(JSON.parse(JSON.stringify(responseJson)).results[i]);
           // checks to see if the users last known location is close enough to the hub to vote
           // on it
@@ -889,9 +896,9 @@ export default class App extends React.Component {
             && coords.lng < this.state.userLocation.longitude + 0.0000748596382
             && coords.lng > this.state.userLocation.longitude - 0.0000748596382)
             || (address_ == this.state.userLocation.address)) {
-            console.log(true);
+            // console.log(true);
           } else {
-            console.log(false);
+            // console.log(false);
           }
 
           // checks to make sure that the new location is not already part of the markers
@@ -899,7 +906,7 @@ export default class App extends React.Component {
           // to query the actual database though instead... Look into this.
           if (this.state.geoHashGrid[ghostGeohash] == undefined || !Object.keys(this.state.geoHashGrid[ghostGeohash]).includes(address_)) {
             // creates the new ghost marker with the information of this location.
-            console.log('here')
+            // console.log('here')
             let newGhostMarker = [];
             newGhostMarker.push({
                 coordinate: {
@@ -911,7 +918,7 @@ export default class App extends React.Component {
                 number: number,
                 key: Math.random()                    
               });
-              console.log(newGhostMarker[0])
+              // console.log(newGhostMarker[0])
               this.setState({showVotingButtons: true})
             // Opens the voting tab for the user.  
             Animated.timing(this.state.animatedTab, {
@@ -1120,8 +1127,10 @@ export default class App extends React.Component {
           </MapView>
 
           <Animated.View style={{...styles.infoPage,top:this.state.animatedTop}}>
-            <Button style={styles.marker} title = 'X' onPress={this.toggleInfoPage} />
-            <Text style = {{...styles.locationText}}>
+            <TouchableOpacity onPress={this.toggleInfoPage} style = {styles.closeBar}>
+              <Text style = {{color:'white',fontWeight:'bold'}}>X</Text>
+            </TouchableOpacity>
+            <Text style = {{...styles.locationText, fontSize: 30, fontWeight:'bold'}}>
               Analytics
             </Text>
             <Text style = {{...styles.locationText}}>
@@ -1136,8 +1145,11 @@ export default class App extends React.Component {
           </Animated.View>
 
           <Animated.View style={{...styles.infoPage,top:this.state.animatedLeaderboard}}>
-            <Button style={styles.marker} title = 'X' onPress={this.toggleLeaderBoard} />
-            <Text style = {{...styles.locationText}}>
+            {/* <Button style={styles.marker} title = 'X' onPress={this.toggleLeaderBoard} /> */}
+            <TouchableOpacity onPress={this.toggleLeaderBoard} style = {styles.closeBar}>
+              <Text style = {{color:'white',fontWeight:'bold'}}>X</Text>
+            </TouchableOpacity>
+            <Text style = {{...styles.locationText, fontSize: 30, fontWeight:'bold'}}>
               Leaderboard
             </Text>
             <FlatList
@@ -1207,7 +1219,6 @@ const styles = StyleSheet.create({
   locationText: {
     marginTop:10,
     alignSelf: 'center',
-    fontSize: 20,
   },
   marker: {
     // padding: 5,
@@ -1303,7 +1314,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderColor:'black',
     borderWidth: 1,
-    borderRadius: 15
+    borderRadius: 15,
+    backgroundColor:'lightsteelblue'
   },
 
   flatListContainer: {
@@ -1325,5 +1337,16 @@ const styles = StyleSheet.create({
   },
   leaderboardText: {
     fontSize: 20,
+  },
+  closeBar: {
+    backgroundColor: 'red',
+    justifyContent:'center',
+    alignItems:'center',
+    width: 30,
+    height: 30,
+    borderRadius: 30,
+    position: 'absolute',
+    left: 4,
+    top: 4
   }
 });
