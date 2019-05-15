@@ -15,23 +15,31 @@ const ref = admin.firestore()
 
 exports.DBupdate = functions.https.onRequest((req, res) => {
     ref.collection('locations').get().then(snapshot => {
-        var twoHoursAgo = Date.now() + (2 * 60 * 60 * 1000);
+        var twoHoursAgo = Date.now() - (10 * 60 * 1000);
         var twoHoursAgo_ = new Date(twoHoursAgo);
         snapshot.forEach( address => {
-            ref.collection('locations').doc(address.id).collection('votes').where('vote', '>', twoHoursAgo_).get()
+            ref.collection('locations').doc(address.id).collection('votes').get().then(query => {
+                if (query.size <=0) {
+                    ref.collection('locations').doc(address.id).delete();
+                }
+                return "";
+            }).catch( reason0 => {
+                res.send(reason0);
+            });
+            ref.collection('locations').doc(address.id).collection('votes').where('voteTime', '<', twoHoursAgo_).get()
                 .then( snapshot_ => {
                     snapshot_.forEach( vote => {
                         ref.collection('locations').doc(address.id).collection('votes').doc(vote.id).delete();
                     })
                     return "";
-                }).catch( reason_ => {
-                    res.send(reason_);
+                }).catch( reason1 => {
+                    res.send(reason1);
                 })
         })
         res.send("success!");
         return "";
-    }).catch( reason => {
-        res.send(reason)
+    }).catch( reason2 => {
+        res.send(reason2);
     })
 });
 
@@ -58,6 +66,7 @@ exports.replenishCounts = functions.https.onRequest((req, res) => {
 
 exports.updatedVote = functions.firestore.document('locations/{address}/votes/{voterID}')
     .onWrite((change,context) => {
+        console.log('updateVote')
         // if (change.type !== 'delete') {
             //value of the new vote for this location
             var newVote = null;
@@ -114,36 +123,4 @@ exports.updatedVote = functions.firestore.document('locations/{address}/votes/{v
         // }
     });
 
-    // exports.deleteVote = functions.firestore.document('locations/{address}/votes/{voterID}')
-    //     .onDelete((change,context) => {
-    //         var deletedVote = change.before.data().vote;
-    //         var locationRef = ref.collection('locations').doc(context.params.address);
-    //         return ref.runTransaction(transaction => {
-    //             return transaction.get(locationRef).then(locationDoc => {
-    //                 //compute new count
-    //                 var currentCount = locationDoc.data().count - deletedVote;
-    //                 //compute upVotes if the new vote is an up vote
-    //                 var upVotes_ = locationDoc.data().upVotes;
-    //                 if(deletedVote === 1) {
-    //                     upVotes_ -= 1;
-    //                 }
-    //                 //compute downVotes
-    //                 var downVotes_ = locationDoc.data().downVotes;
-    //                 if(deletedVote === -1) {
-    //                     downVotes_ -= 1;
-    //                 }
-    //                 //compute percentVotesLastThirty
-
-    //                 //compute percentVotesLastHour
-
-    //                 //update location info
-    //                 console.log("update successful");
-    //                 return transaction.update(locationRef, {
-    //                     count: currentCount,
-    //                     upVotes: upVotes_,
-    //                     downVotes: downVotes_,
-    //                 });
-    //             });
-    //         });
-    //     })
     
