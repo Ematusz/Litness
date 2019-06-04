@@ -15,8 +15,8 @@ const ref = admin.firestore()
 
 exports.DBupdate = functions.https.onRequest((req, res) => {
     ref.collection('locations').get().then(snapshot => {
-        var twoHoursAgo = Date.now() - (10 * 60 * 1000);
-        var twoHoursAgo_ = new Date(twoHoursAgo);
+        let twoHoursAgo = Date.now() - (10 * 60 * 1000);
+        let twoHoursAgo_ = new Date(twoHoursAgo);
         snapshot.forEach( address => {
             ref.collection('locations').doc(address.id).collection('votes').get().then(query => {
                 if (query.size <=0) {
@@ -44,10 +44,10 @@ exports.DBupdate = functions.https.onRequest((req, res) => {
 });
 
 exports.replenishCounts = functions.https.onRequest((req, res) => {
-    var stuff = [];
+    let stuff = [];
     ref.collection('locations').get().then(snapshot => {
         snapshot.forEach(doc => {
-            var newelement = {
+            let newelement = {
                 "id": doc.id,
                 "count": math.ceil(doc.data().count+math.floor(math.random()*100)+1),
                 "timeCreated": doc.data().timeCreated
@@ -69,8 +69,8 @@ exports.updatedVote = functions.firestore.document('locations/{address}/votes/{v
         console.log('updateVote')
         // if (change.type !== 'delete') {
             //value of the new vote for this location
-            var newVote = null;
-            var oldVote = null;
+            let newVote = null;
+            let oldVote = null;
             // Updates the old vote for this location
             // should ouptut an error if it stays null. Need to learn how
             if (change.before.data() === undefined) {
@@ -84,15 +84,15 @@ exports.updatedVote = functions.firestore.document('locations/{address}/votes/{v
                 newVote = change.after.data().vote;
             }
             //reference to the current location
-            var locationRef = ref.collection('locations').doc(context.params.address);
+            let locationRef = ref.collection('locations').doc(context.params.address);
 
             //update count at current location based on either an update of a vote or a new vote
             return ref.runTransaction(transaction => {
                 return transaction.get(locationRef).then(locationDoc => {
                     //compute new count
-                    var currentCount = locationDoc.data().count - oldVote + newVote;
+                    let currentCount = locationDoc.data().count - oldVote + newVote;
                     //compute upVotes if the new vote is an up vote
-                    var upVotes_ = locationDoc.data().upVotes;
+                    let upVotes_ = locationDoc.data().upVotes;
 
                     if(newVote === 1) {
                         upVotes_ += 1;
@@ -101,7 +101,7 @@ exports.updatedVote = functions.firestore.document('locations/{address}/votes/{v
                         upVotes_ -= 1;
                     }
                     //compute downVotes
-                    var downVotes_ = locationDoc.data().downVotes;
+                    let downVotes_ = locationDoc.data().downVotes;
                     if(newVote === -1) {
                         downVotes_ += 1;
                     }

@@ -158,8 +158,8 @@ export default class Map extends React.Component {
       var initialRegion = {
         latitude: JSON.parse(this.state.locationResult).coords.latitude,
         longitude: JSON.parse(this.state.locationResult).coords.longitude,
-        latitudeDelta: 0.005,
-        longitudeDelta: 0.005,
+        latitudeDelta: 0.0005,
+        longitudeDelta: 0.0005,
       }
   
       this.props.mapRegionHandler(initialRegion)

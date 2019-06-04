@@ -235,7 +235,7 @@ export default class MasterView extends React.Component {
           else if(change.type == 'removed') {
             let newGrid = {...this.state.geoHashGrid};
             // this if statement may be redundant
-            let newDictionary = newGrid[change.data().geoHashGrid[0]];
+            let newDictionary = newGrid[change.doc.data().geohash[0]];
             delete newDictionary[change.doc.id];
             newGrid[change.doc.data().geohash[0]] = newDictionary;
             this.setState({geoHashGrid: newGrid})
@@ -324,10 +324,12 @@ export default class MasterView extends React.Component {
       // if infoPage is currently listed as false, open the page. Otherwise close it.
       if (!this.state.infoPage) {
         let data = [];
+        let total = 0;
         db.collection('locations').doc(markerAddress).collection('votes').orderBy('voteTime')
           .get().then( snapshot => {
             snapshot.forEach( doc => {
-              vote = {value: doc.data().vote, time: doc.data().voteTime.toDate()};
+              total = total + doc.data().vote;
+              vote = {value: total, time: doc.data().voteTime.toDate()};
               data.push(vote);
               console.log(data);
             })
@@ -804,6 +806,7 @@ export default class MasterView extends React.Component {
             <AnimatedInfoPage style = {{top:this.state.animatedTop}}
                               toggleInfoPage={this.toggleInfoPage}
                               infoPageMarker={this.state.infoPageMarker}
+                              data_={this.state.data_}
                               returnUpVotes={this.returnUpVotes(this.state.infoPageMarker,this.state.infoPageGeohash)}
                               returnDownVotes={this.returnDownVotes(this.state.infoPageMarker,this.state.infoPageGeohash)}
             />
