@@ -46,6 +46,7 @@ export default class MasterView extends React.Component {
         geoHashGrid: {},
         markers_: {},
         leaderBoard_: [],
+        data_: [],
         showVotingButtons: true,
         //0.00000898311175 lat to 1 m
         //0.000000024953213 lng to 1 m
@@ -322,6 +323,16 @@ export default class MasterView extends React.Component {
     toggleInfoPage (markerAddress) {
       // if infoPage is currently listed as false, open the page. Otherwise close it.
       if (!this.state.infoPage) {
+        let data = [];
+        db.collection('locations').doc(markerAddress).collection('votes').orderBy('voteTime')
+          .get().then( snapshot => {
+            snapshot.forEach( doc => {
+              vote = {value: doc.data().vote, time: doc.data().voteTime.toDate()};
+              data.push(vote);
+              console.log(data);
+            })
+          })
+        this.setState({data_: data});
         Animated.timing(this.state.animatedTop, {
           toValue: 50,
           friction: 100,
@@ -798,7 +809,7 @@ export default class MasterView extends React.Component {
             />
   
             <AnimatedSideTab style = {{left:this.state.animatedTab}} 
-                             clickInfo = {this.toggleInfoPage} 
+                             clickInfo = {()=>this.toggleInfoPage(this.state.selectedMarker)} 
                              clickFire={()=>this.addLit(this.state.selectedMarker,this.state.selectedGeohash)}
                              clickShit={()=>this.deleteLit(this.state.selectedMarker,this.state.selectedGeohash)}
             />
