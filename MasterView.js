@@ -11,6 +11,7 @@ import * as math from 'mathjs';
 import * as firebase from 'firebase';
 import 'firebase/firestore';
 import styles from './styles.js';
+import * as d3 from 'd3-time';
 
 let id = 0;
 
@@ -321,16 +322,38 @@ export default class MasterView extends React.Component {
       if (!this.state.infoPage) {
         let data = [];
         let total = 0;
+        let minute = null;
+        let time = null;
+        let currentTime = new Date();
         db.collection('locations').doc(markerAddress).collection('votes').orderBy('voteTime')
           .get().then( snapshot => {
             snapshot.forEach( doc => {
               total = total + doc.data().vote;
-              vote = {value: total, time: doc.data().voteTime.toDate()};
-              data.push(vote);
+              time = d3.timeMinute(doc.data().voteTime.toDate());
+              if (minute == null) {
+                minute = time;
+                vote = {value: total, time: minute};
+                data.push(vote);
+              } else if (minute.getTime() == time.getTime()) {
+                console.log(1);
+                console.log(data[data.length-1].value)
+                data[data.length-1].value = total;
+              } else {
+                console.log(2);
+                minute = time;
+                vote = {value: total, time: minute};
+                data.push(vote);
+              }
+              // console.log("minutes ", d3.timeMinute(vote.time))
               console.log(data);
             })
+            if (minute != d3.timeMinute(currentTime)) {
+              vote = {value: total, time: d3.timeMinute(currentTime)};
+              data.push(vote);
+            }
+            this.setState({data_: data});
           })
-        this.setState({data_: data});
+        
         Animated.timing(this.state.animatedTop, {
           toValue: 50,
           friction: 100,
@@ -344,6 +367,8 @@ export default class MasterView extends React.Component {
         }).start();
   
       } else {
+        let emptyData = [];
+        this.setState({data_: emptyData})
         Animated.timing(this.state.animatedTop, {
           toValue: 1000,
           friction: 100,
