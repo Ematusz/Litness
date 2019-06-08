@@ -131,8 +131,6 @@ export default class Map extends React.Component {
     onLongPressMap = info => {
       if (!this.props.selectedMarker) {
         let data = info.nativeEvent.coordinate
-        // console.log(data)
-        // console.log(this.state.userLocation)
         let userLocation = this.props.userLocation
         let dist = math.sqrt(math.square(data.latitude - userLocation.latitude)+math.square(data.longitude - userLocation.longitude));
         if (dist < 0.0003) {
@@ -232,7 +230,6 @@ export default class Map extends React.Component {
                     <MapView.Marker 
                     {...marker} 
                     // on press should toggle the voter tab
-                    // onPress = {() => this.toggleTab(marker.address,marker.geohash)} 
                     onPress = {() => this.props.toggleTab(marker.address,marker.geohash)} 
                     >
                         <View style={{...styles.marker,borderColor:marker.borderColor}} >
@@ -252,7 +249,6 @@ export default class Map extends React.Component {
                 {...marker} 
                 // on press should toggle the voter tab. This should only be relevant if pressing
                 // to close the tab
-                // onPress =  {() => this.toggleTab(marker.address)} 
                 onPress =  {() => this.props.toggleTab(marker.address)} 
                 >
                     <View style={styles.ghostMarker} >

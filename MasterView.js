@@ -48,8 +48,6 @@ export default class MasterView extends React.Component {
         leaderBoard_: [],
         data_: [],
         showVotingButtons: true,
-        //0.00000898311175 lat to 1 m
-        //0.000000024953213 lng to 1 m
         selectedMarker:null,
         selectedGeohash:null,
         markerBorderColor: "transparent",
@@ -83,8 +81,6 @@ export default class MasterView extends React.Component {
       this.geoHashGridHandler = this.geoHashGridHandler.bind(this);
 
       this._addListener = this._addListener.bind(this);
-      // this.onUserLocationChange = this.onUserLocationChange.bind(this);
-      // this.onPressMap = this.onPressMap.bind(this);
       this.componentDidMount = this.componentDidMount.bind(this);
       this.closePopUp = this.closePopUp.bind(this);
       this.addLit = this.addLit.bind(this);
@@ -463,18 +459,6 @@ export default class MasterView extends React.Component {
       // selectedMarker. If not, this should change the selected address to the one
       // youre clickig on now.
       else if(this.state.selectedMarker !== markerAddress) {
-        // Markers overhaul
-        // console.log(this.state.geoHashGrid[geohash][markerAddress].latitude)
-        // console.log(this.state.userLocation.userAddressDictionary)
-        // if ((this.state.geoHashGrid[geohash][markerAddress].latitude < this.state.userLocation.latitude + 0.05694933525
-        //       && this.state.geoHashGrid[geohash][markerAddress].latitude > this.state.userLocation.latitude - 0.05694933525
-        //       && this.state.geoHashGrid[geohash][markerAddress].latitude < this.state.userLocation.longitude + 0.0100748596382
-        //       && this.state.geoHashGrid[geohash][markerAddress].latitude > this.state.userLocation.longitude - 0.0100748596382)
-        //       || (markerAddress == this.state.userLocation.address)) {
-        //   console.log(true);
-        // } else {
-        //   console.log(false);
-        // }
   
         if(markerAddress in this.state.userLocation.userAddressDictionary) {
           console.log("YES")
@@ -527,7 +511,7 @@ export default class MasterView extends React.Component {
       
     }
   
-    // hides the vodting tab and switches the state back to false. Also clears out ghostMarker
+    // hides the voting tab and switches the state back to false. Also clears out ghostMarker
     // if necessary.
     hideTab() {
       Animated.timing(this.state.animatedTab, {
