@@ -20,7 +20,7 @@ export default class Leaderboard extends React.Component {
                 {this.props.renderImage(item.count)}
             <Text style = {styles.leaderboardText}> {item.number} {item.street}</Text>
             <View style = {styles.LBinnerBox}>
-              <Text style = {{color:'white',fontSize:20}}>{item.count}</Text>
+              <Text style = {{color:'black',fontSize:20}}>{item.count}</Text>
             </View>
           </View>
         )
