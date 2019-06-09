@@ -6,6 +6,8 @@ import { Defs, LinearGradient, Stop, G} from 'react-native-svg'
 import * as scale from 'd3-scale';
 import * as d3 from 'd3-time';
 import dateFns from 'date-fns';
+//this is a test comment
+
 
 const Gradient = () => (
     <G>
