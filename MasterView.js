@@ -335,48 +335,44 @@ export default class MasterView extends React.Component {
                 vote = {value: total, time: minute};
                 data.push(vote);
               } else if (minute.getTime() == time.getTime()) {
-                console.log(1);
-                console.log(data[data.length-1].value)
                 data[data.length-1].value = total;
               } else {
-                console.log(2);
                 minute = time;
                 vote = {value: total, time: minute};
                 data.push(vote);
               }
-              // console.log("minutes ", d3.timeMinute(vote.time))
-              console.log(data);
             })
             if (minute != d3.timeMinute(currentTime)) {
               vote = {value: total, time: d3.timeMinute(currentTime)};
               data.push(vote);
             }
-            this.setState({data_: data});
+            
+            this.setState({data_: data},()=>{
+              Animated.spring(this.state.animatedTop, {
+              toValue: 50,
+              friction: 100,
+              duration: 300,
+            }).start();
+
+            Animated.spring(this.state.animatedLeaderboardButton, {
+              toValue: -50,
+              friction: 100,
+              duration: 300
+            }).start();
+          
+          });
           })
-        
-        Animated.timing(this.state.animatedTop, {
-          toValue: 50,
-          friction: 100,
-          duration: 300
-        }).start();
-  
-        Animated.timing(this.state.animatedLeaderboardButton, {
-          toValue: -50,
-          friction: 100,
-          duration: 300
-        }).start();
   
       } else {
         let emptyData = [];
         this.setState({data_: emptyData})
-        Animated.timing(this.state.animatedTop, {
+        Animated.spring(this.state.animatedTop, {
           toValue: 1000,
           friction: 100,
           duration: 200
         }).start();
   
-  
-        Animated.timing(this.state.animatedLeaderboardButton, {
+        Animated.spring(this.state.animatedLeaderboardButton, {
           toValue: -3,
           friction: 100,
           duration: 200
@@ -774,21 +770,21 @@ export default class MasterView extends React.Component {
       } else if (markerCost < 50) {
         return <Image
          style = {styles.emojiIcon}
-         source={require('./assets/logsfire.png')}
+         source={require('./assets/fire.png')}
        />;
       } else if (markerCost < 100) {
         return <Image
-         style = {styles.emojiIcon}
-         source={require('./assets/logsfire2.png')}
+         style = {{...styles.emojiIcon,borderColor:'crimson'}}
+         source={require('./assets/fire.png')}
        />;
       } else {
         return <Image
-         style = {styles.emojiIcon}
-         source={require('./assets/forestfire.png')}
+         style = {{...styles.emojiIcon,borderColor:'dodgerblue'}}
+         source={require('./assets/fire.png')}
        />;
       } 
    }
-  
+
     // renders the onscreen info
     render() {
       return (

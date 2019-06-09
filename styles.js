@@ -84,9 +84,9 @@ export default StyleSheet.create({
       },
     
     testtext: {
-        color: "white",
+        color: "black",
         fontWeight: "bold",
-        fontSize: 10,
+        fontSize: 16,
         position: 'absolute',
         // top:'40%'
       },
@@ -129,7 +129,7 @@ export default StyleSheet.create({
         borderColor:'black',
         borderWidth: 1,
         borderRadius: 15,
-        backgroundColor:'lightsteelblue'
+        backgroundColor:'lightcoral'
       },
     
     flatListContainer: {
@@ -140,14 +140,15 @@ export default StyleSheet.create({
         height: 40,
         width: 40,
         borderWidth: 2,
-        borderColor: "#e8b923",
+        borderColor: "black",
         flexDirection:'row',
         justifyContent: 'center',
         alignItems: 'center',
         position: 'absolute',
         right:4,
         borderRadius: 30,
-        backgroundColor:"#e8b923",
+        // backgroundColor:"#e8b923",
+        backgroundColor:"white",
       },
     leaderboardText: {
         fontSize: 20,
@@ -170,6 +171,11 @@ export default StyleSheet.create({
       borderRadius: 20,
       borderWidth: 2,
       borderColor: 'black',
-      backgroundColor:'white'
+      backgroundColor:'whitesmoke'
     },
+    // markerIcon: {
+    //   borderRadius: 30,
+    //   borderWidth: 2,
+    //   backgroundColor:'b'
+    // }
 });
