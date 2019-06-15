@@ -30,9 +30,6 @@ export default class Map extends React.Component {
     addNewLocation = async(latitude_, longitude_) => {
       console.log("I made it to addNewLocation!");
       var ghostGeohash = g.encode_int(latitude_,longitude_,26)
-      var address_ = null;
-      var results = null;
-      var coords = null;
       var city = null;
       var street = null;
       var number = null;
@@ -109,6 +106,8 @@ export default class Map extends React.Component {
                     latitude: coords.lat,
                     longitude: coords.lng
                   },
+                  address: address_,
+                  geohash: ghostGeohash,
                   city: city,
                   street: street,
                   number: number,
@@ -249,7 +248,7 @@ export default class Map extends React.Component {
                 {...marker} 
                 // on press should toggle the voter tab. This should only be relevant if pressing
                 // to close the tab
-                onPress =  {() => this.props.toggleTab(marker.address)} 
+                onPress =  {() => this.props.toggleTab(marker.address,marker.geohash)} 
                 >
                     <View style={styles.ghostMarker} >
                     <Image
