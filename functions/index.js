@@ -1,6 +1,9 @@
 const functions = require('firebase-functions');
 const admin = require('firebase-admin')
 const math = require('mathjs')
+const dateFns = require('date-fns')
+const d3 = require('d3-time')
+
 admin.initializeApp(functions.config().firebase)
 
 // // Create and Deploy Your First Cloud Functions
@@ -43,27 +46,6 @@ exports.DBupdate = functions.https.onRequest((req, res) => {
     })
 });
 
-exports.replenishCounts = functions.https.onRequest((req, res) => {
-    let stuff = [];
-    ref.collection('locations').get().then(snapshot => {
-        snapshot.forEach(doc => {
-            let newelement = {
-                "id": doc.id,
-                "count": math.ceil(doc.data().count+math.floor(math.random()*100)+1),
-                "timeCreated": doc.data().timeCreated
-            }
-            stuff = stuff.concat(newelement);
-            ref.collection('locations').doc(newelement.id).update({
-                count: newelement.count
-            });
-        });
-        res.send(stuff)
-        return "";
-    }).catch(reason => {
-        res.send(reason)
-    })
-});
-
 exports.updatedVote = functions.firestore.document('locations/{address}/votes/{voterID}')
     .onWrite((change,context) => {
         console.log('updateVote')
@@ -91,6 +73,12 @@ exports.updatedVote = functions.firestore.document('locations/{address}/votes/{v
                 return transaction.get(locationRef).then(locationDoc => {
                     //compute new count
                     let currentCount = locationDoc.data().count - oldVote + newVote;
+
+                    let currentTime = new Date();
+                    ref.collection('locations').doc(context.params.address).collection('counts').doc(dateFns.format(d3.timeMinute(currentTime), "hh:mm A")).set({
+                        count: currentCount
+                    })
+
                     //compute upVotes if the new vote is an up vote
                     let upVotes_ = locationDoc.data().upVotes;
 

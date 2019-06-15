@@ -28,7 +28,6 @@ export default class Map extends React.Component {
     };
 
     addNewLocation = async(latitude_, longitude_) => {
-      console.log("I made it to addNewLocation!");
       var ghostGeohash = g.encode_int(latitude_,longitude_,26)
       var address_ = null;
       var results = null;
@@ -102,7 +101,6 @@ export default class Map extends React.Component {
             if (this.props.geoHashGrid[ghostGeohash] == undefined || !Object.keys(this.props.geoHashGrid[ghostGeohash]).includes(address_)) {
               // creates the new ghost marker with the information of this location.
               // console.log('here')
-              console.log("I am making a ghost marker!");
               let newGhostMarker = [];
               newGhostMarker.push({
                   coordinate: {
@@ -134,11 +132,9 @@ export default class Map extends React.Component {
         let userLocation = this.props.userLocation
         let dist = math.sqrt(math.square(data.latitude - userLocation.latitude)+math.square(data.longitude - userLocation.longitude));
         if (dist < 0.0003) {
-          console.log("Hey I am in onLongPressMap!")
           this.addNewLocation(data.latitude, data.longitude); 
           
         }
-        console.log(this.props.geoHashGrid);
       }
     }
 
@@ -171,12 +167,9 @@ export default class Map extends React.Component {
       this.map.animateToRegion(initialRegion, 1);
 
       this.props.mapRegionHandler(initialRegion)
-      console.log("This ran!");
-      console.log(this.props.geoHashGrid);
     };
 
      toggleTabMapPress = pressinfo => {
-      console.log("I am pressed hoaldasdasdsad");
       if(pressinfo.nativeEvent.action !== "marker-press") {
         this.props.hideTab();
       }

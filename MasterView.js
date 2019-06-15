@@ -12,6 +12,7 @@ import * as firebase from 'firebase';
 import 'firebase/firestore';
 import styles from './styles.js';
 import * as d3 from 'd3-time';
+import dateFns from 'date-fns';
 
 let id = 0;
 
@@ -155,7 +156,6 @@ export default class MasterView extends React.Component {
               latitude,
               longitude
             };
-            console.log("coordinate ", newCoordinate);
             // sets new userLocation based on previously created coordinate object
             this.setState({userLocation: newCoordinate});
           })
@@ -250,42 +250,36 @@ export default class MasterView extends React.Component {
     }
 
     showVotingButtonsHandler(someValue) {
-        console.log("I made it to showVotingButtonsHandler");
         this.setState({
             showVotingButtons: someValue
         })
     }
 
     selectedGeohashHandler(someValue) {
-      console.log("I made it to selectedGeohashHandler");
         this.setState({
             selectedGeohash: someValue
         })
     }
 
     selectedMarkerHandler(someValue) {
-      console.log("I made it to selectedMarkerHandler");
         this.setState({
             selectedMarker: someValue
         })
     }
 
     onLongPressHandler(someValue) {
-      console.log("I made it to onLongPressHandler");
         this.setState({
             onLongPress: someValue
         })
     }
 
     ghostMarkerHandler(someValue) {
-      console.log("I made it to ghostMarkerHandler");
         this.setState({
           ghostMarker: someValue
         })
     }
 
     tabValHandler() {
-      console.log("I made it to tabValHandler");
     Animated.timing(this.state.animatedTab, {
         toValue: 370,
         friction: 100,
@@ -297,7 +291,6 @@ export default class MasterView extends React.Component {
     }
 
     mapRegionHandler(someValue) {
-      console.log("I made it to mapRegionHandler");
       this.setState({
         mapRegion: someValue
       })
@@ -320,59 +313,42 @@ export default class MasterView extends React.Component {
     toggleInfoPage (markerAddress) {
       // if infoPage is currently listed as false, open the page. Otherwise close it.
       if (!this.state.infoPage) {
+        this.setState({infoPage: true});
+        Animated.timing(this.state.animatedTop, {
+          toValue: 50,
+          friction: 100,
+          duration: 300,
+        }).start();
+
+        Animated.timing(this.state.animatedLeaderboardButton, {
+          toValue: -50,
+          friction: 100,
+          duration: 300
+        }).start();
+      
         let data = [];
-        let total = 0;
-        let minute = null;
-        let time = null;
-        let currentTime = new Date();
-        db.collection('locations').doc(markerAddress).collection('votes').orderBy('voteTime')
+        let lastCount = 0;
+        db.collection("locations").doc(markerAddress).collection('counts')
           .get().then( snapshot => {
             snapshot.forEach( doc => {
-              total = total + doc.data().vote;
-              time = d3.timeMinute(doc.data().voteTime.toDate());
-              if (minute == null) {
-                minute = time;
-                vote = {value: total, time: minute};
-                data.push(vote);
-              } else if (minute.getTime() == time.getTime()) {
-                data[data.length-1].value = total;
-              } else {
-                minute = time;
-                vote = {value: total, time: minute};
-                data.push(vote);
-              }
-            })
-            if (minute != d3.timeMinute(currentTime)) {
-              vote = {value: total, time: d3.timeMinute(currentTime)};
+              vote = {value:doc.data().count, time:doc.id}
               data.push(vote);
-            }
+              lastCount = doc.data().count;
+            })
             
-            this.setState({data_: data},()=>{
-              Animated.spring(this.state.animatedTop, {
-              toValue: 50,
-              friction: 100,
-              duration: 300,
-            }).start();
-
-            Animated.spring(this.state.animatedLeaderboardButton, {
-              toValue: -50,
-              friction: 100,
-              duration: 300
-            }).start();
-          
-          });
+            let currentTime = new Date();
+            vote = {value:lastCount, time:dateFns.format(d3.timeMinute(currentTime), "hh:mm A")}
+            data.push(vote);
+            this.setState({data_: data});
           })
-  
       } else {
-        let emptyData = [];
-        this.setState({data_: emptyData})
-        Animated.spring(this.state.animatedTop, {
+        Animated.timing(this.state.animatedTop, {
           toValue: 1000,
           friction: 100,
           duration: 200
-        }).start();
+        }).start(()=>this.setState({infoPage: false}));
   
-        Animated.spring(this.state.animatedLeaderboardButton, {
+        Animated.timing(this.state.animatedLeaderboardButton, {
           toValue: -3,
           friction: 100,
           duration: 200
@@ -390,14 +366,11 @@ export default class MasterView extends React.Component {
         this.setState({infoPageGeohash: this.state.selectedGeohash});
         this.hideTab();
       }
-      // switches the infoPage state to on or off
-      this.setState(previousState => (
-        { infoPage: !previousState.infoPage }
-      ))
     }
   
     toggleLeaderBoard() {
       if (!this.state.leaderBoard) {
+        this.setState({leaderBoard: true});
         var leaderBoard_ = [];
         db.collection('locations').where("city", "==", this.state.userLocation.userCity).orderBy('count', 'desc').limit(25).get()
           .then( snapshot => {
@@ -417,7 +390,6 @@ export default class MasterView extends React.Component {
             console.log(error)
           })
           
-        console.log(this.state.leaderBoard_);
         Animated.timing(this.state.animatedLeaderboard, {
           toValue: 50,
           friction: 100,
@@ -439,12 +411,11 @@ export default class MasterView extends React.Component {
         }
   
       } else {
-  
         Animated.timing(this.state.animatedLeaderboard, {
           toValue: 1000,
           friction: 100,
           duration: 200
-        }).start();
+        }).start(()=> this.setState({leaderBoard: false}));
   
         Animated.timing(this.state.animatedLeaderboardButton, {
           toValue: -3,
@@ -460,10 +431,6 @@ export default class MasterView extends React.Component {
           }).start();
         }
       }
-      // switches the infoPage state to on or off
-      this.setState(previousState => (
-        { leaderBoard: !previousState.leaderBoard }
-      ))
     }
   
     toggleTab(markerAddress,geohash) {
@@ -482,10 +449,8 @@ export default class MasterView extends React.Component {
       else if(this.state.selectedMarker !== markerAddress) {
   
         if(markerAddress in this.state.userLocation.userAddressDictionary) {
-          console.log("YES")
           this.setState({showVotingButtons: true})
         } else {
-          console.log("NO")
           this.setState({showVotingButtons: true})
         }
         // Markers overhaul
@@ -494,15 +459,12 @@ export default class MasterView extends React.Component {
         // }
   
         if (!this.state.tabVal) {
+          this.setState({tabVal:true})
           Animated.timing(this.state.animatedTab, {
             toValue: 370,
             friction: 100,
             duration: 200
           }).start();
-          this.setState(previousState => (
-            { tabVal: !previousState.tabVal 
-            }
-          ))
         }
         this.setState({selectedGeohash: geohash});
         this.setState({selectedMarker: markerAddress});
@@ -512,9 +474,6 @@ export default class MasterView extends React.Component {
         }
         this.state.geoHashGrid[geohash][markerAddress].borderColor = "#e8b923"
   
-        console.log(this.state.geoHashGrid[geohash][this.state.selectedMarker])
-        console.log(this.state.selectedMarker);
-        console.log(markerAddress)
         // if (this.state.geoHashGrid[geohash][this.state.selectedMarker]) {
         //   this.state.geoHashGrid[geohash][this.state.selectedMarker].borderColor = "#e8b923"
         // }
@@ -535,14 +494,12 @@ export default class MasterView extends React.Component {
     // hides the voting tab and switches the state back to false. Also clears out ghostMarker
     // if necessary.
     hideTab() {
+      this.setState({tabVal:false});
       Animated.timing(this.state.animatedTab, {
         toValue: 1000,
         friction: 200,
         duration: 500
       }).start();
-      this.setState(previousState => (
-        { tabVal: !previousState.tabVal }
-      ))
       // Markers overhaul
       if (this.state.geoHashGrid[this.state.selectedGeohash] != undefined) {
         if (this.state.geoHashGrid[this.state.selectedGeohash][this.state.selectedMarker] != undefined) {
@@ -569,7 +526,6 @@ export default class MasterView extends React.Component {
     addLit(address,geohash) {
       // recieve the ID from the user
       // var uniqueId = Constants.installationId;
-      console.log("HelloWorld")
       var uniqueId = Math.random().toString();
       // collect timestamp.
       var time = new Date();
@@ -808,13 +764,13 @@ export default class MasterView extends React.Component {
                  renderImage={this.renderImage}
             />
   
-            <AnimatedInfoPage style = {{top:this.state.animatedTop}}
+            {this.state.infoPage && <AnimatedInfoPage style = {{top:this.state.animatedTop}}
                               toggleInfoPage={this.toggleInfoPage}
                               infoPageMarker={this.state.infoPageMarker}
                               data_={this.state.data_}
                               returnUpVotes={this.returnUpVotes(this.state.infoPageMarker,this.state.infoPageGeohash)}
                               returnDownVotes={this.returnDownVotes(this.state.infoPageMarker,this.state.infoPageGeohash)}
-            />
+            />}
   
             <AnimatedSideTab style = {{left:this.state.animatedTab}} 
                              clickInfo = {()=>this.toggleInfoPage(this.state.selectedMarker)} 
@@ -822,11 +778,11 @@ export default class MasterView extends React.Component {
                              clickShit={()=>this.deleteLit(this.state.selectedMarker,this.state.selectedGeohash)}
             />
   
-            <AnimatedLeaderboard style = {{top:this.state.animatedLeaderboard}} 
+            {this.state.leaderBoard && <AnimatedLeaderboard style = {{top:this.state.animatedLeaderboard}} 
                                  toggleLeaderBoard= {this.toggleLeaderBoard}
                                  leaderBoard_={this.state.leaderBoard_}
                                  renderImage={this.renderImage}
-            />
+            />}
   
             <AnimatedLeaderboardTab style = {{right:this.state.animatedLeaderboardButton}} 
                                     toggleLeaderBoard={this.toggleLeaderBoard}
