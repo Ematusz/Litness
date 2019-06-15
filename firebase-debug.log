@@ -1,0 +1,14 @@
+[debug] [2019-06-13T14:55:38.178Z] ----------------------------------------------------------------------
+[debug] [2019-06-13T14:55:38.180Z] Command:       /Users/vinodraman/.nvm/versions/node/v11.8.0/bin/node /Users/vinodraman/.nvm/versions/node/v11.8.0/bin/firebase deploy --only functions
+[debug] [2019-06-13T14:55:38.181Z] CLI Version:   7.0.0
+[debug] [2019-06-13T14:55:38.181Z] Platform:      darwin
+[debug] [2019-06-13T14:55:38.181Z] Node Version:  v11.8.0
+[debug] [2019-06-13T14:55:38.182Z] Time:          Thu Jun 13 2019 07:55:38 GMT-0700 (Pacific Daylight Time)
+[debug] [2019-06-13T14:55:38.182Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2019-06-13T14:55:38.194Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2019-06-13T14:55:38.195Z] > authorizing via signed-in user
+[debug] [2019-06-13T14:55:38.195Z] [iam] checking project testing-617da for permissions ["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]
+[debug] [2019-06-13T14:55:38.197Z] >>> HTTP REQUEST POST https://cloudresourcemanager.googleapis.com/v1/projects/testing-617da:testIamPermissions  
+
+[debug] [2019-06-13T14:55:39.010Z] <<< HTTP RESPONSE 200

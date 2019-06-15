@@ -173,6 +173,12 @@ export default StyleSheet.create({
       borderColor: 'black',
       backgroundColor:'whitesmoke'
     },
+    container: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+      backgroundColor: "#f5fcff"
+    },
     // markerIcon: {
     //   borderRadius: 30,
     //   borderWidth: 2,
