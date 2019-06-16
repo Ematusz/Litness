@@ -85,7 +85,7 @@ export default class MasterView extends React.Component {
       this._addListener = this._addListener.bind(this);
       this.componentDidMount = this.componentDidMount.bind(this);
       this.closePopUp = this.closePopUp.bind(this);
-      this.addLit = this.addLit.bind(this);
+      this.changeLit = this.changeLit.bind(this);
       this.toggleInfoPage = this.toggleInfoPage.bind(this);
       this.toggleLeaderBoard = this.toggleLeaderBoard.bind(this);
       this.toggleTab = this.toggleTab.bind(this);
@@ -96,12 +96,7 @@ export default class MasterView extends React.Component {
     }
   
     componentDidMount() {
-      // currently this watches the users position. 
-      // It updates userLocation when the user moves significantly far away.
-      // The intention is to keep userLocation relatively up to date so they always know
-      // which markers are accessible. This function should also update the votableMarkers
-      // prop which will be a vector of markers that can be voted on from where they are
-      // I was thinking we could mark these with a different color highlight or something.
+       // updates the userLocation prop when the user moves a significant amount
       this.watchID = navigator.geolocation.watchPosition(
         position => {
           const { latitude, longitude } = position.coords;
@@ -116,27 +111,23 @@ export default class MasterView extends React.Component {
             var i = 0;
             var minDist = -1;
             var userAddressDictionary = {}
-            // this loop checks to see which of the possible results returned from the
-            // fetch is closest to the latitude and longitude click that are actually passed
-            // in. This used to just take the first result, however, sometimes it is not sorted
-            // in a fashion of closest so this was causing problems particularly when adding
-            // markers to building with multiple sub buildings attached. For example mason,
-            // Angel, or Tisch halls.
+
+            // creates a dictionary of all possible locations returned by the fetch
             for (indx = 0; indx < len; indx++) {
               if (!isNaN(parseInt(results[indx].formatted_address[0]))) {
                 userAddressDictionary[results[indx].formatted_address] = true;
               }
-              var dist = math.sqrt(math.square(latitude-results[indx].geometry.location.lat)+math.square(longitude-results[indx].geometry.location.lng));
-              if (minDist == -1) {
-                minDist = dist;
-              }
-              else if (dist < minDist) {
-                minDist = dist;
-                i = indx;
-              }
+              // var dist = math.sqrt(math.square(latitude-results[indx].geometry.location.lat)+math.square(longitude-results[indx].geometry.location.lng));
+              // if (minDist == -1) {
+              //   minDist = dist;
+              // }
+              // else if (dist < minDist) {
+              //   minDist = dist;
+              //   i = indx;
+              // }
             }
             var finalResult = results[i]
-            var userAddress = finalResult.formatted_address;
+            // var userAddress = finalResult.formatted_address;
             len = finalResult.address_components.length;
             var userCity = null;
             var l = null;
@@ -151,7 +142,7 @@ export default class MasterView extends React.Component {
             // saves address, latitude, and longitude in a coordinate object
             const newCoordinate = {
               userCity,
-              userAddress,
+              // userAddress,
               userAddressDictionary,
               latitude,
               longitude
@@ -163,8 +154,6 @@ export default class MasterView extends React.Component {
       )
   }
     componentWillMount() {
-      // TODO: The getlocationAsync() and reverselocationAsync() may be unuseful now. Im leaving
-      // them in because you wrote them and I want a second opinon
       this._getDeviceInfoAsync();
     }
 
@@ -175,8 +164,8 @@ export default class MasterView extends React.Component {
       .onSnapshot(snapshot => {
         let changes = snapshot.docChanges();
         changes.forEach(change => {
-          // if a new document is added to the listener. We have to create a location and
-          // add it to the markers dictionary.
+
+          // Create a new location and add it to the markers dictionary when a new document is added to the listener.
           if(change.type == 'added'){
             let newGrid = {...this.state.geoHashGrid};
             if (change.doc.data().geohash[0] in newGrid) {
@@ -215,9 +204,9 @@ export default class MasterView extends React.Component {
               this.setState({geoHashGrid: newGrid})
             }
           } 
-          // if a document in the listener has been modified, it will just update the data in the
-          // markers_ dictionary.
+
           else if(change.type == 'modified'){
+            // update the data in the markers dictionary if a document in the listener has been modified.
             let newGrid = {...this.state.geoHashGrid};
             // this if statement may be redundant
             let newDictionary = newGrid[change.doc.data().geohash[0]];
@@ -438,9 +427,8 @@ export default class MasterView extends React.Component {
       // to see if youre working with a ghost marker. If the marker is a ghost marker
       // and you click it again, it will just hide the tab without adding a new marker 
       // the array.
-      // Markers overhaul
-      // this.state.geoHashGrid[geohash][markerAddress].borderColor = "#e8b923"
-      if(!Object.keys(this.state.geoHashGrid[geohash]).includes(markerAddress)) {
+
+      if(this.state.geoHashGrid[geohash] === undefined || !Object.keys(this.state.geoHashGrid[geohash]).includes(markerAddress)) {
         this.hideTab();
       }
       // checks to see if the marker you clicked on is the one currently stored as
@@ -453,10 +441,6 @@ export default class MasterView extends React.Component {
         } else {
           this.setState({showVotingButtons: true})
         }
-        // Markers overhaul
-        // if (this.state.geoHashGrid[geohash][this.state.selectedMarker]) {
-        //   this.state.geoHashGrid[geohash][this.state.selectedMarker].borderColor = "transparent"
-        // }
   
         if (!this.state.tabVal) {
           this.setState({tabVal:true})
@@ -483,7 +467,6 @@ export default class MasterView extends React.Component {
       // if the marker you're clicking on is neither a ghost marker, nor a new marker, it must
       // be the same one so we just close it.
       else{
-        // Markers overhaul
         this.state.geoHashGrid[geohash][markerAddress].borderColor = "transparent"
         this.hideTab();
       }
@@ -494,12 +477,14 @@ export default class MasterView extends React.Component {
     // hides the voting tab and switches the state back to false. Also clears out ghostMarker
     // if necessary.
     hideTab() {
-      this.setState({tabVal:false});
-      Animated.timing(this.state.animatedTab, {
-        toValue: 1000,
-        friction: 200,
-        duration: 500
-      }).start();
+      if (this.state.tabVal) {
+        this.setState({tabVal:false});
+        Animated.timing(this.state.animatedTab, {
+          toValue: 1000,
+          friction: 200,
+          duration: 500
+        }).start();
+      }
       // Markers overhaul
       if (this.state.geoHashGrid[this.state.selectedGeohash] != undefined) {
         if (this.state.geoHashGrid[this.state.selectedGeohash][this.state.selectedMarker] != undefined) {
@@ -523,7 +508,7 @@ export default class MasterView extends React.Component {
   
     //UPDATED THIS TO WORK WITH DATABASE
     // Adds one vote for lit at the current marker.
-    addLit(address,geohash) {
+    changeLit(address,geohash,vote) {
       // recieve the ID from the user
       // var uniqueId = Constants.installationId;
       var uniqueId = Math.random().toString();
@@ -568,7 +553,7 @@ export default class MasterView extends React.Component {
               // add a new vote to the votes on this document with the users uniqueID.
               ref.collection('votes').doc(uniqueId).set({
                 voteTime: time,
-                vote: 1,
+                vote: vote,
               })
             }
           })
@@ -587,8 +572,8 @@ export default class MasterView extends React.Component {
           if (voteDoc.exists) {
             // if the user had not previously up voted this location then change their vote to
             // an upVote.
-            if (voteDoc.data().vote != 1) {
-              var newVote = 1;
+            if (voteDoc.data().vote != vote) {
+              var newVote = vote;
               ref.set({
                 voteTime: time,
                 vote: newVote,
@@ -600,78 +585,13 @@ export default class MasterView extends React.Component {
           else {
             db.collection('locations').doc(address).collection('votes').doc(uniqueId).set({
               voteTime: time,
-              vote: 1,
+              vote: vote,
             })
           }
         })
       }
-    
     }
   
-    //UPDATED THIS TO WORK WITH DATBASE
-    // TODO: This is very similar to add lit however its for deleting a lit from the db. See 
-    // above comments, however, this just adds downvotes instead. This could probably
-    // be condensed into one function actually 
-    deleteLit(address, geohash) {
-      // var uniqueId = Constants.installationId;
-      var uniqueId = Math.random().toString();
-      var time = new Date();
-      if (this.state.geoHashGrid[geohash] == undefined || !Object.keys(this.state.geoHashGrid[geohash]).includes(address)) {
-        var latitude = this.state.ghostMarker[0].coordinate.latitude;
-        var longitude = this.state.ghostMarker[0].coordinate.longitude;
-        var city = this.state.ghostMarker[0].city;
-        var street = this.state.ghostMarker[0].street;
-        var number = this.state.ghostMarker[0].number;
-        hashes = [g.encode_int(latitude,longitude,26)];
-        hashNeighbors = g.neighbors_int(hashes[0],26);
-        var ref = db.collection('locations').doc(address);
-        ref.get()
-          .then( doc => {
-            if (!doc.exists) {
-              ref.set({
-                count: 0,
-                street: street,
-                number: number,
-                upVotes: 0,
-                downVotes: 0,
-                percentVotesLastThirty: 0,
-                percentVotesLastHour:0,
-                timeCreated: time,
-                latitude:  latitude,
-                longitude: longitude,
-                geohash: hashes.concat(hashNeighbors),
-                imagePath: './assets/logs.png',
-                city: city
-              })
-              ref.collection('votes').doc(uniqueId).set({
-                voteTime: time,
-                vote: -1,
-              })
-            }
-          })
-        this.hideTab();
-      } else {
-        var ref = db.collection('locations').doc(address).collection('votes').doc(uniqueId);
-        return ref.get()
-          .then( voteDoc => {
-            if (voteDoc.exists) {
-              if (voteDoc.data().vote !== -1) {
-                var newVote = -1;
-                ref.set({
-                  voteTime: time,
-                  vote: newVote
-                })
-              }
-            }
-            else {
-              db.collection('locations').doc(address).collection('votes').doc(uniqueId).set({
-                voteTime: time,
-                vote: -1,
-              })
-            }
-          })
-        }
-    }
     // This is being used to get upVotes for the info page, this is because some of this
     // does not have a default value so it needs a function to call it.
     returnUpVotes(address,geohash) {
@@ -774,8 +694,8 @@ export default class MasterView extends React.Component {
   
             <AnimatedSideTab style = {{left:this.state.animatedTab}} 
                              clickInfo = {()=>this.toggleInfoPage(this.state.selectedMarker)} 
-                             clickFire={()=>this.addLit(this.state.selectedMarker,this.state.selectedGeohash)}
-                             clickShit={()=>this.deleteLit(this.state.selectedMarker,this.state.selectedGeohash)}
+                             clickFire={()=>this.changeLit(this.state.selectedMarker,this.state.selectedGeohash,1)}
+                             clickShit={()=>this.changeLit(this.state.selectedMarker,this.state.selectedGeohash,-1)}
             />
   
             {this.state.leaderBoard && <AnimatedLeaderboard style = {{top:this.state.animatedLeaderboard}} 
