@@ -74,8 +74,8 @@ exports.updatedVote = functions.firestore.document('locations/{address}/votes/{v
                     //compute new count
                     let currentCount = locationDoc.data().count - oldVote + newVote;
 
-                    let currentTime = new Date();
-                    ref.collection('locations').doc(context.params.address).collection('counts').doc(dateFns.format(d3.timeMinute(currentTime), "hh:mm A")).set({
+                    let currentTime = new Date().getTime().toString()
+                    ref.collection('locations').doc(context.params.address).collection('counts').doc(currentTime).set({
                         count: currentCount
                     })
 

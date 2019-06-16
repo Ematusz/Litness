@@ -316,7 +316,6 @@ export default class MasterView extends React.Component {
         }).start();
       
         let data = [];
-        let lastCount = 0;
         db.collection("locations").doc(markerAddress).collection('counts')
           .get().then( snapshot => {
             snapshot.forEach( doc => {
@@ -324,10 +323,6 @@ export default class MasterView extends React.Component {
               data.push(vote);
               lastCount = doc.data().count;
             })
-            
-            let currentTime = new Date();
-            vote = {value:lastCount, time:dateFns.format(d3.timeMinute(currentTime), "hh:mm A")}
-            data.push(vote);
             this.setState({data_: data});
           })
       } else {
@@ -690,6 +685,7 @@ export default class MasterView extends React.Component {
                               data_={this.state.data_}
                               returnUpVotes={this.returnUpVotes(this.state.infoPageMarker,this.state.infoPageGeohash)}
                               returnDownVotes={this.returnDownVotes(this.state.infoPageMarker,this.state.infoPageGeohash)}
+                              markerAddress = {this.state.infoPageMarker}
             />}
   
             <AnimatedSideTab style = {{left:this.state.animatedTab}} 
