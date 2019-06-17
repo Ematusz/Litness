@@ -40,12 +40,8 @@ export default class Map extends React.Component {
             var len = JSON.parse(JSON.stringify(responseJson)).results.length
             var i = 0;
             var minDist = -1;
-            // this loop checks to see which of the possible results returned from the
-            // fetch is closest to the latitude and longitude click that are actually passed
-            // in. This used to just take the first result, however, sometimes it is not sorted
-            // in a fashion of closest so this was causing problems particularly when adding
-            // markers to building with multiple sub buildings attached. For example mason,
-            // Angel, or Tisch halls.
+
+            // Chooses the fetched result that is closest to where the user actually clicked the map
             for (indx = 0; indx < len; indx++) {
               var dist = math.sqrt(math.square(latitude_-JSON.parse(JSON.stringify(responseJson)).results[indx].geometry.location.lat)+math.square(longitude_-JSON.parse(JSON.stringify(responseJson)).results[indx].geometry.location.lng));
               if (minDist == -1) {
@@ -56,8 +52,6 @@ export default class Map extends React.Component {
                 i = indx;
               }
             }
-            // saves the data of the json result that is closest to the latitude and longitude 
-            // passed into the funciton.
             let results = JSON.parse(JSON.stringify(responseJson)).results[i]
             let address_ = results.formatted_address;
             let coords = results.geometry.location;
@@ -77,8 +71,7 @@ export default class Map extends React.Component {
                 }
               }
             }
-            // console.log(city);
-            // console.log(JSON.parse(JSON.stringify(responseJson)).results[i]);
+
             // checks to see if the users last known location is close enough to the hub to vote
             // on it
             let userLocation = this.props.userLocation;
@@ -92,12 +85,9 @@ export default class Map extends React.Component {
               // console.log(false);
             }
   
-            // checks to make sure that the new location is not already part of the markers
-            // dictionary. This would mean that the marker is already in the database. May need 
-            // to query the actual database though instead... Look into this.
+            // Checks that this location has not already been added as a hub
             if (this.props.geoHashGrid[ghostGeohash] == undefined || !Object.keys(this.props.geoHashGrid[ghostGeohash]).includes(address_)) {
               // creates the new ghost marker with the information of this location.
-              // console.log('here')
               let newGhostMarker = [];
               newGhostMarker.push({
                   coordinate: {
@@ -239,8 +229,7 @@ export default class Map extends React.Component {
                 return (
                 <MapView.Marker 
                 {...marker} 
-                // on press should toggle the voter tab. This should only be relevant if pressing
-                // to close the tab
+                // on press should toggle the voter tab. This will happen on close
                 onPress =  {() => this.props.toggleTab(marker.address,marker.geohash)} 
                 >
                     <View style={styles.ghostMarker} >
