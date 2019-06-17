@@ -216,8 +216,8 @@ export default class MasterView extends React.Component {
             newGrid[change.doc.data().geohash[0]] = newDictionary;
             this.setState({geoHashGrid: newGrid});
           }
-          // if a document in the listener has been removed it will delete the location from
-          // the markers_ dictionary
+
+          // delete location from markers_dictionary if document is removed from listener
           else if(change.type == 'removed') {
             let newGrid = {...this.state.geoHashGrid};
             // this if statement may be redundant
@@ -230,8 +230,8 @@ export default class MasterView extends React.Component {
       })
     }
   
-    // this gets the Id for the phone. TODO: update to device ID after ejecting project
-    // installationID will likely only work for expo
+    /* this gets the Id for the phone. TODO: update to device ID after ejecting project
+       installationID will likely only work for expo*/
     _getDeviceInfoAsync = async() => {
       console.log('retrieving info')
       var uniqueId = Constants.installationId;
@@ -418,17 +418,13 @@ export default class MasterView extends React.Component {
     }
   
     toggleTab(markerAddress,geohash) {
-      // Checks to see if the marker is in the array of active markers. This is a trigger
-      // to see if youre working with a ghost marker. If the marker is a ghost marker
-      // and you click it again, it will just hide the tab without adding a new marker 
-      // the array.
 
+      // Checks if marker is a ghost. if a ghostMarker is clicked then call hideTab()
       if(this.state.geoHashGrid[geohash] === undefined || !Object.keys(this.state.geoHashGrid[geohash]).includes(markerAddress)) {
         this.hideTab();
       }
-      // checks to see if the marker you clicked on is the one currently stored as
-      // selectedMarker. If not, this should change the selected address to the one
-      // youre clickig on now.
+
+      // change selectedAddress to the new address if the selected marker is not at selectedAddress
       else if(this.state.selectedMarker !== markerAddress) {
   
         if(markerAddress in this.state.userLocation.userAddressDictionary) {
@@ -453,14 +449,9 @@ export default class MasterView extends React.Component {
         }
         this.state.geoHashGrid[geohash][markerAddress].borderColor = "#e8b923"
   
-        // if (this.state.geoHashGrid[geohash][this.state.selectedMarker]) {
-        //   this.state.geoHashGrid[geohash][this.state.selectedMarker].borderColor = "#e8b923"
-        // }
-  
         this.setState({onLongPress: false});
       } 
-      // if the marker you're clicking on is neither a ghost marker, nor a new marker, it must
-      // be the same one so we just close it.
+      // if the marker you're clicking on is neither a ghost marker, nor a new marker, hideTab()
       else{
         this.state.geoHashGrid[geohash][markerAddress].borderColor = "transparent"
         this.hideTab();
@@ -470,7 +461,6 @@ export default class MasterView extends React.Component {
     }
   
     // hides the voting tab and switches the state back to false. Also clears out ghostMarker
-    // if necessary.
     hideTab() {
       if (this.state.tabVal) {
         this.setState({tabVal:false});
@@ -501,8 +491,7 @@ export default class MasterView extends React.Component {
       }
     }
   
-    //UPDATED THIS TO WORK WITH DATABASE
-    // Adds one vote for lit at the current marker.
+    // Adds one positive or negative vote whether lit or shit is voted
     changeLit(address,geohash,vote) {
       // recieve the ID from the user
       // var uniqueId = Constants.installationId;
@@ -510,12 +499,7 @@ export default class MasterView extends React.Component {
       // collect timestamp.
       var time = new Date();
       
-      // TODO: if the marker is not in the markers_ array, then it means that either the address
-      // of the marker is not currently in the database, or somehow, the address is in the
-      // database but was not loaded into the local dictionary of markers. This is something
-      // that I am only now considering and should fix. Although if it were in the database
-      // and you can click on it, it should be in the markers database. This is supposed to
-      // be used to turn a ghost marker into a regular marker. 
+      // Turns a ghostMarker into a regular marker by adding a new location to the database
       if (this.state.geoHashGrid[geohash] == undefined || !Object.keys(this.state.geoHashGrid[geohash]).includes(address)){
         var latitude = this.state.ghostMarker[0].coordinate.latitude;
         var longitude = this.state.ghostMarker[0].coordinate.longitude;
@@ -555,18 +539,17 @@ export default class MasterView extends React.Component {
           // assuming it was a ghost marker, that marker can now be hidden.
           this.hideTab(); 
   
-      // if the marker is in the markers vector then it is already in the database and
-      // we just need to update the votes.
+      // update votes if user is already in the database
       } else {
         // gets a reference to the document at the address.
         var ref = db.collection('locations').doc(address).collection('votes').doc(uniqueId);
         return ref.get()
         .then( voteDoc => {
-          // if there is a document at this address in the votes collection with the users
-          // unique ID then they can only update their vote
+
+          // Do not let user vote multiple times but allow them to update an old vote
           if (voteDoc.exists) {
-            // if the user had not previously up voted this location then change their vote to
-            // an upVote.
+
+            // change vote to the opposite of the previous vote
             if (voteDoc.data().vote != vote) {
               var newVote = vote;
               ref.set({
@@ -575,8 +558,8 @@ export default class MasterView extends React.Component {
               })
             }
           }
-          // if there is not yet a vote with uniqueID, then the user has not yet voted on this
-          // hub. Therefore, we must add a new upVote with their uniqueID as the key
+
+          // add new vote if user is not yet in the db
           else {
             db.collection('locations').doc(address).collection('votes').doc(uniqueId).set({
               voteTime: time,
@@ -586,9 +569,8 @@ export default class MasterView extends React.Component {
         })
       }
     }
-  
-    // This is being used to get upVotes for the info page, this is because some of this
-    // does not have a default value so it needs a function to call it.
+
+    // function to return upVotes for info page due to some states not having default values
     returnUpVotes(address,geohash) {
       if (this.state.geoHashGrid[geohash] != null) {
         if (this.state.geoHashGrid[geohash][address] != null) {
