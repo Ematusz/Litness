@@ -53,6 +53,7 @@ export default class Map extends React.Component {
               }
             }
             let results = JSON.parse(JSON.stringify(responseJson)).results[i]
+            // console.log("results ", results)
             let address_ = results.formatted_address;
             let coords = results.geometry.location;
             len = results.address_components.length;
@@ -61,6 +62,7 @@ export default class Map extends React.Component {
               l = results.address_components[j].types.length;
               for (k = 0; k < l; k++) {
                 if (results.address_components[j].types[k] == "locality") {
+                  // might need to change this to neighborhood work on tuning
                   city = results.address_components[j].long_name;
                 }
                 if (results.address_components[j].types[k] == "route") {
