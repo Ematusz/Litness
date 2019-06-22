@@ -29,7 +29,8 @@ export default class Leaderboard extends React.Component {
             let counter = 1;
             snapshot.forEach( doc => {
               data.push({
-                adress: doc.id.toString(),
+                geohash: doc.data().geohash[0],
+                address: doc.id.toString(),
                 number: doc.data().number,
                 street: doc.data().street,
                 count: doc.data().count,
@@ -46,8 +47,8 @@ export default class Leaderboard extends React.Component {
 
     renderLeaderboardCell =  ({item}) => {
         return (
-          <TouchableOpacity style = {styles.leaderBoardCell}>
-            <Text style = {{...styles.leaderboardText,fontWeight:'bold',color:"white"}}> {item.key} </Text>
+          <TouchableOpacity style = {styles.leaderBoardCell} onPress={()=>this.props.toggleInfoPage(item.address,item.geohash)}>
+            <Text style = {{...styles.leaderboardText,fontWeight:'bold',color:"black"}}> {item.key} </Text>
                 {this.props.renderImage(item.count)}
             <Text style = {styles.leaderboardText}> {item.number} {item.street}</Text>
             <View style = {styles.LBinnerBox}>
@@ -59,11 +60,11 @@ export default class Leaderboard extends React.Component {
 
     render() {
         return (
-            <View style={[styles.infoPage,this.props.style]}>
+            <View style={[styles.leaderboard,this.props.style]}>
                 <TouchableOpacity onPress={this.props.toggleLeaderBoard} style = {styles.closeBar}>
                 <Text style = {{color:'white',fontWeight:'bold'}}>X</Text>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => this.getData()} style={styles.refresh}>
+                {this.state.showLeaderboard && <TouchableOpacity onPress={() => this.getData()} style={styles.refresh}>
                     <Image
                         style = {{flex:1,
                                 height: 20,
@@ -72,7 +73,7 @@ export default class Leaderboard extends React.Component {
                                 alignSelf: 'center'}}
                         source={require('./assets/refresh.png')}
                     />
-                </TouchableOpacity>
+                </TouchableOpacity>}
                 <Text style = {{...styles.locationText, fontSize: 30, fontWeight:'bold'}}>
                 Leaderboard
                 </Text>
@@ -81,9 +82,8 @@ export default class Leaderboard extends React.Component {
                 renderItem = {this.renderLeaderboardCell}
                 style={styles.flatListContainer}
                 />}
-                {!this.state.showLeaderboard && <View>
-                    <ActivityIndicator size="large" color="black" />
-                    <Text>Loading...</Text>
+                {!this.state.showLeaderboard && <View style ={styles.loading}>
+                    <ActivityIndicator size="small" color="white" />
                 </View>}
             </View>
         );

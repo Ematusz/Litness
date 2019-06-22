@@ -4,18 +4,54 @@ import styles from './styles.js'
 import { VictoryLine, VictoryChart,VictoryLabel, VictoryAxis,VictoryZoomContainer,VictoryVoronoiContainer} from "victory-native";
 import * as d3 from 'd3-time';
 import dateFns from 'date-fns';
+import { ButtonGroup} from 'react-native-elements';
 
 export default class InfoPage extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
             showGraph: false,
+            originalData: [],
             processedData:[],
+            selectedIndex: 0,
         }
 
+        this.updateIndex = this.updateIndex.bind(this)
         this.processDates = this.processDates.bind(this);
         this.componentDidMount = this.componentDidMount.bind(this);
         this.getData = this.getData.bind(this);
+        this.filterDataByInterval = this.filterDataByInterval.bind(this);
+    }
+
+    updateIndex (selectedIndex) {
+        this.setState({selectedIndex})
+        this.getData(); 
+    }
+
+    filterDataByInterval(selectedIndex,data) {
+        let intervalInMs = 1 * 60 * 1000;
+        let currentTime = Date.now();
+        let lowerBound = 0;
+        switch(selectedIndex) {
+            case '0':
+                intervalInMs = 1 * 60 * 60 * 1000;
+                lowerBound = currentTime - intervalInMs;
+                break;
+            case '1':
+                intervalInMs = 3 * 60 * 60 * 1000;
+                lowerBound = currentTime - intervalInMs;
+                break;
+            case '2': 
+                intervalInMs = 24 * 60 * 60 * 1000;
+                lowerBound = currentTime - intervalInMs;
+                break;
+            default:
+                intervalInMs = 24 * 60 * 60 * 1000;
+                lowerBound = currentTime - intervalInMs;
+                break;
+        }
+
+        return data.filter(x=>parseInt(x.time) > lowerBound);
     }
 
     getData() {
@@ -28,7 +64,7 @@ export default class InfoPage extends React.Component {
               data.push(vote);
               lastCount = doc.data().count;
             })
-
+            data = this.filterDataByInterval(this.state.selectedIndex.toString(),data);
             this.processDates(data)
           })
     }
@@ -64,19 +100,85 @@ export default class InfoPage extends React.Component {
 
     componentWillMount() {};
 
-    render() {        
+    render() {    
+        const buttons = ['1 hr.', '3 hr.', '24 hr.']
+        const { selectedIndex } = this.state
+        let string = this.props.leaderboardStatus ? '<': 'X';
         return (
             <View style={[styles.infoPage,this.props.style]}>
                 <TouchableOpacity onPress={this.props.toggleInfoPage} style = {styles.closeBar}>
-                    <Text style = {{color:'white',fontWeight:'bold'}}>X</Text>
+                    <Text style = {{color:'white',fontWeight:'bold'}}>{string}</Text>
                 </TouchableOpacity>
-                <Text style = {{...styles.locationText, fontSize: 30, fontWeight:'bold'}}>
-                    Info
+                <Text style = {{...styles.locationText, fontSize: 20, fontWeight:'bold'}}>
+                        Activity Monitor
+                </Text>
+
+                <View>
+                    <VictoryChart
+                    height={375}
+                    width={375}
+                    containerComponent={
+                        <VictoryVoronoiContainer/>
+                      }
+                      scale={{ x: "time", y: "linear" }}
+                    >
+                        
+                        {this.state.showGraph && <VictoryLine
+                        style={{
+                        data: { stroke: "black" },
+                        }}
+                        data={this.state.processedData}
+                        x="time"
+                        y="value"
+                        animate
+                        />}
+
+                        <VictoryAxis 
+                        standalone={false}
+                        fixLabelOverlap={true}
+                        />
+
+                        <VictoryAxis dependentAxis 
+                        standalone={false}
+                        tickFormat={(t) => `${Math.round(t*10)/10}`}
+                        label="Litness"
+                        />
+                        
+                        
+                    </VictoryChart>
+                    <ButtonGroup
+                        onPress={this.updateIndex}
+                        selectedIndex={selectedIndex}
+                        buttons={buttons}
+                        containerStyle={{height: 25,backgroundColor:"white",borderColor:"black",width:'60%',alignSelf:'center'}}
+                        selectedButtonStyle={{backgroundColor:"black"}}
+                        textStyle={{color:"black"}}
+                        underlayColor={'black'}
+                        innerBorderStyle = {{width:1,color:'black'}}
+                        containerBorderRadius={10}
+                    />
+                </View>
+                
+                {!this.state.showGraph && <View style ={styles.loading}>
+                    <ActivityIndicator size="small" color="white" />
+                </View>}
+                {this.state.showGraph && <TouchableOpacity onPress={() => this.getData()} style={styles.refresh}>
+                    <Image
+                        style = {{flex:1,
+                                height: 20,
+                                resizeMode: 'contain',
+                                width: 20,
+                                alignSelf: 'center'}}
+                        source={require('./assets/refresh.png')}
+                    />
+                </TouchableOpacity>}
+
+                <Text style = {{...styles.locationText, fontSize: 20, fontWeight:'bold'}}>
+                    Location
                 </Text>
                 <Text style = {{...styles.locationText, fontSize: 15}}>
                     {this.props.infoPageMarker}
                 </Text>
-
                 {this.state.showGraph && <View style = {{display:"flex", 
                                 flexDirection:"row", 
                                 justifyContent:'center', 
@@ -106,56 +208,7 @@ export default class InfoPage extends React.Component {
                         </Text>
                     </View>
                 </View>}
-
-                <View>
-                    {this.state.showGraph && <VictoryChart
-                    height={375}
-                    width={375}
-                    containerComponent={
-                        <VictoryVoronoiContainer/>
-                        // <VictoryZoomContainer allowZoom={true} zoomDomain={{x: [this.state.processedData.length-4, this.state.processedData.length]}} />
-                      }
-                      scale={{ x: "time", y: "linear" }}
-                    >
-                        
-                        <VictoryLine
-                        style={{
-                        data: { stroke: "#B22222" },
-                        }}
-                        data={this.state.processedData}
-                        x="time"
-                        y="value"
-                        animate
-                        />
-
-                        <VictoryAxis 
-                        standalone={false}
-                        fixLabelOverlap={true}
-                        />
-
-                        <VictoryAxis dependentAxis 
-                        standalone={false}
-                        tickFormat={(t) => `${Math.round(t*10)/10}`}
-                        />
-                        
-                        
-                    </VictoryChart>}
-                </View>
-                
-                {!this.state.showGraph && <View>
-                    <ActivityIndicator size="large" color="black" />
-                    <Text>Loading...</Text>
-                </View>}
-                <TouchableOpacity onPress={() => this.getData()} style={styles.refresh}>
-                    <Image
-                        style = {{flex:1,
-                                height: 20,
-                                resizeMode: 'contain',
-                                width: 20,
-                                alignSelf: 'center'}}
-                        source={require('./assets/refresh.png')}
-                    />
-                </TouchableOpacity>
+                <Button title="Share Location" onPress={() => console.log("Hello")}/>
             </View>
             );
         } 
