@@ -170,6 +170,7 @@ export default class Map extends React.Component {
       var currentGeohash = [g.encode_int(mapRegion.latitude,mapRegion.longitude,26)];
       var currentGrid = g.neighbors_int(currentGeohash[0],26);
       currentGrid = currentGeohash.concat(currentGrid);
+      this.props.currentGridHandler(currentGrid);
       let cleanGrid = null;
       Object.keys(this.props.geoHashGrid).map( geohash => {
         if (!currentGrid.includes(Number(geohash))) {
@@ -180,6 +181,7 @@ export default class Map extends React.Component {
         }
       })
       if (cleanGrid !== null) {
+        console.log("currentGridUpdated");
         this.props.geoHashGridHandler(cleanGrid);
       }
     }
