@@ -18,7 +18,7 @@ const ref = admin.firestore()
 
 exports.DBupdate = functions.https.onRequest((req, res) => {
     ref.collection('locations').get().then(snapshot => {
-        let twoHoursAgo = Date.now() - (10 * 60 * 1000);
+        let twoHoursAgo = Date.now() - (5 * 60 * 60 * 1000);
         let twoHoursAgo_ = new Date(twoHoursAgo);
         snapshot.forEach( address => {
             ref.collection('locations').doc(address.id).collection('votes').get().then(query => {

@@ -223,6 +223,9 @@ export default class MasterView extends React.Component {
 
           // delete location from markers_dictionary if document is removed from listener
           else if(change.type == 'removed') {
+            if (this.state.selectedMarker == change.doc.id) {
+              this.hideTab();
+            }
             let newGrid = {...this.state.geoHashGrid};
             // this if statement may be redundant
             let newDictionary = newGrid[change.doc.data().geohash[0]];
