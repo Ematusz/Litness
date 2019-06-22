@@ -1,5 +1,5 @@
 import React from 'react';
-import {TouchableOpacity,View,Button,Text,ActivityIndicator} from 'react-native';
+import {TouchableOpacity,View,Button,Text,ActivityIndicator,Image} from 'react-native';
 import styles from './styles.js'
 // import { LineChart, YAxis, XAxis, Grid } from 'react-native-svg-charts'
 // import { Defs, LinearGradient, Stop, G} from 'react-native-svg'
@@ -80,8 +80,23 @@ export default class InfoPage extends React.Component {
                 <Text style = {{...styles.locationText, fontSize: 15}}>
                 {this.props.infoPageMarker}
                 </Text>
-                <Text style = {{...styles.locationText}}>
-                🔥 = {this.props.returnUpVotes}          💩 = {this.props.returnDownVotes}
+                <Text style = {{flexDirection: 'row', justifyContent: 'space-evenly'}}>
+                    <Image
+                        style = {{
+                            height: 40,
+                            resizeMode: 'contain',
+                            width: 40,
+                        }}
+                        source={require('./assets/fire.png')}
+                    /> = {this.props.returnUpVotes}          
+                    <Image
+                        style = {{
+                            height: 40,
+                            resizeMode: 'contain',
+                            width: 40,
+                        }}
+                        source={require('./assets/poop.png')}
+                    /> = {this.props.returnDownVotes}
                 </Text>
 
                 {this.state.showGraph && <View >
