@@ -166,7 +166,11 @@ export default class MasterView extends React.Component {
         changes.forEach(change => {
 
           // Create a new location and add it to the markers dictionary when a new document is added to the listener.
-          if(change.type == 'added'){
+          if (change.type == 'added'){
+            // *untested* Should reset tab and remove ghost marker if youre about to vote on a location that was just voted on.
+            if (this.state.ghostMarker.length > 0 && change.doc.id == this.state.ghostMarker[0].address) {
+              this.hideTab();
+            }
             let newGrid = {...this.state.geoHashGrid};
             if (change.doc.data().geohash[0] in newGrid) {
               let newDictionary = {...newGrid[change.doc.data().geohash[0]]}
@@ -488,9 +492,9 @@ export default class MasterView extends React.Component {
             // if the document doesnt yet exist, add a new one with base stats.
             if (!doc.exists) {
               ref.set({
-                count: 0,
-                upVotes: 0,
-                downVotes: 0,
+                // count: 0,
+                // upVotes: 0,
+                // downVotes: 0,
                 percentVotesLastThirty: 0,
                 percentVotesLastHour: 0,
                 timeCreated: time,
