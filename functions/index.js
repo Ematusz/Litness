@@ -80,7 +80,11 @@ exports.updatedVote = functions.firestore.document('locations/{address}/votes/{v
         return ref.runTransaction(transaction => {
             return transaction.get(locationRef).then(locationDoc => {
                 //compute new count
-                let currentCount = locationDoc.data().count - oldVote + newVote;
+                let oldCount = locationDoc.data().count;
+                if (oldCount === undefined) {
+                    oldCount = 0;
+                }
+                let currentCount = oldCount - oldVote + newVote;
 
                 let currentTime = new Date().getTime().toString()
                 ref.collection('locations').doc(context.params.address).collection('counts').doc(currentTime).set({
@@ -89,6 +93,9 @@ exports.updatedVote = functions.firestore.document('locations/{address}/votes/{v
 
                 //compute upVotes if the new vote is an up vote
                 let upVotes_ = locationDoc.data().upVotes;
+                if (upVotes_ === undefined) {
+                    upVotes_ = 0;
+                }
 
                 if(newVote === 1) {
                     upVotes_ += 1;
@@ -98,6 +105,9 @@ exports.updatedVote = functions.firestore.document('locations/{address}/votes/{v
                 }
                 //compute downVotes
                 let downVotes_ = locationDoc.data().downVotes;
+                if (downVotes_ === undefined) {
+                    downVotes_ = 0;
+                }
                 if(newVote === -1) {
                     downVotes_ += 1;
                 }
