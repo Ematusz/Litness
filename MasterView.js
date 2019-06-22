@@ -299,7 +299,7 @@ export default class MasterView extends React.Component {
     }
   
     // Toggles the info page on a hub
-    toggleInfoPage (markerAddress) {
+    toggleInfoPage (markerAddress,selectedGeohash) {
       // if infoPage is currently listed as false, open the page. Otherwise close it.
       if (!this.state.infoPage) {
         this.setState({infoPage: true});
@@ -321,24 +321,26 @@ export default class MasterView extends React.Component {
           friction: 100,
           duration: 200
         }).start(()=>this.setState({infoPage: false}));
-  
-        Animated.timing(this.state.animatedLeaderboardButton, {
-          toValue: -3,
-          friction: 100,
-          duration: 200
-        }).start();
+        
+        if (!this.state.leaderBoard) {
+          Animated.timing(this.state.animatedLeaderboardButton, {
+            toValue: -3,
+            friction: 100,
+            duration: 200
+          }).start();
+        }
+        
       }
-      console.log(this.state.selectedMarker)
       // closes the vote tab when the info page is up so that its not distracting.
       if (this.state.infoPage) {
-        this.toggleTab(this.state.infoPageMarker,this.state.selectedGeohash);
+        this.toggleTab(markerAddress,selectedGeohash);
         this.setState({infoPageMarker: null});
         this.setState({infoPageGeohash: null});
       }
       // re opens the tab when the info page closes
       else {
-        this.setState({infoPageMarker: this.state.selectedMarker});
-        this.setState({infoPageGeohash: this.state.selectedGeohash});
+        this.setState({infoPageMarker: markerAddress});
+        this.setState({infoPageGeohash: selectedGeohash});
         this.hideTab();
       }
     }
@@ -635,16 +637,17 @@ export default class MasterView extends React.Component {
             />
   
             {this.state.infoPage && <AnimatedInfoPage style = {{top:this.state.animatedTop}}
-                              toggleInfoPage={this.toggleInfoPage}
+                              toggleInfoPage={() => this.toggleInfoPage(this.state.infoPageMarker,this.state.infoPageGeohash)}
                               infoPageMarker={this.state.infoPageMarker}
                               data_={this.state.data_}
                               returnUpVotes={this.returnUpVotes(this.state.infoPageMarker,this.state.infoPageGeohash)}
                               returnDownVotes={this.returnDownVotes(this.state.infoPageMarker,this.state.infoPageGeohash)}
                               markerAddress = {this.state.infoPageMarker}
+                              leaderboardStatus = {this.state.leaderBoard}
             />}
   
             <AnimatedSideTab style = {{left:this.state.animatedTab}} 
-                             clickInfo = {()=>this.toggleInfoPage(this.state.selectedMarker)} 
+                             clickInfo = {()=>this.toggleInfoPage(this.state.selectedMarker,this.state.selectedGeohash)} 
                              clickFire={()=>this.changeLit(this.state.selectedMarker,this.state.selectedGeohash,1)}
                              clickShit={()=>this.changeLit(this.state.selectedMarker,this.state.selectedGeohash,-1)}
             />

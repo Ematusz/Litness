@@ -17,7 +17,24 @@ export default StyleSheet.create({
         flex:1,
         flexDirection:'column',
         justifyContent:'flex-start',
-        alignItems:'center'
+        alignItems:'center',
+        zIndex:4,
+      },
+      leaderboard: {
+        height: '90%',
+        width: '90%',
+        position: 'absolute',
+        top:50,
+        alignSelf:'center',
+        borderColor:'black',
+        borderWidth: 2,
+        borderRadius: 15,
+        backgroundColor: 'white',
+        flex:1,
+        flexDirection:'column',
+        justifyContent:'flex-start',
+        alignItems:'center',
+        zIndex:1,
       },
     animView: {
         backgroundColor:'blue',
@@ -113,10 +130,6 @@ export default StyleSheet.create({
         flex:1,
         right: 0,
         top: '10%',
-        // justifyContent: 'space-evenly',
-        // alignItems:"center",
-        // width: 120,
-        // height: 40,
       },
     
     leaderBoardCell: {
@@ -129,6 +142,7 @@ export default StyleSheet.create({
         borderColor:'black',
         borderWidth: 1,
         borderRadius: 15,
+        height: 60,
         backgroundColor:'lightcoral'
       },
     
@@ -194,6 +208,16 @@ export default StyleSheet.create({
       resizeMode: 'contain',
       width: 40,
       backgroundColor:'white'
+    },
+    loading: {
+      position: 'absolute',
+      right: 2,
+      top:2,
+      backgroundColor: '#007AFF',
+      borderRadius: 50,
+      width: 30,
+      height: 30,
+      justifyContent:'center'
     }
 
 });
