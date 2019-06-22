@@ -54,7 +54,7 @@ export default StyleSheet.create({
         position: 'absolute',
         alignItems:'center',
         justifyContent:'center',
-        fontSize: 10,
+        fontSize: 50,
       },
     ghostMarker: {
         borderRadius: 30,
@@ -179,9 +179,21 @@ export default StyleSheet.create({
       alignItems: "center",
       backgroundColor: "#f5fcff"
     },
-    // markerIcon: {
-    //   borderRadius: 30,
-    //   borderWidth: 2,
-    //   backgroundColor:'b'
-    // }
+    refresh: {
+      position: 'absolute',
+      right: 2,
+      top:2,
+      backgroundColor: '#007AFF',
+      borderRadius: 50,
+      width: 30,
+      height: 30,
+      justifyContent:'center'
+    },
+    infoPageIcons: {
+      height: 40,
+      resizeMode: 'contain',
+      width: 40,
+      backgroundColor:'white'
+    }
+
 });

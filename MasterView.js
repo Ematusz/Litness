@@ -315,16 +315,6 @@ export default class MasterView extends React.Component {
           duration: 300
         }).start();
       
-        let data = [];
-        db.collection("locations").doc(markerAddress).collection('counts')
-          .get().then( snapshot => {
-            snapshot.forEach( doc => {
-              vote = {value:doc.data().count, time:doc.id}
-              data.push(vote);
-              lastCount = doc.data().count;
-            })
-            this.setState({data_: data});
-          })
       } else {
         Animated.timing(this.state.animatedTop, {
           toValue: 1000,
@@ -338,6 +328,7 @@ export default class MasterView extends React.Component {
           duration: 200
         }).start();
       }
+      console.log(this.state.selectedMarker)
       // closes the vote tab when the info page is up so that its not distracting.
       if (this.state.infoPage) {
         this.toggleTab(this.state.infoPageMarker,this.state.selectedGeohash);
@@ -355,25 +346,7 @@ export default class MasterView extends React.Component {
     toggleLeaderBoard() {
       if (!this.state.leaderBoard) {
         this.setState({leaderBoard: true});
-        var leaderBoard_ = [];
-        db.collection('locations').where("city", "==", this.state.userLocation.userCity).orderBy('count', 'desc').limit(25).get()
-          .then( snapshot => {
-            let counter = 1;
-            snapshot.forEach( doc => {
-              leaderBoard_.push({
-                number: doc.data().number,
-                street: doc.data().street,
-                count: doc.data().count,
-                key: counter.toString()   
-              });
-              counter = counter + 1;
-            })
-  
-          this.setState({leaderBoard_});
-          }).catch( error =>{
-            console.log(error)
-          })
-          
+            
         Animated.timing(this.state.animatedLeaderboard, {
           toValue: 50,
           friction: 100,
@@ -680,6 +653,8 @@ export default class MasterView extends React.Component {
                                  toggleLeaderBoard= {this.toggleLeaderBoard}
                                  leaderBoard_={this.state.leaderBoard_}
                                  renderImage={this.renderImage}
+                                 toggleInfoPage={this.toggleInfoPage}
+                                 userCity = {this.state.userLocation.userCity}
             />}
   
             <AnimatedLeaderboardTab style = {{right:this.state.animatedLeaderboardButton}} 

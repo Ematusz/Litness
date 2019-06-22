@@ -1,5 +1,5 @@
 import React from 'react';
-import {View, Button} from 'react-native';
+import {View, TouchableOpacity, Image, Button} from 'react-native';
 import styles from './styles.js'
 
 export default class sideTab extends React.Component {
@@ -14,8 +14,24 @@ export default class sideTab extends React.Component {
     render() {
         return (
             <View style = {[styles.tab,this.props.style]}> 
-                <Button style={styles.tabStyle} title = '🔥' onPress= {this.props.clickFire}/>
-                <Button style={styles.tabStyle} title = '💩' onPress= {this.props.clickShit} />
+                <TouchableOpacity onPress= {this.props.clickFire}>
+                    <Image
+                            style = {{
+                                height: 40,
+                                resizeMode: 'contain',
+                                width: 35,}}
+                            source={require('./assets/fire.png')}
+                    />
+                </TouchableOpacity>
+                <TouchableOpacity onPress= {this.props.clickShit}>
+                    <Image
+                            style = {{
+                                height: 40,
+                                resizeMode: 'contain',
+                                width: 30,}}
+                            source={require('./assets/poop.png')}
+                    />
+                </TouchableOpacity>
                 <Button style={styles.tabStyle} title = 'ⓘ' onPress= {this.props.clickInfo} />
             </View>
         );
