@@ -21,6 +21,7 @@ export default class InfoPage extends React.Component {
         this.componentDidMount = this.componentDidMount.bind(this);
         this.getData = this.getData.bind(this);
         this.filterDataByInterval = this.filterDataByInterval.bind(this);
+        this.wierdShit = this.wierdShit.bind(this);
     }
 
     updateIndex (selectedIndex) {
@@ -54,6 +55,32 @@ export default class InfoPage extends React.Component {
         return data.filter(x=>parseInt(x.time) > lowerBound);
     }
 
+    wierdShit(timeRanges, extractedData) {
+        let iterator1 = 0
+        let iterator2 = 0
+        let objectArray = [];
+
+        while(iterator1 < timeRanges.length && iterator2 < extractedData.length) {
+            if (d3.timeMinute(new Date(parseInt(extractedData[iterator2].time))) <= timeRanges[iterator1]) {
+                iterator2+=1;
+            } else {
+                objectArray.push({value:extractedData[iterator2].value,time:dateFns.format(timeRanges[iterator1],"hh:mm A")});
+                iterator1+=1;
+            }
+        }
+
+        if (iterator2 < extractedData.length) {
+            console.log("Hello")
+            objectArray[objectArray.length-1] = {value:extractedData[extractedData.length-1].value,time:dateFns.format(timeRanges[timeRanges.length-1],"hh:mm A")};
+        }
+
+        while(iterator1 < timeRanges.length) {
+            objectArray.push({value:extractedData[iterator2-1].value,time:dateFns.format(timeRanges[iterator1],"hh:mm A")});
+            iterator1+=1;
+        }
+        return objectArray
+    }
+
     getData() {
         this.setState({ showGraph: false })
         let data = [];
@@ -70,26 +97,30 @@ export default class InfoPage extends React.Component {
     }
 
     processDates(objectArray) {
-        let array = [];
+        let range = d3.timeMinute.range(new Date(parseInt(objectArray[0].time)), new Date(),5);
+        let newObject = this.wierdShit(range,objectArray)
 
-        for(i = 0; i < objectArray.length;i++) {
-            let obj = objectArray[i];
-            obj.time = dateFns.format(d3.timeMinute(new Date(parseInt(obj.time))),"hh:mm A"); 
+        // for(i = 0; i < objectArray.length;i++) {
+        //     let obj = objectArray[i];
+        //     // console.log(dateFns.format(d3.timeMinute(new Date(test)),"hh:mm A"))
+        //     obj.time = dateFns.format(d3.timeMinute(new Date(parseInt(obj.time))),"hh:mm A"); 
+        //     // obj.time = test; 
 
-            if (array.length > 0 && obj.time === array[array.length-1].time) {
-                array[array.length-1] = obj
-            } else {
-                array.push(obj)
-            }
-        }
+        //     if (array.length > 0 && obj.time === array[array.length-1].time) {
+        //         array[array.length-1] = obj
+        //     } else {
+        //         array.push(obj)
+        //     }
+        // }
 
-        let vote = {value:array[array.length-1].value, time:dateFns.format(d3.timeMinute(new Date()),"hh:mm A")}
-        array.push(vote);
-        if (objectArray.length === 1) {
-            let prevote = {value:0, time:objectArray[0].time}
-            array.unshift(prevote)
-        }
-        this.setState({ processedData: array },()=>this.setState({ showGraph: true }));
+        // let vote = {value:array[array.length-1].value, time:dateFns.format(d3.timeMinute(new Date()),"hh:mm A")}
+        // // let vote = {value:array[array.length-1].value, time:Math.round(new Date()/ coeff) * coeff};
+        // array.push(vote);
+        // if (objectArray.length === 1) {
+        //     let prevote = {value:0, time:objectArray[0].time}
+        //     array.unshift(prevote)
+        // }
+        this.setState({ processedData: newObject},()=>this.setState({ showGraph: true }));
     }
 
     componentDidMount() {
@@ -101,7 +132,7 @@ export default class InfoPage extends React.Component {
     componentWillMount() {};
 
     render() {    
-        const buttons = ['1 hr.', '3 hr.', '24 hr.']
+        const buttons = ['1 hr', '3 hr', '24 hr']
         const { selectedIndex } = this.state
         let string = this.props.leaderboardStatus ? '<': 'X';
         return (
@@ -136,6 +167,8 @@ export default class InfoPage extends React.Component {
                         <VictoryAxis 
                         standalone={false}
                         fixLabelOverlap={true}
+                        tickValues={[0,1,2]}
+                        // tickFormat={(t) => dateFns.format(t,"hh:mm A")}
                         />
 
                         <VictoryAxis dependentAxis 
