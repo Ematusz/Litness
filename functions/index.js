@@ -79,50 +79,54 @@ exports.updatedVote = functions.firestore.document('locations/{address}/votes/{v
         //update count at current location based on either an update of a vote or a new vote
         return ref.runTransaction(transaction => {
             return transaction.get(locationRef).then(locationDoc => {
-                //compute new count
-                let oldCount = locationDoc.data().count;
-                if (oldCount === undefined) {
-                    oldCount = 0;
-                }
-                let currentCount = oldCount - oldVote + newVote;
-
-                let currentTime = new Date().getTime().toString()
-                ref.collection('locations').doc(context.params.address).collection('counts').doc(currentTime).set({
-                    count: currentCount
-                })
-
-                //compute upVotes if the new vote is an up vote
-                let upVotes_ = locationDoc.data().upVotes;
-                if (upVotes_ === undefined) {
-                    upVotes_ = 0;
-                }
-
-                if(newVote === 1) {
-                    upVotes_ += 1;
-                }
-                if(oldVote === 1) {
-                    upVotes_ -= 1;
-                }
-                //compute downVotes
-                let downVotes_ = locationDoc.data().downVotes;
-                if (downVotes_ === undefined) {
-                    downVotes_ = 0;
-                }
-                if(newVote === -1) {
-                    downVotes_ += 1;
-                }
-                if(oldVote === -1) {
-                    downVotes_ -= 1;
-                }
-                //compute percentVotesLastThirty
-
-                //compute percentVotesLastHour
-
-                //update location info
-                return transaction.update(locationRef, {
-                    count: currentCount,
-                    upVotes: upVotes_,
-                    downVotes: downVotes_,
+                 //compute new count
+                 let oldCount = locationDoc.data().count;
+                 console.log("oldCount ", locationDoc.data().count);
+                 if (oldCount === undefined) {
+                     oldCount = 0;
+                 }
+                 let currentCount = oldCount - oldVote + newVote;
+ 
+                 let currentTime = new Date().getTime().toString()
+                 ref.collection('locations').doc(context.params.address).collection('counts').doc(currentTime).set({
+                     count: currentCount
+                 })
+ 
+                 //compute upVotes if the new vote is an up vote
+                 let upVotes_ = locationDoc.data().upVotes;
+ 
+                 if (upVotes_ === undefined) {
+                     upVotes_ = 0;
+                 }
+ 
+                 if(newVote === 1) {
+                     upVotes_ += 1;
+                 }
+                 if(oldVote === 1) {
+                     upVotes_ -= 1;
+                 }
+                 //compute downVotes
+                 let downVotes_ = locationDoc.data().downVotes;
+ 
+                 if (downVotes_ === undefined) {
+                     downVotes_ = 0;
+                 }
+ 
+                 if(newVote === -1) {
+                     downVotes_ += 1;
+                 }
+                 if(oldVote === -1) {
+                     downVotes_ -= 1;
+                 }
+                 //compute percentVotesLastThirty
+ 
+                 //compute percentVotesLastHour
+ 
+                 //update location info
+                 return transaction.update(locationRef, {
+                     count: currentCount,
+                     upVotes: upVotes_,
+                     downVotes: downVotes_,
                 });
             });
         });
