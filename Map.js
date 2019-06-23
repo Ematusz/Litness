@@ -217,11 +217,16 @@ export default class Map extends React.Component {
                     {...marker} 
                     // on press should toggle the voter tab
                     onPress = {() => this.props.toggleTab(marker.address,marker.geohash)} 
+                    title = {marker.number + " " + marker.street}
                     >
                         <View style={{...styles.marker,borderColor:marker.borderColor}} >
                             {this.props.renderImage(marker.cost)}
                             <Text style={styles.testtext}>{marker.cost}</Text>
                         </View>
+
+                      {/* <MapView.Callout>
+                        <Text>{marker.number + " " + marker.street}</Text>
+                      </MapView.Callout> */}
         
                     </MapView.Marker>
                     )
@@ -234,7 +239,8 @@ export default class Map extends React.Component {
                 <MapView.Marker 
                 {...marker} 
                 // on press should toggle the voter tab. This will happen on close
-                onPress =  {() => this.props.toggleTab(marker.address,marker.geohash)} 
+                onPress =  {() => this.props.toggleTab(marker.address,marker.geohash)}
+                title = {marker.number + " " + marker.street} 
                 >
                     <View style={styles.ghostMarker} >
                     <Image
