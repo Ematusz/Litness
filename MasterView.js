@@ -174,12 +174,16 @@ export default class MasterView extends React.Component {
             let newGrid = {...this.state.geoHashGrid};
             if (change.doc.data().geohash[0] in newGrid) {
               let newDictionary = {...newGrid[change.doc.data().geohash[0]]}
+              let count = change.doc.data().count;
+              if (count == undefined) {
+                count = 0;
+              }
               newDictionary[change.doc.id] = {
                   coordinate: {
                     latitude: change.doc.data().latitude,
                     longitude: change.doc.data().longitude
                   },
-                  cost: change.doc.data().count,
+                  cost: count,
                   address: change.doc.id,
                   street: change.doc.data().street,
                   number: change.doc.data().number,
