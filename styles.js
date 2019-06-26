@@ -63,6 +63,18 @@ export default StyleSheet.create({
         // flexDirection:"column",
         // justifyContent: "center",
       },
+      markerHeatMap: {
+        // padding: 5,
+        borderRadius: 30,
+        height: 60,
+        width: 60,
+        // backgroundColor:"red",
+        borderColor: "transparent",
+        position: 'absolute',
+        alignItems:'center',
+        justifyContent:'center',
+        backgroundColor:'rgba(255,0,0,.3)',
+      },
     tabStyle: {
         borderRadius: 5,
         borderWidth: 2,
@@ -133,17 +145,14 @@ export default StyleSheet.create({
       },
     
     leaderBoardCell: {
-        padding: 15,
         marginTop: 5,
-        flex:1,
+        display:"flex",
         flexDirection: 'row',
         justifyContent: 'flex-start',
         alignItems: 'center',
-        borderColor:'black',
-        borderWidth: 1,
-        borderRadius: 15,
-        height: 60,
-        backgroundColor:'lightcoral'
+        borderBottomWidth: 0,
+        // borderRadius: 15,
+        backgroundColor:'white'
       },
     
     flatListContainer: {
@@ -151,17 +160,13 @@ export default StyleSheet.create({
         width: '95%',
       },
     LBinnerBox: {
-        height: 40,
-        width: 40,
-        borderWidth: 2,
-        borderColor: "black",
+        height:30,
+        width: 30,
         flexDirection:'row',
         justifyContent: 'center',
         alignItems: 'center',
         position: 'absolute',
         right:4,
-        borderRadius: 30,
-        // backgroundColor:"#e8b923",
         backgroundColor:"white",
       },
     leaderboardText: {
@@ -186,6 +191,13 @@ export default StyleSheet.create({
       borderWidth: 2,
       borderColor: 'black',
       backgroundColor:'whitesmoke'
+    },
+    emojiIconHeatMap: {
+      height: 40,
+      resizeMode: 'contain',
+      width: 40,
+      borderRadius: 20,
+      backgroundColor:'transparent'
     },
     container: {
       flex: 1,
@@ -215,6 +227,11 @@ export default StyleSheet.create({
       top:2,
       backgroundColor: '#007AFF',
       borderRadius: 50,
+      width: 30,
+      height: 30,
+      justifyContent:'center'
+    }, 
+    flight: {
       width: 30,
       height: 30,
       justifyContent:'center'

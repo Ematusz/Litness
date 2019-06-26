@@ -1,11 +1,10 @@
 import React from 'react';
-import { TouchableOpacity,FlatList,Animated, Text, View, Button, Image } from 'react-native';
+import { TouchableOpacity,FlatList,Animated, StyleSheet,Text, View, Button, Image } from 'react-native';
 import styles from './styles.js'
 import MapView,{ Marker, PROVIDER_GOOGLE } from 'react-native-maps';
-import {Constants, Location, Permissions} from 'expo';
+import {Constants, Location, Permissions,LinearGradient} from 'expo';
 import g from 'ngeohash'
 import * as math from 'mathjs';
-
 
 export default class Map extends React.Component {
     constructor(props) {
@@ -22,10 +21,15 @@ export default class Map extends React.Component {
         this.onRegionChangeComplete = this.onRegionChangeComplete.bind(this);
     }
 
-    componentDidMount() {};
+    componentDidMount() {
+      this.props.onRef(this)
+    };
     componentWillMount() {
       this._getLocationAsync();
     };
+    componentWillUnmount() {
+      this.props.onRef(undefined)
+    }
 
     addNewLocation = async(latitude_, longitude_) => {
       var ghostGeohash = g.encode_int(latitude_,longitude_,26)
@@ -197,6 +201,7 @@ export default class Map extends React.Component {
             zoomEnabled = {true}
             provider = {PROVIDER_GOOGLE}
             showsUserLocation = {true}
+            showsBuildings = {true}
             onLongPress = {this.onLongPressMap}
             onPress = {this.toggleTabMapPress}
             onRegionChangeComplete = {this.onRegionChangeComplete}
@@ -212,6 +217,12 @@ export default class Map extends React.Component {
                 return(
                 Object.values(markerSet).map( (marker) => {
                 // creates each marker in the primary markers_ dictionary.
+                    let points = marker.cost * 5;
+                    let red = points;
+                    let blue = 255 - points;
+                    let color = 'rgba(' + red.toString() +',0,'+ blue.toString()+',.35)';
+
+                    
                     return (
                     <MapView.Marker 
                     {...marker} 
@@ -219,14 +230,12 @@ export default class Map extends React.Component {
                     onPress = {() => this.props.toggleTab(marker.address,marker.geohash)} 
                     title = {marker.number + " " + marker.street}
                     >
-                        <View style={{...styles.marker,borderColor:marker.borderColor}} >
-                            {this.props.renderImage(marker.cost)}
+                        {!this.props.switchValue && <View style={{...styles.marker,borderColor:marker.borderColor}} >
+                            {!this.props.switchValue && this.props.renderImage(marker.cost)}
                             <Text style={styles.testtext}>{marker.cost}</Text>
-                        </View>
+                        </View>}
 
-                      {/* <MapView.Callout>
-                        <Text>{marker.number + " " + marker.street}</Text>
-                      </MapView.Callout> */}
+                        {this.props.switchValue && <View style={{...styles.markerHeatMap,backgroundColor: color,shadowColor:color}}/>}
         
                     </MapView.Marker>
                     )
