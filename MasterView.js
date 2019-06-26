@@ -1,5 +1,5 @@
 import React from 'react';
-import { TouchableOpacity,FlatList,Animated, Text, View, Button, Image } from 'react-native';
+import { TouchableOpacity,FlatList,Animated, Text, View, Button, Image,Switch} from 'react-native';
 import SideTab from './SideTab.js';
 import InfoPage from './InfoPage.js';
 import Leaderboard from './Leaderboard.js';
@@ -46,6 +46,7 @@ export default class MasterView extends React.Component {
         locationResult:null,
         testtest:null,
         geoHashGrid: {},
+        switchValue:false,
         markers_: {},
         leaderBoard_: [],
         data_: [],
@@ -70,6 +71,7 @@ export default class MasterView extends React.Component {
         },
         error: null,
         testString: null,
+        heatMapMode: false,
       };
   
       this.showVotingButtonsHandler = this.showVotingButtonsHandler.bind(this)
@@ -93,7 +95,13 @@ export default class MasterView extends React.Component {
       this.returnUpVotes = this.returnUpVotes.bind(this);
       this.returnDownVotes = this.returnDownVotes.bind(this);
       this.renderImage = this.renderImage.bind(this);
+      this.goToMarker = this.goToMarker.bind(this);
+      this.toggleSwitch = this.toggleSwitch.bind(this);
     }
+
+    toggleSwitch = (value) => {
+      this.setState({switchValue: value})
+   }
   
     componentDidMount() {
        // updates the userLocation prop when the user moves a significant amount
@@ -155,6 +163,17 @@ export default class MasterView extends React.Component {
   }
     componentWillMount() {
       this._getDeviceInfoAsync();
+    }
+
+    goToMarker(geohash,markerAddress) {
+      if (this.state.infoPage) {
+        this.toggleInfoPage()
+      }
+      if (this.state.leaderBoard) {
+        this.toggleLeaderBoard()
+      }
+      this.state.geoHashGrid[geohash][markerAddress].borderColor = "#e8b923"
+      this.toggleTab(markerAddress,geohash)
     }
 
 
@@ -320,28 +339,24 @@ export default class MasterView extends React.Component {
         this.setState({infoPage: true});
         Animated.timing(this.state.animatedTop, {
           toValue: 50,
-          friction: 100,
           duration: 300,
         }).start();
 
         Animated.timing(this.state.animatedLeaderboardButton, {
           toValue: -50,
-          friction: 100,
           duration: 300
         }).start();
       
       } else {
         Animated.timing(this.state.animatedTop, {
           toValue: 1000,
-          friction: 100,
-          duration: 200
+          duration: 300
         }).start(()=>this.setState({infoPage: false}));
         
         if (!this.state.leaderBoard) {
           Animated.timing(this.state.animatedLeaderboardButton, {
             toValue: -3,
-            friction: 100,
-            duration: 200
+            duration: 300
           }).start();
         }
         
@@ -633,7 +648,8 @@ export default class MasterView extends React.Component {
       return (
         <View style = {styles.bigContainer}>        
   
-            <Map geoHashGrid={this.state.geoHashGrid}
+            <Map onRef={ref => (this.child = ref)}
+                 geoHashGrid={this.state.geoHashGrid}
                  hideTab = {this.hideTab} 
                  onLongPressHandler={this.onLongPressHandler}
                  selectedMarker={this.state.selectedMarker} 
@@ -649,6 +665,7 @@ export default class MasterView extends React.Component {
                  geoHashGridHandler={this.geoHashGridHandler} 
                  toggleTab={this.toggleTab} 
                  renderImage={this.renderImage}
+                 switchValue = {this.state.switchValue}
             />
   
             {this.state.infoPage && <AnimatedInfoPage style = {{top:this.state.animatedTop}}
@@ -659,7 +676,20 @@ export default class MasterView extends React.Component {
                               returnDownVotes={this.returnDownVotes(this.state.infoPageMarker,this.state.infoPageGeohash)}
                               markerAddress = {this.state.infoPageMarker}
                               leaderboardStatus = {this.state.leaderBoard}
+                              goToMarker = {this.goToMarker}
+                              geohash = {this.state.infoPageGeohash}
             />}
+
+
+            <Switch 
+            style ={{transform: [{ rotate: '90deg'}],position:'absolute',left:0,top:'10%'}}
+            onValueChange = {this.toggleSwitch}
+            value = {this.state.switchValue}
+            trackColor={{false: "black"}}
+            ios_backgroundColor={"black"}
+            thumbColor={"white"}>
+            </Switch>
+
   
             <AnimatedSideTab style = {{left:this.state.animatedTab}} 
                              clickInfo = {()=>this.toggleInfoPage(this.state.selectedMarker,this.state.selectedGeohash)} 
