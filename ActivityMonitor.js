@@ -7,20 +7,13 @@ import * as d3 from 'd3-time';
 import dateFns from 'date-fns';
 import { ButtonGroup} from 'react-native-elements';
 import CustomFlyout from './CustomFlyout.js';
-import ActivityMonitor from './ActivityMonitor.js';
 
-const options = {
-    enableVibrateFallback: true,
-    ignoreAndroidSystemSettings: false
-  };
-   
-export default class InfoPage extends React.Component {
+export default class activityMonitor extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
             showChart: false,
             showLine: false,
-            originalData: [],
             processedData:[],
             selectedIndex: 0,
             timeToLit: {},
@@ -28,29 +21,84 @@ export default class InfoPage extends React.Component {
             maxValue: 0,
             minValue: 0,
         }
-
-        this.updateIndex = this.updateIndex.bind(this)
-        this.processDates = this.processDates.bind(this);
-        this.componentDidMount = this.componentDidMount.bind(this);
-        this.closeInfoPage = this.closeInfoPage.bind(this);
-        this.getData = this.getData.bind(this);
-        this.filterDataByInterval = this.filterDataByInterval.bind(this);
-        this.goToMarker = this.goToMarker.bind(this);
         this.getPercentDifference = this.getPercentDifference.bind(this);
+        this.processDates = this.processDates.bind(this);
+        this.getData = this.getData.bind(this);
+        this.updateIndex = this.updateIndex.bind(this);
+        this.filterDataByInterval = this.filterDataByInterval.bind(this);
     }
 
-    goToMarker() {
-        this.setState({ showChart: false },
-        this.props.goToMarker(this.props.geohash,this.props.infoPageMarker));
-    }
-
-    closeInfoPage() {
-        this.setState({ showChart: false },this.props.toggleInfoPage);
-    }
+    componentDidMount() {
+        setTimeout(() => {
+            this.getData(); 
+            }, 1000);
+    };
+    componentWillMount() {};
 
     updateIndex (selectedIndex) {
         this.setState({selectedIndex})
         this.getData(); 
+    }
+
+    getPercentDifference(objectArray,val) {
+        // console.log(objectArray)
+        let difference = val - objectArray[0].value;
+        return (difference/objectArray[0].value) * 100;
+    }
+
+    processDates(objectArray,obj1,obj2) {
+        let array = [];
+        let max = objectArray[0].value;
+        let min = objectArray[0].value;
+        for(i = 0; i < objectArray.length;i++) {
+            let obj = objectArray[i];
+            max = Math.max(max,objectArray[i].value)
+            min = Math.min(min,objectArray[i].value)
+            obj.time = parseInt(obj.time);
+
+            if (array.length > 0 && obj.time === array[array.length-1].time) {
+                array[array.length-1] = obj
+            } else {
+                array.push(obj)
+            }
+        }
+        this.setState({ maxValue: max});
+        this.setState({ minValue: min});
+        this.setState({ processedData: array, selectedValue: array[array.length-1].value, selectedTime: array[array.length-1].time,timeToLit:obj1, timeToShit:obj2},()=>this.setState({ showChart: true, showLine:true }));
+    }
+
+    getData() {
+        this.setState({ showLine: false })
+        let data = [];
+        let lastCount = 0;
+        let lastLit = 0
+        let lastShit = 0
+        let timeToLit = {};
+        let timeToShit = {};
+        db.collection("locations").doc(this.props.markerAddress).collection('upvotes_downvotes')
+          .get().then( snapshot => {
+            snapshot.forEach( doc => {
+              vote = {value:doc.data().count, time:doc.id}
+              data.push(vote);
+              lastCount = doc.data().count;
+              lastLit = doc.data().upvotes;
+              lastShit = doc.data().downvotes;
+              timeToLit[parseInt(doc.id)] = doc.data().upvotes
+              timeToShit[parseInt(doc.id)] = doc.data().downvotes
+            })
+            vote = {value:lastCount, time:(Date.now().toString())}
+            data.push(vote);
+            timeToLit[Date.now()] = lastLit
+            timeToShit[Date.now()] = lastShit
+
+            let filteredData = this.filterDataByInterval(this.state.selectedIndex.toString(),data);
+            //no one has voted in past interval then prepend the latest value with time being one interval back
+            if (filteredData.length == 1) {
+                filteredData.unshift({value:filteredData[0].value,time:(parseInt(filteredData[0].time)-(1 * 60 * 60 * 1000)).toString()})
+            }
+            // console.log(filtetedData)
+            this.processDates(filteredData,timeToLit,timeToShit)
+          })
     }
 
     filterDataByInterval(selectedIndex,data) {
@@ -86,77 +134,9 @@ export default class InfoPage extends React.Component {
         return data.filter(x=>parseInt(x.time) > lowerBound);
     }
 
-    getPercentDifference(objectArray,val) {
-        let difference = val - objectArray[0].value;
-        return (difference/objectArray[0].value) * 100;
-    }
-
-    getData() {
-        this.setState({ showLine: false })
-        let data = [];
-        let lastCount = 0;
-        let lastLit = 0
-        let lastShit = 0
-        let timeToLit = {};
-        let timeToShit = {};
-        db.collection("locations").doc(this.props.markerAddress).collection('upvotes_downvotes')
-          .get().then( snapshot => {
-            snapshot.forEach( doc => {
-              vote = {value:doc.data().count, time:doc.id}
-              data.push(vote);
-              lastCount = doc.data().count;
-              lastLit = doc.data().upvotes;
-              lastShit = doc.data().downvotes;
-              timeToLit[parseInt(doc.id)] = doc.data().upvotes
-              timeToShit[parseInt(doc.id)] = doc.data().downvotes
-            })
-            vote = {value:lastCount, time:(Date.now().toString())}
-            data.push(vote);
-            timeToLit[Date.now()] = lastLit
-            timeToShit[Date.now()] = lastShit
-
-            let filteredData = this.filterDataByInterval(this.state.selectedIndex.toString(),data);
-            //no one has voted in past interval then prepend the latest value with time being one interval back
-            if (filteredData.length == 1) {
-                filteredData.unshift({value:filteredData[0].value,time:(parseInt(filteredData[0].time)-(1 * 60 * 1000)).toString()})
-            }
-            this.processDates(filteredData,timeToLit,timeToShit)
-          })
-    }
-
-    processDates(objectArray,obj1,obj2) {
-        let array = [];
-        let max = objectArray[0].value;
-        let min = objectArray[0].value;
-        for(i = 0; i < objectArray.length;i++) {
-            let obj = objectArray[i];
-            max = Math.max(max,objectArray[i].value)
-            min = Math.min(min,objectArray[i].value)
-            obj.time = parseInt(obj.time);
-
-            if (array.length > 0 && obj.time === array[array.length-1].time) {
-                array[array.length-1] = obj
-            } else {
-                array.push(obj)
-            }
-        }
-        this.setState({ maxValue: max});
-        this.setState({ minValue: min});
-        this.setState({ processedData: array, selectedValue: array[array.length-1].value, selectedTime: array[array.length-1].time,timeToLit:obj1, timeToShit:obj2},()=>this.setState({ showChart: true, showLine:true }));
-    }
-
-    componentDidMount() {
-        setTimeout(() => {
-            this.getData(); 
-            }, 1000);
-    };
-
-    componentWillMount() {};
-
-    render() {    
+    render() {
         const buttons = ['1h', '3h', '12h','24h', 'All']
         const { selectedIndex } = this.state
-        let string = this.props.leaderboardStatus ? '<': 'X';
         let percentDifference = 0;
         if (this.state.processedData.length > 0 && this.state.selectedValue) {
             percentDifference = this.getPercentDifference(this.state.processedData,this.state.selectedValue);
@@ -171,13 +151,9 @@ export default class InfoPage extends React.Component {
             colorString = "red"
         }
         return (
-            <View style={[styles.infoPage,this.props.style]}>
-                <TouchableOpacity onPress={this.closeInfoPage} style = {styles.closeBar}>
-                    <Text style = {{color:'white',fontWeight:'bold'}}>{string}</Text>
-                </TouchableOpacity>
-
+            <View style ={{backgroundColor:"red"}}>
                 {!this.state.showChart && <View style={{marginTop:20, display: "flex", flexDirection:"row", justifyContent:"flex-start"}}>
-                    <Text style ={{fontWeight:"bold", fontSize: 20}}> Loading Data </Text>
+                    <Text style ={{fontWeight:"bold", fontSize: 20}}> Loading Chart </Text>
                     <ActivityIndicator size="small" color="black" />
                 </View>}
 
@@ -216,9 +192,9 @@ export default class InfoPage extends React.Component {
                 </View>}
 
                 {this.state.showChart && <VictoryChart
-                    height={375}
-                    width={375}
-                    padding={{ top: 30, bottom: 10, left: 50, right: 50 }}
+                    height={350}
+                    width={350}
+                    // padding={{ top: 30, bottom: 10, left: 50, right: 50 }}
                     scale={{ x: "time", y: "linear" }}
                     containerComponent={
                         <VictoryVoronoiContainer
@@ -275,13 +251,12 @@ export default class InfoPage extends React.Component {
                         innerBorderStyle = {{width:0,color:'transparent'}}
                         containerBorderRadius={10}
                     />}
-                                        
 
-                {!this.state.showLine && <View style ={styles.loading}>
+                {/* {!this.state.showLine && <View style ={styles.loading}>
                     <ActivityIndicator size="small" color="white" />
-                </View>}
+                </View>} */}
 
-                {this.state.showLine && <TouchableOpacity onPress={() => this.getData()} style={styles.refresh}>
+                {/* {this.state.showLine && <TouchableOpacity onPress={() => this.getData()} style={styles.refresh}>
                     <Image
                         style = {{flex:1,
                                 height: 20,
@@ -290,30 +265,8 @@ export default class InfoPage extends React.Component {
                                 alignSelf: 'center'}}
                         source={require('./assets/refresh.png')}
                     />
-                </TouchableOpacity>}
-                
-                <View>
-
-                <View style ={{display:"flex", flexDirection:"row", justifyContent: "center"}}>
-                    <TouchableOpacity onPress={this.goToMarker}>
-                        <Image
-                            style = {{
-                                    margin:2,
-                                    height: 50,
-                                    resizeMode: 'contain',
-                                    width: 50,                                    
-                                    }}
-                            source={require('./assets/landmark.png')}
-                        />
-                    </TouchableOpacity>
-                </View>
-                <TouchableOpacity onPress={this.goToMarker}>
-                <Text style = {{...styles.locationText, fontSize: 15}}>
-                    {this.props.infoPageMarker}
-                </Text>
-                </TouchableOpacity>
-                </View>
+                </TouchableOpacity>} */}
             </View>
-            );
-        } 
+        );
     }
+}
