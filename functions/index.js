@@ -26,7 +26,7 @@ exports.DBupdate = functions.https.onRequest((req, res) => {
                     ref.collection('locations').doc(address.id).collection('counts').get()
                     .then( snapshot__ => {
                         snapshot__.forEach( count => {
-                            ref.collection('locations').doc(address.id).collection('counts').doc(count.id).delete();
+                            ref.collection('locations').doc(address.id).collection('upvotes_downvotes').doc(count.id).delete();
                         })
                         ref.collection('locations').doc(address.id).delete();
                         return "";
@@ -88,9 +88,6 @@ exports.updatedVote = functions.firestore.document('locations/{address}/votes/{v
                  let currentCount = oldCount - oldVote + newVote;
  
                  let currentTime = new Date().getTime().toString()
-                 ref.collection('locations').doc(context.params.address).collection('counts').doc(currentTime).set({
-                     count: currentCount
-                 })
  
                  //compute upVotes if the new vote is an up vote
                  let upVotes_ = locationDoc.data().upVotes;
