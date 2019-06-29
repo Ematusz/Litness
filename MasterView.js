@@ -678,17 +678,18 @@ export default class MasterView extends React.Component {
                               leaderboardStatus = {this.state.leaderBoard}
                               goToMarker = {this.goToMarker}
                               geohash = {this.state.infoPageGeohash}
+                              renderImage={this.renderImage}
             />}
 
 
-            <Switch 
+            {/* <Switch 
             style ={{transform: [{ rotate: '90deg'}],position:'absolute',left:0,top:'10%'}}
             onValueChange = {this.toggleSwitch}
             value = {this.state.switchValue}
             trackColor={{false: "black"}}
             ios_backgroundColor={"black"}
             thumbColor={"white"}>
-            </Switch>
+            </Switch> */}
 
   
             <AnimatedSideTab style = {{left:this.state.animatedTab}} 

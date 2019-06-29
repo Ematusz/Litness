@@ -145,7 +145,7 @@ export default StyleSheet.create({
       },
     
     leaderBoardCell: {
-        marginTop: 5,
+        marginTop: 10,
         display:"flex",
         flexDirection: 'row',
         justifyContent: 'flex-start',
@@ -216,9 +216,9 @@ export default StyleSheet.create({
       justifyContent:'center'
     },
     infoPageIcons: {
-      height: 40,
+      height: 20,
       resizeMode: 'contain',
-      width: 40,
+      width: 20,
       backgroundColor:'white'
     },
     loading: {

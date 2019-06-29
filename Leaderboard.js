@@ -33,26 +33,6 @@ export default class Leaderboard extends React.Component {
     refresh() {
       this.setState({refreshing:true});
       this.getData()
-      // let data = [];
-      //   db.collection('locations').where("city", "==", this.props.userCity).orderBy('count', 'desc').limit(25).get()
-      //     .then( snapshot => {
-      //       let counter = 1;
-      //       snapshot.forEach( doc => {
-      //         data.push({
-      //           geohash: doc.data().geohash[0],
-      //           address: doc.id.toString(),
-      //           number: doc.data().number,
-      //           street: doc.data().street,
-      //           count: doc.data().count,
-      //           key: counter.toString()   
-      //         });
-      //         counter = counter + 1;
-      //       })
-  
-      //     this.setState({ processedData: data },()=>this.setState({ showLeaderboard: true , refreshing: false}));
-      //     }).catch( error =>{
-      //       console.log(error)
-      //     })
     }
 
     getData() {
@@ -131,9 +111,9 @@ export default class Leaderboard extends React.Component {
                 <TouchableOpacity onPress={this.refresh} style={styles.refresh}>
                     <Image
                         style = {{flex:1,
-                                height: 20,
+                                height: 15,
                                 resizeMode: 'contain',
-                                width: 20,
+                                width: 15,
                                 alignSelf: 'center'}}
                         source={require('./assets/refresh.png')}
                     />
@@ -141,7 +121,7 @@ export default class Leaderboard extends React.Component {
                 <Text style = {{...styles.locationText, fontSize: 30, fontWeight:'bold'}}>
                 Leaderboard
                 </Text>
-                <ButtonGroup
+                {/* <ButtonGroup
                         onPress={this.updateIndex}
                         selectedIndex={selectedIndex}
                         buttons={buttons}
@@ -151,7 +131,7 @@ export default class Leaderboard extends React.Component {
                         underlayColor={'black'}
                         innerBorderStyle = {{width:1,color:'black'}}
                         containerBorderRadius={10}
-                  />
+                  /> */}
                 {this.state.showLeaderboard && <FlatList
                 ItemSeparatorComponent={this.renderSeparator}
                 data = {this.state.processedData}
