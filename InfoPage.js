@@ -1,11 +1,18 @@
 import React from 'react';
-import {TouchableOpacity,View,Button,Image,Text,ActivityIndicator} from 'react-native';
+import {TouchableOpacity,Vibration,View,Button,Image,Text,ActivityIndicator} from 'react-native';
 import styles from './styles.js'
-import { VictoryLine, VictoryChart,VictoryLabel, VictoryAxis,VictoryZoomContainer,VictoryVoronoiContainer} from "victory-native";
+// import ReactNativeHapticFeedback from "react-native-haptic-feedback";
+import { VictoryLine, VictoryChart,VictoryLabel,VictoryCursorContainer,VictoryTheme, VictoryTooltip,VictoryAxis,VictoryZoomContainer,VictoryVoronoiContainer} from "victory-native";
 import * as d3 from 'd3-time';
 import dateFns from 'date-fns';
 import { ButtonGroup} from 'react-native-elements';
+import CustomFlyout from './CustomFlyout.js';
 
+const options = {
+    enableVibrateFallback: true,
+    ignoreAndroidSystemSettings: false
+  };
+   
 export default class InfoPage extends React.Component {
     constructor(props) {
         super(props);
@@ -15,6 +22,10 @@ export default class InfoPage extends React.Component {
             originalData: [],
             processedData:[],
             selectedIndex: 0,
+            timeToLit: {},
+            timeToShit:{},
+            maxValue: 0,
+            minValue: 0,
         }
 
         this.updateIndex = this.updateIndex.bind(this)
@@ -27,6 +38,22 @@ export default class InfoPage extends React.Component {
         this.calculateLowerbound = this.calculateLowerbound.bind(this);
         this.bin = this.bin.bind(this);
         this.goToMarker = this.goToMarker.bind(this);
+        this.getPercentDifference = this.getPercentDifference.bind(this);
+        this.getLitShitCounts = this.getLitShitCounts.bind(this);
+    }
+
+    getLitShitCounts() {
+        let timeToLit = {};
+        let timeToShit = {};
+        db.collection("locations").doc(this.props.markerAddress).collection('upvotes_downvotes')
+          .get().then( snapshot => {
+            snapshot.forEach( doc => {
+                timeToLit[parseInt(doc.id)] = doc.data().upvotes
+                timeToShit[parseInt(doc.id)] = doc.data().downvotes
+            })
+            // console.log(filtetedData)
+            this.setState({timeToLit:timeToLit, timeToShit:timeToShit}, console.log(timeToLit));
+          })
     }
 
     goToMarker() {
@@ -88,8 +115,15 @@ export default class InfoPage extends React.Component {
                 lowerBound = currentTime - intervalInMs;
                 break;
             case '2': 
+                intervalInMs = 12 * 60 * 60 * 1000;
+                lowerBound = currentTime - intervalInMs;
+                break;
+            case '3': 
                 intervalInMs = 24 * 60 * 60 * 1000;
                 lowerBound = currentTime - intervalInMs;
+                break;
+            case '4': 
+                lowerBound = 0;
                 break;
             default:
                 intervalInMs = 24 * 60 * 60 * 1000;
@@ -98,6 +132,12 @@ export default class InfoPage extends React.Component {
         }
 
         return data.filter(x=>parseInt(x.time) > lowerBound);
+    }
+
+    getPercentDifference(objectArray,val) {
+        // console.log(objectArray)
+        let difference = val - objectArray[0].value;
+        return (difference/objectArray[0].value) * 100;
     }
 
     bin(timeRanges, extractedData) {
@@ -109,24 +149,24 @@ export default class InfoPage extends React.Component {
             if (d3.timeMinute(new Date(parseInt(extractedData[iterator2].time))) < timeRanges[iterator1]) {
                 iterator2+=1;
             } else {
-                objectArray.push({value:extractedData[iterator2-1].value,time:dateFns.format(timeRanges[iterator1],"hh:mm A")});
+                objectArray.push({value:extractedData[iterator2-1].value,time:timeRanges[iterator1].getTime()});
                 iterator1+=1;
             }
         }
 
         if (iterator2 < extractedData.length) {
-            objectArray.push({value:extractedData[extractedData.length-1].value,time:dateFns.format(d3.timeMinute(new Date(parseInt(extractedData[extractedData.length-1].time))),"hh:mm A")});
+            objectArray.push({value:extractedData[extractedData.length-1].value,time: parseInt(extractedData[extractedData.length-1].time)});
         }
 
         while(iterator1 < timeRanges.length && extractedData.length > 0) {
-            objectArray.push({value:extractedData[iterator2-1].value,time:dateFns.format(timeRanges[iterator1],"hh:mm A")});
+            objectArray.push({value:extractedData[iterator2-1].value,time:timeRanges[iterator1].getTime()});
             iterator1+=1;
         }
 
 
         //if only one object exists, then that means all votes occured before the bin, that means that we should prepend the value that occured at the very beginning, with its corresponding timestamp
         if (objectArray.length == 1) {
-            objectArray.unshift({value:extractedData[0].value,time:dateFns.format(d3.timeMinute(new Date(parseInt(extractedData[0].time))),"hh:mm A")})
+            objectArray.unshift({value:extractedData[0].value,time:parseInt(extractedData[0].time)})
         }
         return objectArray
     }
@@ -135,160 +175,98 @@ export default class InfoPage extends React.Component {
         this.setState({ showLine: false })
         let data = [];
         let lastCount = 0;
-        db.collection("locations").doc(this.props.markerAddress).collection('counts')
+        let lastLit = 0
+        let lastShit = 0
+        let timeToLit = {};
+        let timeToShit = {};
+        db.collection("locations").doc(this.props.markerAddress).collection('upvotes_downvotes')
           .get().then( snapshot => {
             snapshot.forEach( doc => {
               vote = {value:doc.data().count, time:doc.id}
               data.push(vote);
               lastCount = doc.data().count;
+              lastLit = doc.data().upvotes;
+              lastShit = doc.data().downvotes;
+              timeToLit[parseInt(doc.id)] = doc.data().upvotes
+              timeToShit[parseInt(doc.id)] = doc.data().downvotes
             })
             vote = {value:lastCount, time:(Date.now().toString())}
             data.push(vote);
-            console.log(data)
-            let filtetedData = this.filterDataByInterval(this.state.selectedIndex.toString(),data);
+            timeToLit[Date.now()] = lastLit
+            timeToShit[Date.now()] = lastShit
+
+            let filteredData = this.filterDataByInterval(this.state.selectedIndex.toString(),data);
             //no one has voted in past interval then prepend the latest value with time being one interval back
-            if (filtetedData.length == 1) {
-                filtetedData.unshift({value:filtetedData[0].value,time:(parseInt(filtetedData[0].time)-(1 * 60 * 60 * 1000)).toString()})
+            if (filteredData.length == 1) {
+                filteredData.unshift({value:filteredData[0].value,time:(parseInt(filteredData[0].time)-(1 * 60 * 60 * 1000)).toString()})
             }
-            console.log(filtetedData)
-            this.processDates(filtetedData)
+            // console.log(filtetedData)
+            this.processDates(filteredData,timeToLit,timeToShit)
           })
     }
 
-    processDates(objectArray) {
-        // console.log(objectArray)
-        let range = d3.timeMinute.range(new Date(parseInt(objectArray[0].time)), new Date(),1);
-        // console.log("adasdadasdasd")
-        let newObject = this.bin(range,objectArray)
-        console.log(range)
-        console.log(newObject)
+    processDates(objectArray,obj1,obj2) {
+        let array = [];
+        let max = objectArray[0].value;
+        let min = objectArray[0].value;
+        for(i = 0; i < objectArray.length;i++) {
+            let obj = objectArray[i];
+            max = Math.max(max,objectArray[i].value)
+            min = Math.min(min,objectArray[i].value)
+            obj.time = parseInt(obj.time);
 
-        // for(i = 0; i < objectArray.length;i++) {
-        //     let obj = objectArray[i];
-        //     // console.log(dateFns.format(d3.timeMinute(new Date(test)),"hh:mm A"))
-        //     obj.time = dateFns.format(d3.timeMinute(new Date(parseInt(obj.time))),"hh:mm A"); 
-        //     // obj.time = test; 
-
-        //     if (array.length > 0 && obj.time === array[array.length-1].time) {
-        //         array[array.length-1] = obj
-        //     } else {
-        //         array.push(obj)
-        //     }
-        // }
-
-        // let vote = {value:array[array.length-1].value, time:dateFns.format(d3.timeMinute(new Date()),"hh:mm A")}
-        // // let vote = {value:array[array.length-1].value, time:Math.round(new Date()/ coeff) * coeff};
-        // array.push(vote);
-        // if (objectArray.length === 1) {
-        //     let prevote = {value:0, time:objectArray[0].time}
-        //     array.unshift(prevote)
-        // }
-        this.setState({ processedData: newObject},()=>this.setState({ showChart: true, showLine:true }));
-        // this.setState({ processedData: newObject},()=>console.log(this.state.processedData));
+            if (array.length > 0 && obj.time === array[array.length-1].time) {
+                array[array.length-1] = obj
+            } else {
+                array.push(obj)
+            }
+        }
+        this.setState({ maxValue: max});
+        this.setState({ minValue: min});
+        this.setState({ processedData: array, selectedValue: array[array.length-1].value, selectedTime: array[array.length-1].time,timeToLit:obj1, timeToShit:obj2},()=>this.setState({ showChart: true, showLine:true }));
     }
 
     componentDidMount() {
         setTimeout(() => {
-            this.getData();            
+            this.getData(); 
             }, 1000);
     };
 
     componentWillMount() {};
 
     render() {    
-        const buttons = ['1 hr', '3 hr', '24 hr']
+        const buttons = ['1h', '3h', '12h','24h', 'All']
         const { selectedIndex } = this.state
         let string = this.props.leaderboardStatus ? '<': 'X';
+        let percentDifference = 0;
+        if (this.state.processedData.length > 0 && this.state.selectedValue) {
+            percentDifference = this.getPercentDifference(this.state.processedData,this.state.selectedValue);
+        }
+        let stringBean = "";
+        let colorString = ""
+        if (percentDifference >= 0) {
+            stringBean = "+" + percentDifference.toFixed(2).toString() + "%"
+            colorString = "rgb(38,169,113)"
+        } else {
+            stringBean = percentDifference.toFixed(2).toString() + "%"
+            colorString = "red"
+        }
         return (
             <View style={[styles.infoPage,this.props.style]}>
                 <TouchableOpacity onPress={this.closeInfoPage} style = {styles.closeBar}>
                     <Text style = {{color:'white',fontWeight:'bold'}}>{string}</Text>
                 </TouchableOpacity>
-                <Text style = {{...styles.locationText, fontSize: 20, fontWeight:'bold'}}>
-                        Activity Monitor
-                </Text>
 
-                <View>
-                    {this.state.showChart && <VictoryChart
-                    height={375}
-                    width={375}
-                    containerComponent={
-                        <VictoryVoronoiContainer/>
-                      }
-                      scale={{ x: "time", y: "linear" }}
-                    >
-                        
-                        {this.state.showLine && <VictoryLine
-                        style={{
-                        data: { stroke: "black" },
-                        }}
-                        data={this.state.processedData}
-                        x="time"
-                        y="value"
-                        animate
-                        />}
-
-                        <VictoryAxis 
-                        standalone={false}
-                        fixLabelOverlap={true}
-                        tickValues={[0,1]}
-                        // tickFormat={(t) => dateFns.format(t,"hh:mm A")}
-                        />
-
-                        <VictoryAxis dependentAxis 
-                        standalone={false}
-                        tickFormat={(t) => `${Math.round(t*10)/10}`}
-                        label="Litness"
-                        />
-                        
-                        
-                    </VictoryChart>}
-                    <ButtonGroup
-                        onPress={this.updateIndex}
-                        selectedIndex={selectedIndex}
-                        buttons={buttons}
-                        containerStyle={{height: 25,backgroundColor:"white",borderColor:"black",width:'60%',alignSelf:'center'}}
-                        selectedButtonStyle={{backgroundColor:"black"}}
-                        textStyle={{color:"black"}}
-                        underlayColor={'black'}
-                        innerBorderStyle = {{width:1,color:'black'}}
-                        containerBorderRadius={10}
-                    />
-                </View>
-                
-                {!this.state.showLine && <View style ={styles.loading}>
-                    <ActivityIndicator size="small" color="white" />
+                {!this.state.showChart && <View style={{marginTop:20, display: "flex", flexDirection:"row", justifyContent:"flex-start"}}>
+                    <Text style ={{fontWeight:"bold", fontSize: 20}}> Loading Chart </Text>
+                    <ActivityIndicator size="small" color="black" />
                 </View>}
-                {this.state.showLine && <TouchableOpacity onPress={() => this.getData()} style={styles.refresh}>
-                    <Image
-                        style = {{flex:1,
-                                height: 20,
-                                resizeMode: 'contain',
-                                width: 20,
-                                alignSelf: 'center'}}
-                        source={require('./assets/refresh.png')}
-                    />
-                </TouchableOpacity>}
-                <View style ={{display:"flex", flexDirection:"row"}}>
-                    <Text style = {{...styles.locationText, fontSize: 20, fontWeight:'bold'}}>
-                        Location
-                    </Text>
-                    <TouchableOpacity onPress={this.goToMarker}>
-                        <Image
-                            style = {{
-                                    margin:2,
-                                    height: 30,
-                                    resizeMode: 'contain',
-                                    width: 30,
-                                    }}
-                            source={require('./assets/flight.png')}
-                        />
-                    </TouchableOpacity>
-                </View>
-                <Text style = {{...styles.locationText, fontSize: 15}}>
-                    {this.props.infoPageMarker}
-                </Text>
-                {this.state.showLine && <View style = {{display:"flex", 
+
+                <View style = {{marginTop:20}}>
+                {(this.state.selectedValue && this.state.showChart) && <Text style = {{fontSize: 30, alignSelf:"center", color:"black"}}>{this.state.selectedValue.toString() + " LF"}</Text>}
+                {(this.state.selectedValue && this.state.showChart) && <Text style = {{fontSize: 15, alignSelf:"center", color:colorString}}>{stringBean}</Text>}
+                {(this.state.selectedTime && this.state.showChart) && <Text style = {{fontSize: 15, alignSelf:"center", color:"grey"}}>{dateFns.format(d3.timeMinute(this.state.selectedTime),"hh:mm A")}</Text>}
+                {(this.state.selectedTime && this.state.showChart) && <View style = {{display:"flex", 
                                 flexDirection:"row", 
                                 justifyContent:'center', 
                                 alignItems:'center',
@@ -302,7 +280,7 @@ export default class InfoPage extends React.Component {
                             source={require('./assets/fire.png')}
                         />
                         <Text style = {{...styles.locationText}}>
-                            {this.props.returnUpVotes}          
+                            {this.state.timeToLit[this.state.selectedTime]}          
                         </Text>
                     </View>
                     <View style = {{
@@ -313,11 +291,109 @@ export default class InfoPage extends React.Component {
                             source={require('./assets/poop.png')}
                         />
                         <Text style = {{...styles.locationText}}>
-                            {this.props.returnDownVotes}          
+                            {this.state.timeToShit[this.state.selectedTime]}  
                         </Text>
                     </View>
                 </View>}
-                <Button title="Share Location" onPress={() => console.log("Hello")}/>
+
+                {this.state.showChart && <VictoryChart
+                    height={375}
+                    width={375}
+                    padding={{ top: 30, bottom: 10, left: 50, right: 50 }}
+                    scale={{ x: "time", y: "linear" }}
+                    containerComponent={
+                        <VictoryVoronoiContainer
+                        labels={(d) =>"."}
+                        labelComponent={
+                            <VictoryTooltip
+                              flyoutComponent={<CustomFlyout/>}
+                            />
+                          }
+                        onActivated={(points, props) => this.setState({selectedValue: points[0].value, selectedTime: points[0].time})}                    
+                        />
+                      }
+                    >
+                        
+                        {this.state.showLine && <VictoryLine
+                        style={{
+                        data: { stroke: "rgb(240,148,59)" },
+                        }}
+                        data={this.state.processedData}
+                        x="time"
+                        y="value"
+                        animate
+                        />}
+
+                        <VictoryAxis dependentAxis 
+                        standalone={false}
+                        tickFormat={(t) => `${Math.round(t*10)/10}`}
+                        style={{ axis: {stroke: "none"} , tickLabels: {
+                            color: "grey",
+                            fill: "grey",
+                            fontSize: '10px',
+                            fontFamily: 'inherit',
+                            fillOpacity: 1,
+                            margin: 0,
+                            padding: 0
+                          }
+                        }}
+                        offsetX={350}
+                        tickValues = {[this.state.minValue, this.state.maxValue]}
+                        />
+
+                    </VictoryChart>}
+                </View>
+                
+                {this.state.showChart && <ButtonGroup
+                        onPress={this.updateIndex}
+                        selectedIndex={selectedIndex}
+                        buttons={buttons}
+                        containerStyle={{height: 20,backgroundColor:"transparent",borderColor:"transparent",width:'100%',alignSelf:'center'}}
+                        selectedButtonStyle={{backgroundColor:"transparent"}}
+                        selectedTextStyle = {{color: "black"}}
+                        textStyle={{color:"lightgrey",fontSize:12,fontWeight:"bold"}}
+                        underlayColor={'black'}
+                        innerBorderStyle = {{width:0,color:'transparent'}}
+                        containerBorderRadius={10}
+                    />}
+                                        
+
+                {!this.state.showLine && <View style ={styles.loading}>
+                    <ActivityIndicator size="small" color="white" />
+                </View>}
+
+                {this.state.showLine && <TouchableOpacity onPress={() => this.getData()} style={styles.refresh}>
+                    <Image
+                        style = {{flex:1,
+                                height: 20,
+                                resizeMode: 'contain',
+                                width: 20,
+                                alignSelf: 'center'}}
+                        source={require('./assets/refresh.png')}
+                    />
+                </TouchableOpacity>}
+                
+                <View>
+
+                <View style ={{display:"flex", flexDirection:"row", justifyContent: "center"}}>
+                    <TouchableOpacity onPress={this.goToMarker}>
+                        <Image
+                            style = {{
+                                    margin:2,
+                                    height: 50,
+                                    resizeMode: 'contain',
+                                    width: 50,
+                                    }}
+                            source={require('./assets/landmark.png')}
+                        />
+                    </TouchableOpacity>
+                </View>
+                <TouchableOpacity onPress={this.goToMarker}>
+                <Text style = {{...styles.locationText, fontSize: 15}}>
+                    {this.props.infoPageMarker}
+                </Text>
+                </TouchableOpacity>
+                </View>
             </View>
             );
         } 

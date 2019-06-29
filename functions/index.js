@@ -118,6 +118,12 @@ exports.updatedVote = functions.firestore.document('locations/{address}/votes/{v
                  if(oldVote === -1) {
                      downVotes_ -= 1;
                  }
+
+                 ref.collection('locations').doc(context.params.address).collection('upvotes_downvotes').doc(currentTime).set({
+                    upvotes: upVotes_,
+                    downvotes: downVotes_,
+                    count: currentCount
+                })
                  //compute percentVotesLastThirty
  
                  //compute percentVotesLastHour
