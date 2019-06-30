@@ -14,8 +14,8 @@ export default class CustomFlyout extends React.Component {
       return (
         <G>
           <Line x1={x} y1={newY+500} x2={x} y2={newY-500} stroke="lightgrey" strokeWidth=".75"/>   
-          <Circle cx={x} cy={newY+25} r="8" stroke="black" fill="white"/>                                                
-          <Circle cx={x} cy={newY+25} r="5" stroke="black" fill="black"/>
+          <Circle cx={x} cy={newY+25} r="8" stroke="lightgrey" fill="white"/>                                                
+          <Circle cx={x} cy={newY+25} r="5" stroke="transparent" fill="#007AFF"/>
         </G>
       );
     }

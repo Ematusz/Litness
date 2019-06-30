@@ -10,6 +10,7 @@ import g from 'ngeohash'
 import * as math from 'mathjs';
 import * as firebase from 'firebase';
 import 'firebase/firestore';
+import ClusteringMap from './ClusteringMap.js';
 import styles from './styles.js';
 import * as d3 from 'd3-time';
 import dateFns from 'date-fns';
@@ -90,13 +91,69 @@ export default class MasterView extends React.Component {
       this.changeLit = this.changeLit.bind(this);
       this.toggleInfoPage = this.toggleInfoPage.bind(this);
       this.toggleLeaderBoard = this.toggleLeaderBoard.bind(this);
-      this.toggleTab = this.toggleTab.bind(this);
-      this.hideTab = this.hideTab.bind(this);
       this.returnUpVotes = this.returnUpVotes.bind(this);
       this.returnDownVotes = this.returnDownVotes.bind(this);
       this.renderImage = this.renderImage.bind(this);
       this.goToMarker = this.goToMarker.bind(this);
       this.toggleSwitch = this.toggleSwitch.bind(this);
+      this.openTab = this.openTab.bind(this);
+      this.closeTab = this.closeTab.bind(this);
+    }
+
+    openTab(markerAddress,geohash) {
+      // Checks if marker is a ghost. if a ghostMarker is clicked then call hideTab()
+      if(this.state.geoHashGrid[geohash] === undefined || !Object.keys(this.state.geoHashGrid[geohash]).includes(markerAddress)) {
+        this.closeTab();
+      }
+
+      // change selectedAddress to the new address if the selected marker is not at selectedAddress
+      else if(this.state.selectedMarker !== markerAddress) {
+
+        if(markerAddress in this.state.userLocation.userAddressDictionary) {
+          this.setState({showVotingButtons: true})
+        } else {
+          this.setState({showVotingButtons: true})
+        }
+
+        if (!this.state.tabVal) {
+          this.setState({tabVal:true})
+          Animated.timing(this.state.animatedTab, {
+            toValue: 370,
+            friction: 100,
+            duration: 500
+          }).start();
+        }
+        this.setState({selectedGeohash: geohash});
+        this.setState({selectedMarker: markerAddress});
+
+        if (this.state.geoHashGrid[geohash][this.state.selectedMarker]) {
+          this.state.geoHashGrid[geohash][this.state.selectedMarker].borderColor = "transparent"
+        }
+        this.state.geoHashGrid[geohash][markerAddress].borderColor = "#e8b923"
+
+        this.setState({onLongPress: false});
+      } 
+    }
+
+    closeTab() {
+      if (this.state.tabVal) {
+        this.setState({tabVal:false});
+        Animated.timing(this.state.animatedTab, {
+          toValue: 1000,
+          friction: 200,
+          duration: 500
+        }).start();
+      }
+      // Markers overhaul
+      if (this.state.geoHashGrid[this.state.selectedGeohash] != undefined) {
+        if (this.state.geoHashGrid[this.state.selectedGeohash][this.state.selectedMarker] != undefined) {
+          this.state.geoHashGrid[this.state.selectedGeohash][this.state.selectedMarker].borderColor = "transparent"
+        }
+      }
+      
+      this.setState({selectedMarker: null});
+      var deleteGhost = []
+      this.setState({ghostMarker: deleteGhost});
     }
 
     toggleSwitch = (value) => {
@@ -173,7 +230,8 @@ export default class MasterView extends React.Component {
         this.toggleLeaderBoard()
       }
       this.state.geoHashGrid[geohash][markerAddress].borderColor = "#e8b923"
-      this.toggleTab(markerAddress,geohash)
+      this.openTab(markerAddress,geohash)
+      // this.toggleTab(markerAddress,geohash)
     }
 
 
@@ -188,7 +246,7 @@ export default class MasterView extends React.Component {
           if (change.type == 'added'){
             // *untested* Should reset tab and remove ghost marker if youre about to vote on a location that was just voted on.
             if (this.state.ghostMarker.length > 0 && change.doc.id == this.state.ghostMarker[0].address) {
-              this.hideTab();
+              this.closeTab();
             }
             let newGrid = {...this.state.geoHashGrid};
             if (change.doc.data().geohash[0] in newGrid) {
@@ -199,6 +257,10 @@ export default class MasterView extends React.Component {
               }
               newDictionary[change.doc.id] = {
                   coordinate: {
+                    latitude: change.doc.data().latitude,
+                    longitude: change.doc.data().longitude
+                  },
+                  location: {
                     latitude: change.doc.data().latitude,
                     longitude: change.doc.data().longitude
                   },
@@ -218,6 +280,10 @@ export default class MasterView extends React.Component {
               let newDictionary = {};
               newDictionary[change.doc.id] = {
                   coordinate: {
+                    latitude: change.doc.data().latitude,
+                    longitude: change.doc.data().longitude
+                  },
+                  location: {
                     latitude: change.doc.data().latitude,
                     longitude: change.doc.data().longitude
                   },
@@ -251,7 +317,7 @@ export default class MasterView extends React.Component {
           // delete location from markers_dictionary if document is removed from listener
           else if(change.type == 'removed') {
             if (this.state.selectedMarker == change.doc.id) {
-              this.hideTab();
+              this.closeTab();
             }
             let newGrid = {...this.state.geoHashGrid};
             // this if statement may be redundant
@@ -363,7 +429,8 @@ export default class MasterView extends React.Component {
       }
       // closes the vote tab when the info page is up so that its not distracting.
       if (this.state.infoPage) {
-        this.toggleTab(markerAddress,selectedGeohash);
+        this.openTab(markerAddress,selectedGeohash);
+        // this.toggleTab(markerAddress,selectedGeohash);
         this.setState({infoPageMarker: null});
         this.setState({infoPageGeohash: null});
       }
@@ -371,7 +438,7 @@ export default class MasterView extends React.Component {
       else {
         this.setState({infoPageMarker: markerAddress});
         this.setState({infoPageGeohash: selectedGeohash});
-        this.hideTab();
+        this.closeTab()
       }
     }
   
@@ -420,71 +487,6 @@ export default class MasterView extends React.Component {
           }).start();
         }
       }
-    }
-  
-    toggleTab(markerAddress,geohash) {
-
-      // Checks if marker is a ghost. if a ghostMarker is clicked then call hideTab()
-      if(this.state.geoHashGrid[geohash] === undefined || !Object.keys(this.state.geoHashGrid[geohash]).includes(markerAddress)) {
-        this.hideTab();
-      }
-
-      // change selectedAddress to the new address if the selected marker is not at selectedAddress
-      else if(this.state.selectedMarker !== markerAddress) {
-  
-        if(markerAddress in this.state.userLocation.userAddressDictionary) {
-          this.setState({showVotingButtons: true})
-        } else {
-          this.setState({showVotingButtons: true})
-        }
-  
-        if (!this.state.tabVal) {
-          this.setState({tabVal:true})
-          Animated.timing(this.state.animatedTab, {
-            toValue: 370,
-            friction: 100,
-            duration: 200
-          }).start();
-        }
-        this.setState({selectedGeohash: geohash});
-        this.setState({selectedMarker: markerAddress});
-  
-        if (this.state.geoHashGrid[geohash][this.state.selectedMarker]) {
-          this.state.geoHashGrid[geohash][this.state.selectedMarker].borderColor = "transparent"
-        }
-        this.state.geoHashGrid[geohash][markerAddress].borderColor = "#e8b923"
-  
-        this.setState({onLongPress: false});
-      } 
-      // if the marker you're clicking on is neither a ghost marker, nor a new marker, hideTab()
-      else{
-        this.state.geoHashGrid[geohash][markerAddress].borderColor = "transparent"
-        this.hideTab();
-      }
-      
-      
-    }
-  
-    // hides the voting tab and switches the state back to false. Also clears out ghostMarker
-    hideTab() {
-      if (this.state.tabVal) {
-        this.setState({tabVal:false});
-        Animated.timing(this.state.animatedTab, {
-          toValue: 1000,
-          friction: 200,
-          duration: 500
-        }).start();
-      }
-      // Markers overhaul
-      if (this.state.geoHashGrid[this.state.selectedGeohash] != undefined) {
-        if (this.state.geoHashGrid[this.state.selectedGeohash][this.state.selectedMarker] != undefined) {
-          this.state.geoHashGrid[this.state.selectedGeohash][this.state.selectedMarker].borderColor = "transparent"
-        }
-      }
-      
-      this.setState({selectedMarker: null});
-      var deleteGhost = []
-      this.setState({ghostMarker: deleteGhost});
     }
   
     closePopUp() {
@@ -542,7 +544,7 @@ export default class MasterView extends React.Component {
             }
           })
           // assuming it was a ghost marker, that marker can now be hidden.
-          this.hideTab(); 
+          this.closeTab();
   
       // update votes if user is already in the database
       } else {
@@ -648,9 +650,9 @@ export default class MasterView extends React.Component {
       return (
         <View style = {styles.bigContainer}>        
   
-            <Map onRef={ref => (this.child = ref)}
+            <ClusteringMap onRef={ref => (this.child = ref)}
                  geoHashGrid={this.state.geoHashGrid}
-                 hideTab = {this.hideTab} 
+                 closeTab={this.closeTab}
                  onLongPressHandler={this.onLongPressHandler}
                  selectedMarker={this.state.selectedMarker} 
                  selectedMarkerHandler={this.selectedMarkerHandler}
@@ -663,7 +665,8 @@ export default class MasterView extends React.Component {
                  userLocation={this.state.userLocation} 
                  ghostMarkerHandler={this.ghostMarkerHandler} 
                  geoHashGridHandler={this.geoHashGridHandler} 
-                 toggleTab={this.toggleTab} 
+                //  toggleTab={this.toggleTab} 
+                 openTab={this.openTab} 
                  renderImage={this.renderImage}
                  switchValue = {this.state.switchValue}
             />
@@ -681,17 +684,15 @@ export default class MasterView extends React.Component {
                               renderImage={this.renderImage}
             />}
 
-
-            {/* <Switch 
+            <Switch 
             style ={{transform: [{ rotate: '90deg'}],position:'absolute',left:0,top:'10%'}}
             onValueChange = {this.toggleSwitch}
             value = {this.state.switchValue}
             trackColor={{false: "black"}}
             ios_backgroundColor={"black"}
             thumbColor={"white"}>
-            </Switch> */}
+            </Switch>
 
-  
             <AnimatedSideTab style = {{left:this.state.animatedTab}} 
                              clickInfo = {()=>this.toggleInfoPage(this.state.selectedMarker,this.state.selectedGeohash)} 
                              clickFire={()=>this.changeLit(this.state.selectedMarker,this.state.selectedGeohash,1)}
