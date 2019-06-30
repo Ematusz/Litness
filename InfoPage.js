@@ -177,14 +177,14 @@ export default class InfoPage extends React.Component {
                 </TouchableOpacity>
 
                 {!this.state.showChart && <View style={{marginTop:20, display: "flex", flexDirection:"row", justifyContent:"flex-start"}}>
-                    <Text style ={{fontWeight:"bold", fontSize: 20}}> Loading Data </Text>
+                    <Text style ={{color:"black", fontSize: 17}}> Loading Data </Text>
                     <ActivityIndicator size="small" color="black" />
                 </View>}
 
                 <View style = {{marginTop:20}}>
                 {(this.state.selectedValue && this.state.showChart) && <Text style = {{fontSize: 30, alignSelf:"center", color:"black"}}>{this.state.selectedValue.toString() + " LF"}</Text>}
                 {(this.state.selectedValue && this.state.showChart) && <Text style = {{fontSize: 15, alignSelf:"center", color:colorString}}>{stringBean}</Text>}
-                {(this.state.selectedTime && this.state.showChart) && <Text style = {{fontSize: 15, alignSelf:"center", color:"grey"}}>{dateFns.format(d3.timeMinute(this.state.selectedTime),"hh:mm A")}</Text>}
+                {(this.state.selectedTime && this.state.showChart) && <Text style = {{fontSize: 15, alignSelf:"center", color:"grey"}}>{dateFns.format(d3.timeSecond(this.state.selectedTime),"hh:mm:ss")}</Text>}
                 {(this.state.selectedTime && this.state.showChart) && <View style = {{display:"flex", 
                                 flexDirection:"row", 
                                 justifyContent:'center', 
@@ -235,7 +235,7 @@ export default class InfoPage extends React.Component {
                         
                         {this.state.showLine && <VictoryLine
                         style={{
-                        data: { stroke: "rgb(240,148,59)" },
+                        data: { stroke: "black" },
                         }}
                         data={this.state.processedData}
                         x="time"
@@ -247,8 +247,8 @@ export default class InfoPage extends React.Component {
                         standalone={false}
                         tickFormat={(t) => `${Math.round(t*10)/10}`}
                         style={{ axis: {stroke: "none"} , tickLabels: {
-                            color: "grey",
-                            fill: "grey",
+                            color: "black",
+                            fill: "black",
                             fontSize: '10px',
                             fontFamily: 'inherit',
                             fillOpacity: 1,
@@ -280,6 +280,12 @@ export default class InfoPage extends React.Component {
                 {!this.state.showLine && <View style ={styles.loading}>
                     <ActivityIndicator size="small" color="white" />
                 </View>}
+
+                <View style={{
+                    height:1,
+                    width:"100%",
+                    backgroundColor:"lightgrey"
+                }}/>
 
                 {this.state.showLine && <TouchableOpacity onPress={() => this.getData()} style={styles.refresh}>
                     <Image
