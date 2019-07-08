@@ -106,6 +106,18 @@ export default StyleSheet.create({
         borderWidth: 2,
         borderRadius: 10
       },
+    addHubButton: {
+        backgroundColor:"white",
+        borderColor:'black',
+        borderWidth: 2,
+        position: 'absolute',
+        flex:1,
+        left: 0,
+        bottom: '10%',
+        height: 30,
+        resizeMode: 'contain',
+        width: 30
+      },
     text: {
         color: "#FFF",
         fontWeight: "bold",
@@ -143,7 +155,7 @@ export default StyleSheet.create({
         right: 0,
         top: '10%',
       },
-    
+
     leaderBoardCell: {
         marginTop: 10,
         display:"flex",
