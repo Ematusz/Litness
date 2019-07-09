@@ -65,7 +65,6 @@ export default class MasterView extends React.Component {
           longitudeDelta: null
         },
         clustering: true,
-        markerReference: null,
         currentGrid: [],
         userLocation: {
           formattedAddress: null,
@@ -77,7 +76,6 @@ export default class MasterView extends React.Component {
         heatMapMode: false,
       };
   
-      this.markerReferenceHandler = this.markerReferenceHandler.bind(this);
       this.showVotingButtonsHandler = this.showVotingButtonsHandler.bind(this);
       this.selectedGeohashHandler= this.selectedGeohashHandler.bind(this);
       this.selectedMarkerHandler= this.selectedMarkerHandler.bind(this);
@@ -157,7 +155,6 @@ export default class MasterView extends React.Component {
         }
       }
       
-      this.setState({selectedMarker: null});
       if (deleteGhost) {
         this.setState({selectedMarker: null});
         var deleteGhost = []
@@ -385,13 +382,6 @@ export default class MasterView extends React.Component {
       console.log(uniqueId);
     }
 
-    markerReferenceHandler(someValue) {
-      console.log("markerReference:", someValue)
-      this.setState({
-        markerReference: someValue
-      })
-    }
-
     showVotingButtonsHandler(someValue) {
         this.setState({
             showVotingButtons: someValue
@@ -560,6 +550,7 @@ export default class MasterView extends React.Component {
   
     // Initializes the ghost marker to closest location in possible current locations
     setGhost(referenceLatitude, referenceLongitude) {
+      console.log('ghost set')
       // this._addWatchPosition()
       let oldGhost = false;
       let ghostGeohash = null;
@@ -577,6 +568,10 @@ export default class MasterView extends React.Component {
       
       let test = Object.keys(this.state.userLocation.userAddressDictionary).map( address => {
         if (oldGhost == false) {
+          return address;
+        }
+        else if (this.state.geoHashGrid[this.state.userLocation.userAddressDictionary[address].geohash] == undefined) {
+          console.log('here')
           return address;
         }
         else if (!(address in this.state.geoHashGrid[this.state.userLocation.userAddressDictionary[address].geohash])||
@@ -809,7 +804,6 @@ export default class MasterView extends React.Component {
                  closeTab={this.closeTab}
                  onLongPressHandler={this.onLongPressHandler}
                  selectedMarker={this.state.selectedMarker} 
-                 markerReferenceHandler={this.markerReferenceHandler}
                  selectedMarkerHandler={this.selectedMarkerHandler}
                  selectedGeohashHandler={this.selectedGeohashHandler} 
                  tabValHandler={this.tabValHandler}
