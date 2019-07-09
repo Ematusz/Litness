@@ -73,6 +73,7 @@ export default class MasterView extends React.Component {
         error: null,
         testString: null,
         heatMapMode: false,
+        selectedMarkerRef: {}
       };
   
       this.showVotingButtonsHandler = this.showVotingButtonsHandler.bind(this)
@@ -100,16 +101,16 @@ export default class MasterView extends React.Component {
       this.closeTab = this.closeTab.bind(this);
     }
 
-    openTab(markerAddress,geohash) {
+    openTab(marker) {
       // Checks if marker is a ghost. if a ghostMarker is clicked then call hideTab()
-      if(this.state.geoHashGrid[geohash] === undefined || !Object.keys(this.state.geoHashGrid[geohash]).includes(markerAddress)) {
+      if(this.state.geoHashGrid[marker.geohash] === undefined || !Object.keys(this.state.geoHashGrid[marker.geohash]).includes(marker.address)) {
         this.closeTab();
       }
 
       // change selectedAddress to the new address if the selected marker is not at selectedAddress
-      else if(this.state.selectedMarker !== markerAddress) {
+      else if(this.state.selectedMarker !== marker.address) {
 
-        if(markerAddress in this.state.userLocation.userAddressDictionary) {
+        if(marker.address in this.state.userLocation.userAddressDictionary) {
           this.setState({showVotingButtons: true})
         } else {
           this.setState({showVotingButtons: true})
@@ -120,17 +121,16 @@ export default class MasterView extends React.Component {
           Animated.timing(this.state.animatedTab, {
             toValue: 370,
             friction: 100,
-            duration: 500
+            duration: 200
           }).start();
         }
-        this.setState({selectedGeohash: geohash});
-        this.setState({selectedMarker: markerAddress});
+        this.setState({selectedGeohash: marker.geohash});
+        this.setState({selectedMarker: marker.address});
+        this.setState({selectedMarkerRef: marker});
 
-        if (this.state.geoHashGrid[geohash][this.state.selectedMarker]) {
-          this.state.geoHashGrid[geohash][this.state.selectedMarker].borderColor = "transparent"
+        if (this.state.geoHashGrid[marker.geohash][this.state.selectedMarker]) {
+          // this.state.geoHashGrid[geohash][this.state.selectedMarker].borderColor = "transparent"
         }
-        this.state.geoHashGrid[geohash][markerAddress].borderColor = "#e8b923"
-
         this.setState({onLongPress: false});
       } 
     }
@@ -141,7 +141,7 @@ export default class MasterView extends React.Component {
         Animated.timing(this.state.animatedTab, {
           toValue: 1000,
           friction: 200,
-          duration: 500
+          duration: 200
         }).start();
       }
       // Markers overhaul
@@ -222,16 +222,24 @@ export default class MasterView extends React.Component {
       this._getDeviceInfoAsync();
     }
 
-    goToMarker(geohash,markerAddress) {
+    goToMarker(marker) {
       if (this.state.infoPage) {
-        this.toggleInfoPage()
+        this.toggleInfoPage(marker)
       }
       if (this.state.leaderBoard) {
         this.toggleLeaderBoard()
       }
-      this.state.geoHashGrid[geohash][markerAddress].borderColor = "#e8b923"
-      this.openTab(markerAddress,geohash)
-      // this.toggleTab(markerAddress,geohash)
+
+      // this.state.geoHashGrid[geohash][markerAddress].borderColor = "#e8b923"
+      this.openTab(marker)
+      let locationObj = {};
+      locationObj.coordinates = marker.coordinate
+      locationObj.coordinates.latitudeDelta = 0.0005
+      locationObj.coordinates.longitudeDelta = 0.0005
+      locationObj.address = marker.address
+      this.setState({
+        moveToLocation: locationObj
+      })
     }
 
 
@@ -271,7 +279,6 @@ export default class MasterView extends React.Component {
                   geohash: change.doc.data().geohash[0],
                   upVotes: change.doc.data().upVotes,
                   downVotes: change.doc.data().downVotes,
-                  borderColor: "transparent",
                   key: change.doc.id,
               }
               newGrid[change.doc.data().geohash[0]] = newDictionary
@@ -294,7 +301,6 @@ export default class MasterView extends React.Component {
                   geohash: change.doc.data().geohash[0],
                   upVotes: change.doc.data().upVotes,
                   downVotes: change.doc.data().downVotes,
-                  borderColor: "transparent",
                   key: change.doc.id,
               }
               newGrid[change.doc.data().geohash[0]] = newDictionary
@@ -397,9 +403,9 @@ export default class MasterView extends React.Component {
         geoHashGrid: someValue
       })
     }
-  
+
     // Toggles the info page on a hub
-    toggleInfoPage (markerAddress,selectedGeohash) {
+    toggleInfoPage (marker) {
       // if infoPage is currently listed as false, open the page. Otherwise close it.
       if (!this.state.infoPage) {
         this.setState({infoPage: true});
@@ -429,15 +435,17 @@ export default class MasterView extends React.Component {
       }
       // closes the vote tab when the info page is up so that its not distracting.
       if (this.state.infoPage) {
-        this.openTab(markerAddress,selectedGeohash);
+        this.openTab(marker);
         // this.toggleTab(markerAddress,selectedGeohash);
         this.setState({infoPageMarker: null});
         this.setState({infoPageGeohash: null});
+        this.setState({selectedMarkerRef: null});
       }
       // re opens the tab when the info page closes
       else {
-        this.setState({infoPageMarker: markerAddress});
-        this.setState({infoPageGeohash: selectedGeohash});
+        this.setState({infoPageMarker: marker.address});
+        this.setState({infoPageGeohash: marker.geohash});
+        this.setState({selectedMarkerRef: marker});
         this.closeTab()
       }
     }
@@ -620,27 +628,27 @@ export default class MasterView extends React.Component {
       if (markerCost < 0) {
         return <Image
         style = {styles.emojiIcon}
-        source={require('./assets/poop.png')}
+        source={{uri:"https://media.giphy.com/media/WnNzIz5cTKYyVcVZxM/giphy.gif"}}
       />;
-      } else if(markerCost < 10) {
+      } else if(markerCost < 3) {
          return <Image
-         style = {styles.emojiIcon}
+         style = {{...styles.emojiIcon}}
          source={require('./assets/logs.png')}
        />;
-      } else if (markerCost < 50) {
+      } else if (markerCost < 5) {
         return <Image
          style = {styles.emojiIcon}
-         source={require('./assets/fire.png')}
+         source={{uri:"https://media.giphy.com/media/MFyEVDtwt0gaQ0MGmm/giphy.gif"}}
        />;
-      } else if (markerCost < 100) {
+      } else if (markerCost < 10) {
         return <Image
-         style = {{...styles.emojiIcon,borderColor:'crimson'}}
-         source={require('./assets/fire.png')}
+         style = {{...styles.emojiIcon}}
+         source={{uri:"https://media.giphy.com/media/ZBQruf89fJy4hLvrsu/giphy.gif"}}
        />;
       } else {
         return <Image
-         style = {{...styles.emojiIcon,borderColor:'dodgerblue'}}
-         source={require('./assets/fire.png')}
+         style = {{...styles.emojiIcon}}
+         source={{uri:"https://media.giphy.com/media/VdiViln8zZB2WdYcmR/giphy.gif"}}
        />;
       } 
    }
@@ -665,14 +673,14 @@ export default class MasterView extends React.Component {
                  userLocation={this.state.userLocation} 
                  ghostMarkerHandler={this.ghostMarkerHandler} 
                  geoHashGridHandler={this.geoHashGridHandler} 
-                //  toggleTab={this.toggleTab} 
                  openTab={this.openTab} 
                  renderImage={this.renderImage}
                  switchValue = {this.state.switchValue}
+                 moveToLocation={this.state.moveToLocation}
             />
   
             {this.state.infoPage && <AnimatedInfoPage style = {{top:this.state.animatedTop}}
-                              toggleInfoPage={() => this.toggleInfoPage(this.state.infoPageMarker,this.state.infoPageGeohash)}
+                              toggleInfoPage={() => this.toggleInfoPage(this.state.selectedMarkerRef)}
                               infoPageMarker={this.state.infoPageMarker}
                               data_={this.state.data_}
                               returnUpVotes={this.returnUpVotes(this.state.infoPageMarker,this.state.infoPageGeohash)}
@@ -682,6 +690,7 @@ export default class MasterView extends React.Component {
                               goToMarker = {this.goToMarker}
                               geohash = {this.state.infoPageGeohash}
                               renderImage={this.renderImage}
+                              markerRef={this.state.selectedMarkerRef}
             />}
 
             <Switch 
@@ -694,7 +703,7 @@ export default class MasterView extends React.Component {
             </Switch>
 
             <AnimatedSideTab style = {{left:this.state.animatedTab}} 
-                             clickInfo = {()=>this.toggleInfoPage(this.state.selectedMarker,this.state.selectedGeohash)} 
+                             clickInfo = {()=>this.toggleInfoPage(this.state.selectedMarkerRef)} 
                              clickFire={()=>this.changeLit(this.state.selectedMarker,this.state.selectedGeohash,1)}
                              clickShit={()=>this.changeLit(this.state.selectedMarker,this.state.selectedGeohash,-1)}
             />

@@ -15,6 +15,7 @@ export default class ClusteringMap extends React.Component {
             error: null,
             pins: [],
             interaction: true,
+            markerToRef: {},
         };
 
         this._getLocationAsync = this._getLocationAsync.bind(this);
@@ -24,6 +25,13 @@ export default class ClusteringMap extends React.Component {
         this.onRegionChangeComplete = this.onRegionChangeComplete.bind(this);
         this.renderMarker = this.renderMarker.bind(this)
         this.renderCluster = this.renderCluster.bind(this)
+        this.componentDidUpdate = this.componentDidUpdate.bind(this);
+        this.pressMarker = this.pressMarker.bind(this);
+    }
+
+    pressMarker(marker) {
+      this.state.markerToRef[marker.address].showCallout();
+      this.props.openTab(marker);
     }
 
     componentDidMount() {
@@ -36,6 +44,15 @@ export default class ClusteringMap extends React.Component {
       this.props.onRef(undefined)
     }
 
+    componentDidUpdate(prevProps, prevState, snapshot) {
+      if (prevProps.moveToLocation != this.props.moveToLocation ) {
+        this.map.getMapRef().animateToRegion(this.props.moveToLocation.coordinates,1);
+        setTimeout(() => {
+          this.state.markerToRef[this.props.moveToLocation.address].showCallout();
+        }, 5000);
+      } 
+    }
+
     renderCluster = (cluster, onPress) => {
       const pointCount = cluster.pointCount,
             coordinate = cluster.coordinate,
@@ -44,7 +61,7 @@ export default class ClusteringMap extends React.Component {
       return (
         <Marker identifier={`cluster-${clusterId}`} coordinate={coordinate} onPress={onPress}>
           <View style={{...styles.marker,width:40,height:40, backgroundColor:"white",borderWidth:2, borderColor:"black"}}>
-            <Text style={styles.testtext}>
+            <Text style={{...styles.markerCost,color:"black"}}>
               {pointCount}
             </Text>
           </View>
@@ -62,7 +79,7 @@ export default class ClusteringMap extends React.Component {
           <MapView.Marker 
             {...marker} 
             // on press should toggle the voter tab. This will happen on close
-            onPress =  {() => this.props.openTab(marker.address,marker.geohash)}
+            onPress =  {() => this.props.openTab(marker)}
             // onPress =  {() => this.props.toggleTab(marker.address,marker.geohash)}
             title = {marker.number + " " + marker.street} 
             >
@@ -71,7 +88,7 @@ export default class ClusteringMap extends React.Component {
                     style = {styles.emojiIcon}
                     source={require('./assets/poo2.png')}
                 />
-                <Text style={styles.testtext}>?</Text>
+                <Text style={styles.markerCost}>?</Text>
                 </View>
 
           </MapView.Marker>
@@ -81,17 +98,17 @@ export default class ClusteringMap extends React.Component {
           <MapView.Marker 
             {...marker} 
             // on press should toggle the voter tab
-            onPress = {() => this.props.openTab(marker.address,marker.geohash)} 
+            onPress = {() => this.pressMarker(marker)} 
             // onPress = {() => this.props.toggleTab(marker.address,marker.geohash)} 
             title = {marker.number + " " + marker.street}
+            ref={(ref) => this.state.markerToRef[marker.address] = ref}
           >
-            {!this.props.switchValue && <View style={{...styles.marker,borderColor:marker.borderColor}} >
+            {!this.props.switchValue && <View style={{...styles.marker}} >
                 {!this.props.switchValue && this.props.renderImage(marker.cost)}
-                <Text style={styles.testtext}>{marker.cost}</Text>
+                <Text style={styles.markerCost}>{marker.cost}</Text>
             </View>}
   
             {this.props.switchValue && <View style={{...styles.markerHeatMap,backgroundColor: color,shadowColor:color}}/>}
-          
           </MapView.Marker>
         )
       }
@@ -235,9 +252,7 @@ export default class ClusteringMap extends React.Component {
     };
 
      toggleTabMapPress = pressinfo => {
-       console.log("pressed")
       if(pressinfo.nativeEvent.action !== "marker-press") {
-        // this.props.hideTab();
         this.props.closeTab();
         this.setState({interaction:true})
       } else {

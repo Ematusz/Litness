@@ -112,8 +112,8 @@ export default StyleSheet.create({
         fontSize: 20
       },
     
-    testtext: {
-        color: "black",
+    markerCost: {
+        color: "white",
         fontWeight: "bold",
         fontSize: 16,
         position: 'absolute',
@@ -123,7 +123,7 @@ export default StyleSheet.create({
     tab: {
         backgroundColor:"white",
         borderColor:'black',
-        borderWidth: 2,
+        borderWidth: 1,
         borderRadius: 10,
         position: 'absolute',
         flex:1,
@@ -190,7 +190,7 @@ export default StyleSheet.create({
       borderRadius: 20,
       borderWidth: 2,
       borderColor: 'black',
-      backgroundColor:'whitesmoke'
+      backgroundColor:'black'
     },
     emojiIconHeatMap: {
       height: 40,
