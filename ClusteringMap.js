@@ -15,6 +15,7 @@ export default class ClusteringMap extends React.Component {
             error: null,
             pins: [],
             interaction: true,
+            dragging: false,
         };
 
         this._getLocationAsync = this._getLocationAsync.bind(this);
@@ -61,10 +62,13 @@ export default class ClusteringMap extends React.Component {
         return (
           <MapView.Marker
             {...marker} 
-            // ref = {marker=> {
-            //   this.marker = marker;
-            //   // marker.showCallout();
-            // }}
+            ref = {markerRef=> {
+              this.markerRef = markerRef;
+              if (markerRef != null && !this.state.dragging) {
+                markerRef.showCallout();
+              }
+              
+            }}
             draggable
             zIndex={10}
             showCallout
@@ -72,11 +76,19 @@ export default class ClusteringMap extends React.Component {
             // on press should toggle the voter tab. This will happen on close
             onPress =  {() => this.props.openTab(marker.address,marker.geohash)}
             // onPress =  {() => this.props.toggleTab(marker.address,marker.geohash)}
-            onDragStart = { () => this.props.closeTab(false)}
+            onDragStart = { () => {
+              // console.log(this.markerRef)
+              this.setState({dragging: true})
+              this.markerRef.hideCallout()
+              this.props.closeTab(false)
+            }}
             // onRegionChangeComplete getting called here. Not quite sure why
-            onDragEnd = { (e) => {this.props.setGhost(e.nativeEvent.coordinate.latitude,e.nativeEvent.coordinate.longitude); console.log("dragend")}}
-            // title = {marker.number + " " + marker.street} 
-            title = {"hello"}
+            onDragEnd = { (e) => {
+              this.setState({dragging: false})
+              this.props.setGhost(e.nativeEvent.coordinate.latitude,e.nativeEvent.coordinate.longitude)
+            }}
+            title = {marker.number + " " + marker.street + "\nDrag me!"} 
+            // title = {"hello"}
             >
                 <View style={styles.ghostMarker} >
                 <Image
