@@ -197,10 +197,10 @@ export default class InfoPage extends React.Component {
         return (
             <View style={[styles.infoPage,this.props.style]}>
 
-                {!this.state.showChart && <View style={{marginTop:20, display: "flex", flexDirection:"column", justifyContent:"flex-start",alignItems:"center"}}>
+                {!this.state.showChart && <View style={{top:'50%', display: "flex", flexDirection:"column", justifyContent:"flex-start",alignItems:"center"}}>
                     {/* <Text style ={{color:"black", fontSize: 17}}> Loading... </Text> */}
                     <Image
-                        style = {{...styles.emojiIcon,backgroundColor:"white",borderWidth:0}}
+                        style = {{...styles.emojiIcon,backgroundColor:"white",borderWidth:0, alignSelf:'center'}}
                         source={{uri:"https://media.giphy.com/media/MFyEVDtwt0gaQ0MGmm/giphy.gif"}}
                     />
                     <Text style ={{color:"black", fontSize: 17}}> Loading... </Text>
@@ -308,11 +308,11 @@ export default class InfoPage extends React.Component {
                     <ActivityIndicator size="small" color="white" />
                 </View>}
 
-                <View style={{
+                {this.state.showChart && <View style={{
                     height:1,
                     width:"100%",
                     backgroundColor:"lightgrey"
-                }}/>
+                }}/>}
 
                 {this.state.showLine && <TouchableOpacity onPress={() => this.getData()} style={styles.refresh}>
                     <Image
@@ -325,7 +325,7 @@ export default class InfoPage extends React.Component {
                     />
                 </TouchableOpacity>}
                 
-                <View>
+                {this.state.showChart&& <View>
 
                 <View style ={{display:"flex", flexDirection:"row", justifyContent: "center"}}>
                     <TouchableOpacity onPress={this.goToMarker}>
@@ -345,7 +345,7 @@ export default class InfoPage extends React.Component {
                             {this.props.infoPageMarker}
                         </Text>
                     </TouchableOpacity>
-                </View>
+                </View>}
 
                 {this.state.showChart&&<TouchableOpacity onPress={this.closeInfoPage} style = {styles.closeBar}>
                     <Text style = {{color:'white',fontWeight:'bold'}}>{string}</Text>
