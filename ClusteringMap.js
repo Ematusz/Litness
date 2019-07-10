@@ -76,12 +76,24 @@ export default class ClusteringMap extends React.Component {
       let color = 'rgba(' + red.toString() +',0,'+ blue.toString()+',.35)';
       if (marker.ghostMarker) {
         return (
-          <MapView.Marker 
+          <MapView.Marker
             {...marker} 
+            // ref = {marker=> {
+            //   this.marker = marker;
+            //   // marker.showCallout();
+            // }}
+            draggable
+            zIndex={10}
+            showCallout
+            cluster = {false}
             // on press should toggle the voter tab. This will happen on close
             onPress =  {() => this.props.openTab(marker)}
             // onPress =  {() => this.props.toggleTab(marker.address,marker.geohash)}
-            title = {marker.number + " " + marker.street} 
+            onDragStart = { () => this.props.closeTab(false)}
+            // onRegionChangeComplete getting called here. Not quite sure why
+            onDragEnd = { (e) => {this.props.setGhost(e.nativeEvent.coordinate.latitude,e.nativeEvent.coordinate.longitude); console.log("dragend")}}
+            // title = {marker.number + " " + marker.street} 
+            title = {"hello"}
             >
                 <View style={styles.ghostMarker} >
                 <Image
@@ -102,6 +114,7 @@ export default class ClusteringMap extends React.Component {
             // onPress = {() => this.props.toggleTab(marker.address,marker.geohash)} 
             title = {marker.number + " " + marker.street}
             ref={(ref) => this.state.markerToRef[marker.address] = ref}
+            zIndex = {0}
           >
             {!this.props.switchValue && <View style={{...styles.marker}} >
                 {!this.props.switchValue && this.props.renderImage(marker.cost)}
@@ -114,11 +127,14 @@ export default class ClusteringMap extends React.Component {
       }
     }
 
+        // Initializes the ghost marker to closest location in possible current locations
+
+    // may be depreciated soon
     addNewLocation = async(latitude_, longitude_) => {
-      var ghostGeohash = g.encode_int(latitude_,longitude_,26)
-      var city = null;
-      var street = null;
-      var number = null;
+      let ghostGeohash = g.encode_int(latitude_,longitude_,26)
+      let city = null;
+      let street = null;
+      let number = null;
       // fetch the address of the place you are passing in the coordinates of.
       myApiKey = 'AIzaSyBkwazID1O1ryFhdC6mgSR4hJY2-GdVPmE';
       fetch('https://maps.googleapis.com/maps/api/geocode/json?address=' + latitude_ + ',' + longitude_ + '&key=' + myApiKey)
@@ -196,7 +212,7 @@ export default class ClusteringMap extends React.Component {
                   key: Math.random()                    
                 });
                 console.log(newGhostMarker[0])
-                this.props.showVotingButtonsHandler(true)
+              this.props.showVotingButtonsHandler(true)
 
               this.props.tabValHandler()
 
@@ -253,7 +269,7 @@ export default class ClusteringMap extends React.Component {
 
      toggleTabMapPress = pressinfo => {
       if(pressinfo.nativeEvent.action !== "marker-press") {
-        this.props.closeTab();
+        this.props.closeTab(true);
         this.setState({interaction:true})
       } else {
         this.setState({interaction:false})
@@ -261,6 +277,7 @@ export default class ClusteringMap extends React.Component {
     }
 
     onRegionChangeComplete = mapRegion => {
+
       var currentGeohash = [g.encode_int(mapRegion.latitude,mapRegion.longitude,26)];
       var currentGrid = g.neighbors_int(currentGeohash[0],26);
       currentGrid = currentGeohash.concat(currentGrid);
@@ -275,7 +292,6 @@ export default class ClusteringMap extends React.Component {
         }
       })
       if (cleanGrid !== null) {
-        console.log("currentGridUpdated");
         this.props.geoHashGridHandler(cleanGrid);
       }
     }
@@ -284,7 +300,8 @@ export default class ClusteringMap extends React.Component {
         return (
           <ClusteredMapView
           style={{flex: 1}}
-          ref={ref => {this.map = ref;}}  
+          ref={ref => {this.map = ref;}} 
+            clusteringEnabled={this.props.clustering} 
             minZoomLevel = {12}
             maxZoomLevel = {19}
             showsMyLocationButton = {true}          
