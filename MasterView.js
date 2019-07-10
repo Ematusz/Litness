@@ -4,6 +4,7 @@ import SideTab from './SideTab.js';
 import InfoPage from './InfoPage.js';
 import Leaderboard from './Leaderboard.js';
 import LeaderboardTab from './LeaderboardTab.js';
+import AddHubTab from './AddHubTab.js'
 import Map from './Map.js';
 import {Constants, Location, Permissions} from 'expo';
 import g from 'ngeohash'
@@ -27,6 +28,7 @@ const AnimatedSideTab = Animated.createAnimatedComponent(SideTab);
 const AnimatedInfoPage = Animated.createAnimatedComponent(InfoPage);
 const AnimatedLeaderboard = Animated.createAnimatedComponent(Leaderboard);
 const AnimatedLeaderboardTab = Animated.createAnimatedComponent(LeaderboardTab);
+const AnimatedAddHubTab = Animated.createAnimatedComponent(AddHubTab);
 
 export default class MasterView extends React.Component {
 
@@ -44,6 +46,7 @@ export default class MasterView extends React.Component {
         animatedLeaderboard: new Animated.Value(1000),
         animatedLeaderboardButton: new Animated.Value(-3),
         animatedTab:  new Animated.Value(500),
+        animatedAddHubTab: new Animated.Value(-3),
         locationResult:null,
         testtest:null,
         geoHashGrid: {},
@@ -814,7 +817,6 @@ export default class MasterView extends React.Component {
                  userLocation={this.state.userLocation} 
                  ghostMarkerHandler={this.ghostMarkerHandler} 
                  geoHashGridHandler={this.geoHashGridHandler} 
-                //  toggleTab={this.toggleTab} 
                  openTab={this.openTab} 
                  renderImage={this.renderImage}
                  switchValue = {this.state.switchValue}
@@ -861,10 +863,15 @@ export default class MasterView extends React.Component {
             <AnimatedLeaderboardTab style = {{right:this.state.animatedLeaderboardButton}} 
                                     toggleLeaderBoard={this.toggleLeaderBoard}
             />
-            <Button style = {styles.addHubButton} 
+
+            <AnimatedAddHubTab style ={{right:this.state.animatedLeaderboardButton}}
+                       setGhost={() => this.setGhost(this.state.userLocation.latitude, this.state.userLocation.longitude)}
+            /> 
+
+            {/* <Button style = {styles.addHubButton} 
               onPress = {() => this.setGhost(this.state.userLocation.latitude, this.state.userLocation.longitude)}
               title = "+"
-            />
+            /> */}
 
           </View>
       );
