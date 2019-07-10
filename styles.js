@@ -89,7 +89,6 @@ export default StyleSheet.create({
         borderRadius: 30,
         borderWidth: 2,
         borderColor: "transparent",
-        backgroundColor:"white",
         position: 'absolute',
         alignItems:'center',
         justifyContent:'center',

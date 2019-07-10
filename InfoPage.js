@@ -1,13 +1,11 @@
 import React from 'react';
 import {TouchableOpacity,Vibration,View,Button,Image,Text,ActivityIndicator} from 'react-native';
 import styles from './styles.js'
-// import ReactNativeHapticFeedback from "react-native-haptic-feedback";
 import { VictoryLine, VictoryChart,VictoryLabel,VictoryCursorContainer,VictoryTheme, VictoryTooltip,VictoryAxis,VictoryZoomContainer,VictoryVoronoiContainer} from "victory-native";
 import * as d3 from 'd3-time';
 import dateFns from 'date-fns';
 import { ButtonGroup} from 'react-native-elements';
 import CustomFlyout from './CustomFlyout.js';
-import ActivityMonitor from './ActivityMonitor.js';
 
 const options = {
     enableVibrateFallback: true,
@@ -197,7 +195,7 @@ export default class InfoPage extends React.Component {
         return (
             <View style={[styles.infoPage,this.props.style]}>
 
-                {!this.state.showChart && <View style={{top:'50%', display: "flex", flexDirection:"column", justifyContent:"flex-start",alignItems:"center"}}>
+                {!this.state.showChart && <View style={{position:'absolute',top:'50%', display: "flex", flexDirection:"column", justifyContent:"flex-start",alignItems:"center"}}>
                     {/* <Text style ={{color:"black", fontSize: 17}}> Loading... </Text> */}
                     <Image
                         style = {{...styles.emojiIcon,backgroundColor:"white",borderWidth:0, alignSelf:'center'}}

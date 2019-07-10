@@ -92,6 +92,7 @@ export default class Leaderboard extends React.Component {
                 {this.state.showLeaderboard && <TouchableOpacity onPress={this.props.toggleLeaderBoard} style = {styles.closeBar}>
                   <Text style = {{color:'white',fontWeight:'bold'}}>X</Text>
                 </TouchableOpacity>}
+
                 <TouchableOpacity onPress={this.refresh} style={styles.refresh}>
                     <Image
                         style = {{flex:1,
@@ -102,9 +103,18 @@ export default class Leaderboard extends React.Component {
                         source={require('./assets/refresh.png')}
                     />
                 </TouchableOpacity>
+
                 <Text style = {{...styles.locationText, fontSize: 30, fontWeight:'bold'}}>
                   Leaderboard
                 </Text>
+
+                {!this.state.showLeaderboard && <View style={{position:'absolute',top:'50%', display: "flex", flexDirection:"column", justifyContent:"flex-start",alignItems:"center"}}>
+                    <Image
+                        style = {{...styles.emojiIcon,backgroundColor:"white",borderWidth:0, alignSelf:'center'}}
+                        source={{uri:"https://media.giphy.com/media/MFyEVDtwt0gaQ0MGmm/giphy.gif"}}
+                    />
+                    <Text style ={{color:"black", fontSize: 17}}> Loading... </Text>
+                </View>}
 
                 {this.state.showLeaderboard && <FlatList
                 ItemSeparatorComponent={this.renderSeparator}

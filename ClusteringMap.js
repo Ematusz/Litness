@@ -19,8 +19,6 @@ export default class ClusteringMap extends React.Component {
         };
 
         this._getLocationAsync = this._getLocationAsync.bind(this);
-        this.onLongPressMap = this.onLongPressMap.bind(this);
-        this.addNewLocation = this.addNewLocation.bind(this);
         this.toggleTabMapPress = this.toggleTabMapPress.bind(this);
         this.onRegionChangeComplete = this.onRegionChangeComplete.bind(this);
         this.renderMarker = this.renderMarker.bind(this)
@@ -78,21 +76,13 @@ export default class ClusteringMap extends React.Component {
         return (
           <MapView.Marker
             {...marker} 
-            // ref = {marker=> {
-            //   this.marker = marker;
-            //   // marker.showCallout();
-            // }}
             draggable
             zIndex={10}
             showCallout
             cluster = {false}
-            // on press should toggle the voter tab. This will happen on close
             onPress =  {() => this.props.openTab(marker)}
-            // onPress =  {() => this.props.toggleTab(marker.address,marker.geohash)}
             onDragStart = { () => this.props.closeTab(false)}
-            // onRegionChangeComplete getting called here. Not quite sure why
             onDragEnd = { (e) => {this.props.setGhost(e.nativeEvent.coordinate.latitude,e.nativeEvent.coordinate.longitude); console.log("dragend")}}
-            // title = {marker.number + " " + marker.street} 
             title = {"hello"}
             >
                 <View style={styles.ghostMarker} >
@@ -111,7 +101,6 @@ export default class ClusteringMap extends React.Component {
             {...marker} 
             // on press should toggle the voter tab
             onPress = {() => this.pressMarker(marker)} 
-            // onPress = {() => this.props.toggleTab(marker.address,marker.geohash)} 
             title = {marker.number + " " + marker.street}
             ref={(ref) => this.state.markerToRef[marker.address] = ref}
             zIndex = {0}
@@ -128,114 +117,6 @@ export default class ClusteringMap extends React.Component {
     }
 
         // Initializes the ghost marker to closest location in possible current locations
-
-    // may be depreciated soon
-    addNewLocation = async(latitude_, longitude_) => {
-      let ghostGeohash = g.encode_int(latitude_,longitude_,26)
-      let city = null;
-      let street = null;
-      let number = null;
-      // fetch the address of the place you are passing in the coordinates of.
-      myApiKey = 'AIzaSyBkwazID1O1ryFhdC6mgSR4hJY2-GdVPmE';
-      fetch('https://maps.googleapis.com/maps/api/geocode/json?address=' + latitude_ + ',' + longitude_ + '&key=' + myApiKey)
-          .then((response) => response.json())
-          .then((responseJson) => {
-            var len = JSON.parse(JSON.stringify(responseJson)).results.length
-            var i = 0;
-            var minDist = -1;
-
-            // Chooses the fetched result that is closest to where the user actually clicked the map
-            for (indx = 0; indx < len; indx++) {
-              var dist = math.sqrt(math.square(latitude_-JSON.parse(JSON.stringify(responseJson)).results[indx].geometry.location.lat)+math.square(longitude_-JSON.parse(JSON.stringify(responseJson)).results[indx].geometry.location.lng));
-              if (minDist == -1) {
-                minDist = dist;
-              }
-              else if (dist < minDist) {
-                minDist = dist;
-                i = indx;
-              }
-            }
-            let results = JSON.parse(JSON.stringify(responseJson)).results[i]
-            // console.log("results ", results)
-            let address_ = results.formatted_address;
-            let coords = results.geometry.location;
-            len = results.address_components.length;
-            var l = null;
-            for (j = 0; j < len; j++) {
-              l = results.address_components[j].types.length;
-              for (k = 0; k < l; k++) {
-                if (results.address_components[j].types[k] == "locality") {
-                  // might need to change this to neighborhood work on tuning
-                  city = results.address_components[j].long_name;
-                }
-                if (results.address_components[j].types[k] == "route") {
-                  street = results.address_components[j].short_name;
-                }
-                if (results.address_components[j].types[k] == "street_number") {
-                  number = results.address_components[j].long_name;
-                }
-              }
-            }
-
-            // checks to see if the users last known location is close enough to the hub to vote
-            // on it
-            let userLocation = this.props.userLocation;
-            if ((coords.lat < userLocation.latitude + 0.02694933525
-              && coords.lat > userLocation.latitude - 0.02694933525
-              && coords.lng < userLocation.longitude + 0.0000748596382
-              && coords.lng > userLocation.longitude - 0.0000748596382)
-              || (address_ == userLocation.address)) {
-              // console.log(true);
-            } else {
-              // console.log(false);
-            }
-  
-            // Checks that this location has not already been added as a hub
-            if (this.props.geoHashGrid[ghostGeohash] == undefined || !Object.keys(this.props.geoHashGrid[ghostGeohash]).includes(address_)) {
-              // creates the new ghost marker with the information of this location.
-              let newGhostMarker = [];
-              newGhostMarker.push({
-                  coordinate: {
-                    latitude: coords.lat,
-                    longitude: coords.lng
-                  },
-                  location: {
-                    latitude: coords.lat,
-                    longitude: coords.lng
-                  },
-                  address: address_,
-                  geohash: ghostGeohash,
-                  city: city,
-                  street: street,
-                  number: number,
-                  ghostMarker: true,
-                  key: Math.random()                    
-                });
-                console.log(newGhostMarker[0])
-              this.props.showVotingButtonsHandler(true)
-
-              this.props.tabValHandler()
-
-              this.props.selectedMarkerHandler(address_)
-
-              this.props.selectedGeohashHandler(ghostGeohash)
-
-              this.props.ghostMarkerHandler(newGhostMarker)
-            }
-          })
-      }
-
-    onLongPressMap = info => {
-      if (!this.props.selectedMarker) {
-        let data = info.nativeEvent.coordinate
-        let userLocation = this.props.userLocation
-        let dist = math.sqrt(math.square(data.latitude - userLocation.latitude)+math.square(data.longitude - userLocation.longitude));
-        if (dist < 0.0003) {
-          this.addNewLocation(data.latitude, data.longitude); 
-          
-        }
-      }
-    }
 
     _getLocationAsync = async() => {
       let{ status } = await Permissions.askAsync(Permissions.LOCATION);
@@ -316,7 +197,6 @@ export default class ClusteringMap extends React.Component {
             zoomEnabled={this.state.interaction}
             showsBuildings = {true}
             loadingEnabled={true}
-            onLongPress = {this.onLongPressMap}
             onPress = {this.toggleTabMapPress}
             onRegionChangeComplete = {this.onRegionChangeComplete}
             style={styles.container}
