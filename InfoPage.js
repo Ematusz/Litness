@@ -1,13 +1,11 @@
 import React from 'react';
 import {TouchableOpacity,Vibration,View,Button,Image,Text,ActivityIndicator} from 'react-native';
 import styles from './styles.js'
-// import ReactNativeHapticFeedback from "react-native-haptic-feedback";
 import { VictoryLine, VictoryChart,VictoryLabel,VictoryCursorContainer,VictoryTheme, VictoryTooltip,VictoryAxis,VictoryZoomContainer,VictoryVoronoiContainer} from "victory-native";
 import * as d3 from 'd3-time';
 import dateFns from 'date-fns';
 import { ButtonGroup} from 'react-native-elements';
 import CustomFlyout from './CustomFlyout.js';
-import ActivityMonitor from './ActivityMonitor.js';
 
 const options = {
     enableVibrateFallback: true,
@@ -31,7 +29,9 @@ export default class InfoPage extends React.Component {
 
         this.updateIndex = this.updateIndex.bind(this)
         this.processDates = this.processDates.bind(this);
+        this.updateState = this.updateState.bind(this);
         this.componentDidMount = this.componentDidMount.bind(this);
+        this.filterData = this.filterData.bind(this);
         this.closeInfoPage = this.closeInfoPage.bind(this);
         this.getData = this.getData.bind(this);
         this.filterDataByInterval = this.filterDataByInterval.bind(this);
@@ -40,17 +40,18 @@ export default class InfoPage extends React.Component {
     }
 
     goToMarker() {
+        console.log(this.props.markerRef)
         this.setState({ showChart: false },
-        this.props.goToMarker(this.props.geohash,this.props.infoPageMarker));
+            this.props.goToMarker(this.props.markerRef))
     }
 
     closeInfoPage() {
-        this.setState({ showChart: false },this.props.toggleInfoPage);
+        this.setState({ showChart: false },()=>{this.props.toggleInfoPage()});
     }
 
     updateIndex (selectedIndex) {
-        this.setState({selectedIndex})
-        this.getData(); 
+        this.setState({selectedIndex},()=>{this.setState({ showLine: false },()=>{this.filterData(this.state.originalData,this.state.timeToLit,this.state.timeToShit,this.updateState)});
+        })
     }
 
     filterDataByInterval(selectedIndex,data) {
@@ -88,7 +89,11 @@ export default class InfoPage extends React.Component {
 
     getPercentDifference(objectArray,val) {
         let difference = val - objectArray[0].value;
-        return (difference/objectArray[0].value) * 100;
+        if (objectArray[0].value === 0) {
+            return difference * 100;
+        } else {
+            return (difference/objectArray[0].value) * 100;
+        }
     }
 
     getData() {
@@ -115,16 +120,27 @@ export default class InfoPage extends React.Component {
             timeToLit[Date.now()] = lastLit
             timeToShit[Date.now()] = lastShit
 
-            let filteredData = this.filterDataByInterval(this.state.selectedIndex.toString(),data);
-            //no one has voted in past interval then prepend the latest value with time being one interval back
-            if (filteredData.length == 1) {
-                filteredData.unshift({value:filteredData[0].value,time:(parseInt(filteredData[0].time)-(1 * 60 * 1000)).toString()})
-            }
-            this.processDates(filteredData,timeToLit,timeToShit)
+            this.setState({lastLit:lastLit, lastShit:lastShit})
+
+            this.setState({
+                originalData: this.processDates(data)
+            },()=>{this.filterData(this.state.originalData,timeToLit,timeToShit,this.updateState)});
           })
     }
 
-    processDates(objectArray,obj1,obj2) {
+    filterData(data, timeToLit, timeToShit,callback) {
+        let filteredData = this.filterDataByInterval(this.state.selectedIndex.toString(),data);
+        if (filteredData.length == 1) {
+            timeToLit[(parseInt(filteredData[0].time)-(1 * 60 * 1000))] = this.state.lastLit
+            timeToShit[(parseInt(filteredData[0].time)-(1 * 60 * 1000))] = this.state.lastShit
+            filteredData.unshift({value:filteredData[0].value,time:(parseInt(filteredData[0].time)-(1 * 60 * 1000))})
+        }
+
+        callback(filteredData,timeToLit,timeToShit);
+        return filteredData
+    }
+
+    processDates(objectArray) {
         let array = [];
         let max = objectArray[0].value;
         let min = objectArray[0].value;
@@ -140,9 +156,15 @@ export default class InfoPage extends React.Component {
                 array.push(obj)
             }
         }
+        return array;
+    }
+
+    updateState(data,timetoLit,timetoShit) {
+        let max = Math.max.apply(Math, data.map(function(o) { return o.value; }))
+        let min = Math.min.apply(Math, data.map(function(o) { return o.value; }))
         this.setState({ maxValue: max});
         this.setState({ minValue: min});
-        this.setState({ processedData: array, selectedValue: array[array.length-1].value, selectedTime: array[array.length-1].time,timeToLit:obj1, timeToShit:obj2},()=>this.setState({ showChart: true, showLine:true }));
+        this.setState({ processedData: data, selectedValue: data[data.length-1].value, selectedTime: data[data.length-1].time,timeToLit:timetoLit, timeToShit:timetoShit},()=>this.setState({ showChart: true, showLine:true }));
     }
 
     componentDidMount() {
@@ -172,19 +194,21 @@ export default class InfoPage extends React.Component {
         }
         return (
             <View style={[styles.infoPage,this.props.style]}>
-                <TouchableOpacity onPress={this.closeInfoPage} style = {styles.closeBar}>
-                    <Text style = {{color:'white',fontWeight:'bold'}}>{string}</Text>
-                </TouchableOpacity>
 
-                {!this.state.showChart && <View style={{marginTop:20, display: "flex", flexDirection:"row", justifyContent:"flex-start"}}>
-                    <Text style ={{color:"black", fontSize: 17}}> Loading Data </Text>
-                    <ActivityIndicator size="small" color="black" />
+                {!this.state.showChart && <View style={{position:'absolute',top:'50%', display: "flex", flexDirection:"column", justifyContent:"flex-start",alignItems:"center"}}>
+                    {/* <Text style ={{color:"black", fontSize: 17}}> Loading... </Text> */}
+                    <Image
+                        style = {{...styles.emojiIcon,backgroundColor:"white",borderWidth:0, alignSelf:'center'}}
+                        source={{uri:"https://media.giphy.com/media/MFyEVDtwt0gaQ0MGmm/giphy.gif"}}
+                    />
+                    <Text style ={{color:"black", fontSize: 17}}> Loading... </Text>
+
                 </View>}
 
-                <View style = {{marginTop:20}}>
-                {(this.state.selectedValue && this.state.showChart) && <Text style = {{fontSize: 30, alignSelf:"center", color:"black"}}>{this.state.selectedValue.toString() + " LF"}</Text>}
-                {(this.state.selectedValue && this.state.showChart) && <Text style = {{fontSize: 15, alignSelf:"center", color:colorString}}>{stringBean}</Text>}
-                {(this.state.selectedTime && this.state.showChart) && <Text style = {{fontSize: 15, alignSelf:"center", color:"grey"}}>{dateFns.format(d3.timeSecond(this.state.selectedTime),"hh:mm:ss")}</Text>}
+                <View style = {{marginTop:20}} >
+                {(this.state.selectedValue!==null && this.state.showChart) && <Text style = {{fontSize: 30, alignSelf:"center", color:"black"}}>{this.state.selectedValue.toString() + " LF"}</Text>}
+                {(this.state.selectedValue!==null && this.state.showChart) && <Text style = {{fontSize: 15, alignSelf:"center", color:colorString}}>{stringBean}</Text>}
+                {(this.state.selectedTime && this.state.showChart) && <Text style = {{fontSize: 15, alignSelf:"center", color:"grey"}}>{dateFns.format(d3.timeSecond(this.state.selectedTime),"hh:mm:ss A")}</Text>}
                 {(this.state.selectedTime && this.state.showChart) && <View style = {{display:"flex", 
                                 flexDirection:"row", 
                                 justifyContent:'center', 
@@ -219,6 +243,7 @@ export default class InfoPage extends React.Component {
                     height={375}
                     width={375}
                     padding={{ top: 30, bottom: 10, left: 50, right: 50 }}
+                    domain={{y: [this.state.minValue-.5, this.state.maxValue+.5], x: [this.state.processedData[0].time-(1),this.state.processedData[this.state.processedData.length-1].time+(1)]}}
                     scale={{ x: "time", y: "linear" }}
                     containerComponent={
                         <VictoryVoronoiContainer
@@ -281,11 +306,11 @@ export default class InfoPage extends React.Component {
                     <ActivityIndicator size="small" color="white" />
                 </View>}
 
-                <View style={{
+                {this.state.showChart && <View style={{
                     height:1,
                     width:"100%",
                     backgroundColor:"lightgrey"
-                }}/>
+                }}/>}
 
                 {this.state.showLine && <TouchableOpacity onPress={() => this.getData()} style={styles.refresh}>
                     <Image
@@ -298,7 +323,7 @@ export default class InfoPage extends React.Component {
                     />
                 </TouchableOpacity>}
                 
-                <View>
+                {this.state.showChart&& <View>
 
                 <View style ={{display:"flex", flexDirection:"row", justifyContent: "center"}}>
                     <TouchableOpacity onPress={this.goToMarker}>
@@ -313,12 +338,16 @@ export default class InfoPage extends React.Component {
                         />
                     </TouchableOpacity>
                 </View>
-                <TouchableOpacity onPress={this.goToMarker}>
-                <Text style = {{...styles.locationText, fontSize: 15}}>
-                    {this.props.infoPageMarker}
-                </Text>
-                </TouchableOpacity>
-                </View>
+                    <TouchableOpacity onPress={this.goToMarker}>
+                        <Text style = {{...styles.locationText, fontSize: 15}}>
+                            {this.props.infoPageMarker}
+                        </Text>
+                    </TouchableOpacity>
+                </View>}
+
+                {this.state.showChart&&<TouchableOpacity onPress={this.closeInfoPage} style = {styles.closeBar}>
+                    <Text style = {{color:'white',fontWeight:'bold'}}>{string}</Text>
+                </TouchableOpacity>}
             </View>
             );
         } 

@@ -46,8 +46,10 @@ export default class Leaderboard extends React.Component {
                 address: doc.id.toString(),
                 number: doc.data().number,
                 street: doc.data().street,
+                city: doc.data().city,
                 count: doc.data().count,
-                key: counter.toString()   
+                key: counter.toString(),
+                coordinate: {latitude: doc.data().latitude, longitude: doc.data().longitude}
               });
               counter = counter + 1;
             })
@@ -60,7 +62,7 @@ export default class Leaderboard extends React.Component {
 
     renderLeaderboardCell =  ({item}) => {
         return (
-          <TouchableOpacity style = {styles.leaderBoardCell} onPress={()=>this.props.toggleInfoPage(item.address,item.geohash)}>
+          <TouchableOpacity style = {styles.leaderBoardCell} onPress={()=>this.props.toggleInfoPage(item)}>
             <Text style = {{...styles.leaderboardText,fontWeight:'bold',color:"black"}}> {item.key} </Text>
                 {this.props.renderImage(item.count)}
             <Text style = {styles.leaderboardText}> {item.number} {item.street}</Text>
@@ -84,30 +86,13 @@ export default class Leaderboard extends React.Component {
       );
     };
 
-    // renderHeader = () => {
-    //   const buttons = ['Litness', 'Distance']
-    //   const { selectedIndex } = this.state
-    //   return (<ButtonGroup
-    //     onPress={this.updateIndex}
-    //     selectedIndex={selectedIndex}
-    //     buttons={buttons}
-    //     containerStyle={{height: 25,backgroundColor:"white",borderColor:"black",width:'60%',alignSelf:'center'}}
-    //     selectedButtonStyle={{backgroundColor:"black"}}
-    //     textStyle={{color:"black"}}
-    //     underlayColor={'black'}
-    //     innerBorderStyle = {{width:1,color:'black'}}
-    //     containerBorderRadius={10}
-    // />);
-    // };
-
     render() {
-        const buttons = ['Litness', 'Total Votes']
-        const { selectedIndex } = this.state
         return (
             <View style={[styles.leaderboard,this.props.style]}>
-                <TouchableOpacity onPress={this.props.toggleLeaderBoard} style = {styles.closeBar}>
-                <Text style = {{color:'white',fontWeight:'bold'}}>X</Text>
-                </TouchableOpacity>
+                {this.state.showLeaderboard && <TouchableOpacity onPress={this.props.toggleLeaderBoard} style = {styles.closeBar}>
+                  <Text style = {{color:'white',fontWeight:'bold'}}>X</Text>
+                </TouchableOpacity>}
+
                 <TouchableOpacity onPress={this.refresh} style={styles.refresh}>
                     <Image
                         style = {{flex:1,
@@ -118,20 +103,19 @@ export default class Leaderboard extends React.Component {
                         source={require('./assets/refresh.png')}
                     />
                 </TouchableOpacity>
+
                 <Text style = {{...styles.locationText, fontSize: 30, fontWeight:'bold'}}>
-                Leaderboard
+                  Leaderboard
                 </Text>
-                {/* <ButtonGroup
-                        onPress={this.updateIndex}
-                        selectedIndex={selectedIndex}
-                        buttons={buttons}
-                        containerStyle={{height: 25,backgroundColor:"white",borderColor:"black",width:'80%',alignSelf:'center'}}
-                        selectedButtonStyle={{backgroundColor:"black"}}
-                        textStyle={{color:"black"}}
-                        underlayColor={'black'}
-                        innerBorderStyle = {{width:1,color:'black'}}
-                        containerBorderRadius={10}
-                  /> */}
+
+                {!this.state.showLeaderboard && <View style={{position:'absolute',top:'50%', display: "flex", flexDirection:"column", justifyContent:"flex-start",alignItems:"center"}}>
+                    <Image
+                        style = {{...styles.emojiIcon,backgroundColor:"white",borderWidth:0, alignSelf:'center'}}
+                        source={{uri:"https://media.giphy.com/media/MFyEVDtwt0gaQ0MGmm/giphy.gif"}}
+                    />
+                    <Text style ={{color:"black", fontSize: 17}}> Loading... </Text>
+                </View>}
+
                 {this.state.showLeaderboard && <FlatList
                 ItemSeparatorComponent={this.renderSeparator}
                 data = {this.state.processedData}

@@ -89,7 +89,6 @@ export default StyleSheet.create({
         borderRadius: 30,
         borderWidth: 2,
         borderColor: "transparent",
-        backgroundColor:"white",
         position: 'absolute',
         alignItems:'center',
         justifyContent:'center',
@@ -107,16 +106,12 @@ export default StyleSheet.create({
         borderRadius: 10
       },
     addHubButton: {
-        backgroundColor:"white",
-        borderColor:'black',
-        borderWidth: 2,
-        position: 'absolute',
-        flex:1,
-        left: 0,
-        bottom: '10%',
-        height: 30,
-        resizeMode: 'contain',
-        width: 30
+      backgroundColor:"white",
+      borderColor:'black',
+      borderWidth: 2,
+      position: 'absolute',
+      right: 0,
+      top: '16%',
       },
     text: {
         color: "#FFF",
@@ -124,8 +119,8 @@ export default StyleSheet.create({
         fontSize: 20
       },
     
-    testtext: {
-        color: "black",
+    markerCost: {
+        color: "white",
         fontWeight: "bold",
         fontSize: 16,
         position: 'absolute',
@@ -153,7 +148,7 @@ export default StyleSheet.create({
         position: 'absolute',
         flex:1,
         right: 0,
-        top: '10%',
+        top: '12%',
       },
 
     leaderBoardCell: {
@@ -202,7 +197,7 @@ export default StyleSheet.create({
       borderRadius: 20,
       borderWidth: 2,
       borderColor: 'black',
-      backgroundColor:'whitesmoke'
+      backgroundColor:'black'
     },
     emojiIconHeatMap: {
       height: 40,
