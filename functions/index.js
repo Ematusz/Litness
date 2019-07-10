@@ -23,7 +23,7 @@ exports.DBupdate = functions.https.onRequest((req, res) => {
         snapshot.forEach( address => {
             ref.collection('locations').doc(address.id).collection('votes').get().then(query => {
                 if (query.size <=0) {
-                    ref.collection('locations').doc(address.id).collection('counts').get()
+                    ref.collection('locations').doc(address.id).collection('upvotes_downvotes').get()
                     .then( snapshot__ => {
                         snapshot__.forEach( count => {
                             ref.collection('locations').doc(address.id).collection('upvotes_downvotes').doc(count.id).delete();
