@@ -11,11 +11,11 @@ export default class ClusteringMap extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            locationResult:null,
-            error: null,
-            pins: [],
-            interaction: true,
-            markerToRef: {},
+          error: null,
+          interaction: true,
+          locationResult:null,
+          markerToRef: {},
+          pins: [],
         };
 
         this._getLocationAsync = this._getLocationAsync.bind(this);

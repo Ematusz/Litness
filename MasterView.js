@@ -5,7 +5,6 @@ import InfoPage from './InfoPage.js';
 import Leaderboard from './Leaderboard.js';
 import LeaderboardTab from './LeaderboardTab.js';
 import AddHubTab from './AddHubTab.js'
-import Map from './Map.js';
 import {Constants, Location, Permissions} from 'expo';
 import g from 'ngeohash'
 import * as math from 'mathjs';
@@ -35,49 +34,49 @@ export default class MasterView extends React.Component {
     constructor(props) {
       super(props);
       this.state = { 
-        pressStatus: false,
-        showStatus: false,
-        infoPage: false,
-        leaderBoard: false,
-        tabVal: false,
+        animatedAddHubTab: new Animated.Value(-3),
         animatedFlex: new Animated.Value(.5),
         animatedHeight: new Animated.Value(30),
-        animatedTop: new Animated.Value(1000),
         animatedLeaderboard: new Animated.Value(1000),
         animatedLeaderboardButton: new Animated.Value(-3),
         animatedTab:  new Animated.Value(500),
-        animatedAddHubTab: new Animated.Value(-3),
-        locationResult:null,
-        testtest:null,
-        geoHashGrid: {},
-        switchValue:false,
-        markers_: {},
-        leaderBoard_: [],
+        animatedTop: new Animated.Value(1000),
+        clustering: true,
+        currentGrid: [],
         data_: [],
-        showVotingButtons: true,
-        selectedMarker:null,
-        selectedGeohash:null,
-        markerBorderColor: "transparent",
-        infoPageMarker:null,
-        infoPageGeohash:null,
+        error: null,
+        geoHashGrid: {},
         ghostMarker: [],
+        heatMapMode: false,
+        infoPage: false,
+        infoPageGeohash: null,
+        infoPageMarker: null,
+        leaderBoard: false,
+        leaderBoard_: [],
+        locationResult:null,
         mapRegion: {
           latitude: null,
           latitudeDelta: null,
           longitude: null,
           longitudeDelta: null
         },
-        clustering: true,
-        currentGrid: [],
+        markerBorderColor: "transparent",
+        markers_: {},
+        pressStatus: false,
+        selectedGeohash: null,
+        selectedMarker: null,
+        selectedMarkerRef: {},
+        showStatus: false,
+        showVotingButtons: true,
+        switchValue:false,
+        tabVal: false,
+        testString: null,
+        testtest:null,
         userLocation: {
           formattedAddress: null,
           latitude: null,
           longitude: null
         },
-        error: null,
-        testString: null,
-        heatMapMode: false,
-        selectedMarkerRef: {}
       };
   
       this.showVotingButtonsHandler = this.showVotingButtonsHandler.bind(this);
