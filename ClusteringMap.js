@@ -15,6 +15,7 @@ export default class ClusteringMap extends React.Component {
             error: null,
             pins: [],
             interaction: true,
+            dragging: false,
             markerToRef: {},
         };
 
@@ -76,14 +77,33 @@ export default class ClusteringMap extends React.Component {
         return (
           <MapView.Marker
             {...marker} 
+            ref = {markerRef=> {
+              this.markerRef = markerRef;
+              if (markerRef != null && !this.state.dragging) {
+                markerRef.showCallout();
+              }
+              
+            }}
             draggable
             zIndex={10}
             showCallout
             cluster = {false}
-            onPress =  {() => this.props.openTab(marker)}
-            onDragStart = { () => this.props.closeTab(false)}
-            onDragEnd = { (e) => {this.props.setGhost(e.nativeEvent.coordinate.latitude,e.nativeEvent.coordinate.longitude); console.log("dragend")}}
-            title = {"hello"}
+            // on press should toggle the voter tab. This will happen on close
+            onPress =  {() => this.props.openTab(marker.address,marker.geohash)}
+            // onPress =  {() => this.props.toggleTab(marker.address,marker.geohash)}
+            onDragStart = { () => {
+              // console.log(this.markerRef)
+              this.setState({dragging: true})
+              this.markerRef.hideCallout()
+              this.props.closeTab(false)
+            }}
+            // onRegionChangeComplete getting called here. Not quite sure why
+            onDragEnd = { (e) => {
+              this.setState({dragging: false})
+              this.props.setGhost(e.nativeEvent.coordinate.latitude,e.nativeEvent.coordinate.longitude)
+            }}
+            title = {marker.number + " " + marker.street + "\nDrag me!"} 
+            // title = {"hello"}
             >
                 <View style={styles.ghostMarker} >
                 <Image
