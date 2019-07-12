@@ -7,10 +7,10 @@ export default class Leaderboard extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            showLeaderboard: false,
-            processedData:[],
-            refreshing: true,
-            selectedIndex: 0,
+          processedData:[],
+          refreshing: true,
+          showLeaderboard: false,
+          selectedIndex: 0,
         }
 
         this.renderLeaderboardCell = this.renderLeaderboardCell.bind(this);
