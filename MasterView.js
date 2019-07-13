@@ -271,7 +271,7 @@ export default class MasterView extends React.Component {
           })
         },
         (error) => console.log(error),
-        {enableHighAccuracy: true, distanceFilter: 1, timeout:250}
+        {enableHighAccuracy: true, distanceFilter: 1, timeout:0}
       )}
 
     goToMarker(marker) {
