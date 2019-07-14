@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "litness",
-    "slug": "litness",
-    "privacy": "unlisted",
+    "name": "expo-firebase-example-2.0",
+    "slug": "expo-firebase-example-2",
+    "privacy": "public",
     "sdkVersion": "32.0.0",
     "platforms": [
       "ios",
