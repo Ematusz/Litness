@@ -532,7 +532,7 @@ export default class MasterView extends React.Component {
           return address;
         }
         else if (!(address in this.state.geoHashGrid[this.state.userLocation.userAddressDictionary[address].geohash])||
-                  address == this.state.ghostMarker[0].address) {
+                  address == this.state.ghostMarker[0].location.address) {
           return address;
         } else {
           return null;
@@ -615,11 +615,12 @@ export default class MasterView extends React.Component {
       
       // Turns a ghostMarker into a regular marker by adding a new location to the database
       if (this.state.geoHashGrid[marker.geohash] == undefined || !Object.keys(this.state.geoHashGrid[marker.geohash]).includes(marker.location.address)){
+        console.log(this.state.ghostMarker)
         var latitude = this.state.ghostMarker[0].coordinate.latitude;
         var longitude = this.state.ghostMarker[0].coordinate.longitude;
-        var city = this.state.ghostMarker[0].city;
-        var street = this.state.ghostMarker[0].street;
-        var number = this.state.ghostMarker[0].number;
+        var city = this.state.ghostMarker[0].location.city;
+        var street = this.state.ghostMarker[0].location.street;
+        var number = this.state.ghostMarker[0].location.number;
         hashes = [g.encode_int(latitude,longitude,26)];
         hashNeighbors = g.neighbors_int(hashes[0],26);
         // get a reference to the document at this address in the database.
