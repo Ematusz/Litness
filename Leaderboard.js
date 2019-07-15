@@ -1,4 +1,5 @@
 import React from 'react';
+import Hub from './Hub.js'
 import {TouchableOpacity,View, ActivityIndicator,Button,Image,Text, FlatList} from 'react-native';
 import styles from './styles.js'
 
@@ -40,16 +41,40 @@ export default class Leaderboard extends React.Component {
           .then( snapshot => {
             let counter = 1;
             snapshot.forEach( doc => {
-              data.push({
-                geohash: doc.data().geohash[0],
-                address: doc.id.toString(),
-                number: doc.data().number,
-                street: doc.data().street,
-                city: doc.data().city,
-                count: doc.data().count,
-                key: counter.toString(),
-                coordinate: {latitude: doc.data().latitude, longitude: doc.data().longitude}
-              });
+              let hub = new Hub(
+                {
+                  latitude: doc.data().latitude,
+                  longitude: doc.data().longitude
+                },
+                {
+                  latitude: doc.data().latitude,
+                  longitude: doc.data().longitude,
+                  address: doc.id,
+                  city: doc.data().city,
+                  street: doc.data().street,
+                  number: doc.data().number,
+                },
+                false,
+                doc.data().geohash[0],
+                {
+                  cost: doc.data().count,
+                  upVotes: doc.data().upVotes,
+                  downVotes: doc.data().downVotes,
+                },
+                doc.id,
+              )
+
+              // data.push({
+              //   geohash: doc.data().geohash[0],
+              //   address: doc.id.toString(),
+              //   number: doc.data().number,
+              //   street: doc.data().street,
+              //   city: doc.data().city,
+              //   count: doc.data().count,
+              //   key: counter.toString(),
+              //   coordinate: {latitude: doc.data().latitude, longitude: doc.data().longitude}
+              // });
+              data.push({hub:hub,key:counter.toString()});
               counter = counter + 1;
             })
   
@@ -61,12 +86,12 @@ export default class Leaderboard extends React.Component {
 
     renderLeaderboardCell =  ({item}) => {
         return (
-          <TouchableOpacity style = {styles.leaderBoardCell} onPress={()=>this.props.toggleInfoPage(item)}>
+          <TouchableOpacity style = {styles.leaderBoardCell} onPress={()=>this.props.toggleInfoPage(item.hub)}>
             <Text style = {{...styles.leaderboardText,fontWeight:'bold',color:"black"}}> {item.key} </Text>
-                {this.props.renderImage(item.count)}
-            <Text style = {styles.leaderboardText}> {item.number} {item.street}</Text>
+                {this.props.renderImage(item.hub.stats.cost)}
+            <Text style = {styles.leaderboardText}> {item.hub.location.number} {item.hub.location.street}</Text>
             <View style = {styles.LBinnerBox}>
-              <Text style = {{color:'black',fontSize:20}}>{item.count}</Text>
+              <Text style = {{color:'black',fontSize:20}}>{item.hub.stats.cost}</Text>
             </View>
           </TouchableOpacity>
         )

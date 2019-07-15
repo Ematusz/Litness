@@ -91,6 +91,7 @@ export default class MasterView extends React.Component {
     }
 
     openTab(marker) {
+      console.log("I am here")
       // Checks if marker is a ghost. if a ghostMarker is clicked then call hideTab()
       if(this.state.geoHashGrid[marker.geohash] === undefined || !Object.keys(this.state.geoHashGrid[marker.geohash]).includes(marker.location.address)) {
         this.closeTab(true);
