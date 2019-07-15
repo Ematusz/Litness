@@ -1,7 +1,7 @@
 import React from 'react';
-import {TouchableOpacity,Vibration,View,Button,Image,Text,ActivityIndicator} from 'react-native';
+import {TouchableOpacity,View,Image,Text,ActivityIndicator} from 'react-native';
 import styles from './styles.js'
-import { VictoryLine, VictoryChart,VictoryLabel,VictoryCursorContainer,VictoryTheme, VictoryTooltip,VictoryAxis,VictoryZoomContainer,VictoryVoronoiContainer} from "victory-native";
+import { VictoryLine, VictoryChart, VictoryTooltip,VictoryAxis,VictoryZoomContainer,VictoryVoronoiContainer} from "victory-native";
 import * as d3 from 'd3-time';
 import dateFns from 'date-fns';
 import { ButtonGroup} from 'react-native-elements';
@@ -40,9 +40,8 @@ export default class InfoPage extends React.Component {
     }
 
     goToMarker() {
-        console.log(this.props.markerRef)
         this.setState({ showChart: false },
-            this.props.goToMarker(this.props.markerRef))
+            this.props.goToMarker(this.props.infoPageMarker))
     }
 
     closeInfoPage() {
@@ -104,7 +103,7 @@ export default class InfoPage extends React.Component {
         let lastShit = 0
         let timeToLit = {};
         let timeToShit = {};
-        db.collection("locations").doc(this.props.markerAddress).collection('upvotes_downvotes')
+        db.collection("locations").doc(this.props.infoPageMarker.location.address).collection('upvotes_downvotes')
           .get().then( snapshot => {
             snapshot.forEach( doc => {
               vote = {value:doc.data().count, time:doc.id}
@@ -196,7 +195,6 @@ export default class InfoPage extends React.Component {
             <View style={[styles.infoPage,this.props.style]}>
 
                 {!this.state.showChart && <View style={{position:'absolute',top:'50%', display: "flex", flexDirection:"column", justifyContent:"flex-start",alignItems:"center"}}>
-                    {/* <Text style ={{color:"black", fontSize: 17}}> Loading... </Text> */}
                     <Image
                         style = {{...styles.emojiIcon,backgroundColor:"white",borderWidth:0, alignSelf:'center'}}
                         source={{uri:"https://media.giphy.com/media/MFyEVDtwt0gaQ0MGmm/giphy.gif"}}
@@ -340,7 +338,7 @@ export default class InfoPage extends React.Component {
                 </View>
                     <TouchableOpacity onPress={this.goToMarker}>
                         <Text style = {{...styles.locationText, fontSize: 15}}>
-                            {this.props.infoPageMarker}
+                            {this.props.infoPageMarker.location.address}
                         </Text>
                     </TouchableOpacity>
                 </View>}

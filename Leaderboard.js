@@ -1,7 +1,6 @@
 import React from 'react';
 import {TouchableOpacity,View, ActivityIndicator,Button,Image,Text, FlatList} from 'react-native';
 import styles from './styles.js'
-import { ButtonGroup} from 'react-native-elements';
 
 export default class Leaderboard extends React.Component {
     constructor(props) {
