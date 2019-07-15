@@ -286,7 +286,7 @@ export default class MasterView extends React.Component {
                 false,
                 change.doc.data().geohash[0],
                 {
-                  cost: change.doc.data().count,
+                  cost: count,
                   upVotes: change.doc.data().upVotes,
                   downVotes: change.doc.data().downVotes,
                 },
