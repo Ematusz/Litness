@@ -91,7 +91,6 @@ export default class MasterView extends React.Component {
     }
 
     openTab(marker) {
-      console.log("I am here")
       // Checks if marker is a ghost. if a ghostMarker is clicked then call hideTab()
       if(this.state.geoHashGrid[marker.geohash] === undefined || !Object.keys(this.state.geoHashGrid[marker.geohash]).includes(marker.location.address)) {
         this.closeTab(true);
@@ -417,7 +416,6 @@ export default class MasterView extends React.Component {
 
     // Toggles the info page on a hub
     toggleInfoPage (marker) {
-      console.log(marker)
       // if infoPage is currently listed as false, open the page. Otherwise close it.
       if (!this.state.infoPage) {
         this.setState({infoPage: true});
@@ -616,7 +614,6 @@ export default class MasterView extends React.Component {
       
       // Turns a ghostMarker into a regular marker by adding a new location to the database
       if (this.state.geoHashGrid[marker.geohash] == undefined || !Object.keys(this.state.geoHashGrid[marker.geohash]).includes(marker.location.address)){
-        console.log(this.state.ghostMarker)
         var latitude = this.state.ghostMarker[0].coordinate.latitude;
         var longitude = this.state.ghostMarker[0].coordinate.longitude;
         var city = this.state.ghostMarker[0].location.city;

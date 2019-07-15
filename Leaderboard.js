@@ -63,17 +63,6 @@ export default class Leaderboard extends React.Component {
                 },
                 doc.id,
               )
-
-              // data.push({
-              //   geohash: doc.data().geohash[0],
-              //   address: doc.id.toString(),
-              //   number: doc.data().number,
-              //   street: doc.data().street,
-              //   city: doc.data().city,
-              //   count: doc.data().count,
-              //   key: counter.toString(),
-              //   coordinate: {latitude: doc.data().latitude, longitude: doc.data().longitude}
-              // });
               data.push({hub:hub,key:counter.toString()});
               counter = counter + 1;
             })
