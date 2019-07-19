@@ -11,6 +11,8 @@ export default class Leaderboard extends React.Component {
           refreshing: true,
           showLeaderboard: false,
           selectedIndex: 0,
+          state: null,
+          city: null,
         }
 
         this.renderLeaderboardCell = this.renderLeaderboardCell.bind(this);
@@ -36,8 +38,28 @@ export default class Leaderboard extends React.Component {
     }
 
     getData() {
+      myApiKey = 'AIzaSyBkwazID1O1ryFhdC6mgSR4hJY2-GdVPmE';
+      fetch('https://maps.googleapis.com/maps/api/geocode/json?latlng=' + this.props.mapRegion.latitude + ',' + this.props.mapRegion.longitude + '&key=' + myApiKey)
+      .then((response) => response.json())
+      .then((responseJson) => { 
+        let results = JSON.parse(JSON.stringify(responseJson)).results
+        let state = null;
+        let city = null;
+        results[0].address_components.forEach( component => {
+          component.types.forEach( type => {
+            if (type == "administrative_area_level_1") {
+              state = component.short_name;
+              this.setState({state});
+            }
+            if (type == "locality") {
+              // might need to change this to neighborhood work on tuning
+              city = component.long_name;
+              this.setState({city});
+            }
+          })
+        })
         let data = [];
-        db.collection('locations').where("city", "==", this.props.userCity).orderBy('count', 'desc').limit(25).get()
+        db.collection('locations').where("city", "==", city).where("state", "==", state).orderBy('count', 'desc').limit(25).get()
           .then( snapshot => {
             let counter = 1;
             snapshot.forEach( doc => {
@@ -66,11 +88,12 @@ export default class Leaderboard extends React.Component {
               data.push({hub:hub,key:counter.toString()});
               counter = counter + 1;
             })
-  
+
           this.setState({ processedData: data },()=>this.setState({ showLeaderboard: true,refreshing:false }));
           }).catch( error =>{
             console.log(error)
           })
+        })
     }
 
     renderLeaderboardCell =  ({item}) => {
@@ -120,6 +143,9 @@ export default class Leaderboard extends React.Component {
                 <Text style = {{...styles.locationText, fontSize: 30, fontWeight:'bold'}}>
                   Leaderboard
                 </Text>
+                {this.state.showLeaderboard && <Text style={{...styles.locationText, fontSize: 20}}>
+                  {this.state.city + ", " + this.state.state}
+                </Text>}
 
                 {!this.state.showLeaderboard && <View style={{position:'absolute',top:'50%', display: "flex", flexDirection:"column", justifyContent:"flex-start",alignItems:"center"}}>
                     <Image

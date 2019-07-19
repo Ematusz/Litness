@@ -88,6 +88,7 @@ export default class MasterView extends React.Component {
       this._addWatchPosition = this._addWatchPosition.bind(this);
       
       this.setGhost = this.setGhost.bind(this);
+      this.success = this.success.bind(this);
     }
 
     openTab(marker) {
@@ -159,75 +160,83 @@ export default class MasterView extends React.Component {
         }
     }
 
-    _addWatchPosition = async() => {
-      // updates the userLocation prop when the user moves a significant amount
-      this.watchID = navigator.geolocation.watchPosition(
-        position => {
-          const { latitude, longitude } = position.coords;
-          let ghostGeohash = g.encode_int(latitude,longitude,26)
-          // Fetch curent location
-          myApiKey = 'AIzaSyBkwazID1O1ryFhdC6mgSR4hJY2-GdVPmE';
-          fetch('https://maps.googleapis.com/maps/api/geocode/json?latlng=' + latitude + ',' + longitude + '&location_type=ROOFTOP&result_type=street_address|premise&key=' + myApiKey)
-          .then((response) => response.json())
-          .then((responseJson) => {
-            let results = JSON.parse(JSON.stringify(responseJson)).results
-            // console.log(results)
-            let userAddressDictionary = {}
-            // creates a dictionary of all possible locations returned by the fetch
-            // TODO: trim down results to only important ones. Remove results that are renages of numbers and limit returns
-            results.forEach( result => {
-              // if (!isNaN(parseInt(result.formatted_address[0]))) {
-                let city = null;
-                let street = null;
-                let number = null;
-                result.address_components.forEach( component => {
-                  component.types.forEach( type => {
-                    if (type == "locality") {
-                      // might need to change this to neighborhood work on tuning
-                      city = component.long_name;
-                    }
-                    if (type == "route") {
-                      street = component.short_name;
-                    }
-                    if (type == "street_number") {
-                      number = component.long_name;
-                    }
-                  })
-                })
-                // let userLocation = this.props.userLocation
-                // let dist = math.sqrt(math.square(result.geometry.location.lat - latitude)+math.square(result.geometry.location.lng - longitude));
-                console.log(ghostGeohash);
-                // if (number != null && !(number.includes("-")) && dist < 0.0003)  {
-                  userAddressDictionary[result.formatted_address] = {
-                    coord: result.geometry.location,
-                    geohash: ghostGeohash,
-                    city: city,
-                    street: street,
-                    number: number,
-                  };
-            })
-            let userCity = null;
-            results[0].address_components.forEach( component => {
+    success = position => {
+      const { latitude, longitude } = position.coords;
+      let ghostGeohash = g.encode_int(latitude,longitude,26)
+      // Fetch curent location
+      myApiKey = 'AIzaSyBkwazID1O1ryFhdC6mgSR4hJY2-GdVPmE';
+      fetch('https://maps.googleapis.com/maps/api/geocode/json?latlng=' + latitude + ',' + longitude + '&location_type=ROOFTOP&result_type=street_address|premise&key=' + myApiKey)
+      .then((response) => response.json())
+      .then((responseJson) => {
+        let results = JSON.parse(JSON.stringify(responseJson)).results
+        // console.log(results)
+        let userAddressDictionary = {}
+        // creates a dictionary of all possible locations returned by the fetch
+        // TODO: trim down results to only important ones. Remove results that are renages of numbers and limit returns
+        results.forEach( result => {
+          // if (!isNaN(parseInt(result.formatted_address[0]))) {
+            let state = null;
+            let city = null;
+            let street = null;
+            let number = null;
+            result.address_components.forEach( component => {
               component.types.forEach( type => {
+                if (type == "administrative_area_level_1") {
+                  state = component.short_name;
+                }
                 if (type == "locality") {
-                        userCity = component.long_name;
+                  // might need to change this to neighborhood work on tuning
+                  city = component.long_name;
+                }
+                if (type == "route") {
+                  street = component.short_name;
+                }
+                if (type == "street_number") {
+                  number = component.long_name;
                 }
               })
             })
-            // saves address, latitude, and longitude in a coordinate object
-            // console.log("userAddressDictionary",userAddressDictionary)
-            const newCoordinate = {
-              userCity,
-              userAddressDictionary,
-              latitude,
-              longitude
-            };
-            // sets new userLocation based on previously created coordinate object
-            this.setState({userLocation: newCoordinate});
+            // let userLocation = this.props.userLocation
+            // let dist = math.sqrt(math.square(result.geometry.location.lat - latitude)+math.square(result.geometry.location.lng - longitude));
+            console.log(ghostGeohash);
+            // if (number != null && !(number.includes("-")) && dist < 0.0003)  {
+              userAddressDictionary[result.formatted_address] = {
+                coord: result.geometry.location,
+                geohash: ghostGeohash,
+                state: state,
+                city: city,
+                street: street,
+                number: number,
+              };
+        })
+        let userCity = null;
+        results[0].address_components.forEach( component => {
+          component.types.forEach( type => {
+            if (type == "locality") {
+                    userCity = component.long_name;
+            }
           })
-        },
+        })
+        // saves address, latitude, and longitude in a coordinate object
+        // console.log("userAddressDictionary",userAddressDictionary)
+        const newCoordinate = {
+          userCity,
+          userAddressDictionary,
+          latitude,
+          longitude
+        };
+        // sets new userLocation based on previously created coordinate object
+        this.setState({userLocation: newCoordinate});
+        console.log(newCoordinate)
+      })
+    }
+
+    _addWatchPosition = async() => {
+      // updates the userLocation prop when the user moves a significant amount
+      this.watchID = navigator.geolocation.watchPosition(
+        (position) => this.success(position),
         (error) => console.log(error),
-        {enableHighAccuracy: true, distanceFilter: 1, timeout:250}
+        {enableHighAccuracy: true, distanceFilter: 0, timeout:50000}
       )}
 
     goToMarker(marker) {
@@ -512,12 +521,12 @@ export default class MasterView extends React.Component {
     // Initializes the ghost marker to closest location in possible current locations
     setGhost(referenceLatitude, referenceLongitude) {
       console.log('ghost set')
-      // this._addWatchPosition()
       let oldGhost = false;
       let ghostGeohash = null;
       let ghostLatitude = null;
       let ghostLongitude = null;
       let ghostAddress = null;
+      let ghostState = null;
       let ghostCity = null;
       let ghostStreet = null;
       let ghostNumber = null;
@@ -526,6 +535,8 @@ export default class MasterView extends React.Component {
       if (this.state.ghostMarker.length > 0) {
         oldGhost = true;
       }
+      navigator.geolocation.clearWatch(this.watchId);
+      this._addWatchPosition();
       
       let test = Object.keys(this.state.userLocation.userAddressDictionary).map( address => {
         if (oldGhost == false) {
@@ -565,6 +576,7 @@ export default class MasterView extends React.Component {
           ghostGeohash = this.state.userLocation.userAddressDictionary[ghostAddress].geohash;
           ghostLatitude = this.state.userLocation.userAddressDictionary[ghostAddress].coord.lat;
           ghostLongitude = this.state.userLocation.userAddressDictionary[ghostAddress].coord.lng;
+          ghostState = this.state.userLocation.userAddressDictionary[ghostAddress].state;
           ghostCity = this.state.userLocation.userAddressDictionary[ghostAddress].city;
           ghostStreet = this.state.userLocation.userAddressDictionary[ghostAddress].street;
           ghostNumber = this.state.userLocation.userAddressDictionary[ghostAddress].number;
@@ -579,6 +591,7 @@ export default class MasterView extends React.Component {
               latitude: ghostLatitude,
               longitude: ghostLongitude,
               address: ghostAddress,
+              state: ghostState,
               city: ghostCity,
               street: ghostStreet,
               number: ghostNumber,
@@ -613,21 +626,22 @@ export default class MasterView extends React.Component {
     changeLit(marker,vote) {
       // recieve the ID from the user
       // var uniqueId = Constants.installationId;
-      var uniqueId = Math.random().toString();
+      let uniqueId = Math.random().toString();
       // collect timestamp.
-      var time = new Date();
+      let time = new Date();
       
       // Turns a ghostMarker into a regular marker by adding a new location to the database
       if (this.state.geoHashGrid[marker.geohash] == undefined || !Object.keys(this.state.geoHashGrid[marker.geohash]).includes(marker.location.address)){
-        var latitude = this.state.ghostMarker[0].coordinate.latitude;
-        var longitude = this.state.ghostMarker[0].coordinate.longitude;
-        var city = this.state.ghostMarker[0].location.city;
-        var street = this.state.ghostMarker[0].location.street;
-        var number = this.state.ghostMarker[0].location.number;
+        let latitude = this.state.ghostMarker[0].coordinate.latitude;
+        let longitude = this.state.ghostMarker[0].coordinate.longitude;
+        let state = this.state.ghostMarker[0].location.state;
+        let city = this.state.ghostMarker[0].location.city;
+        let street = this.state.ghostMarker[0].location.street;
+        let number = this.state.ghostMarker[0].location.number;
         hashes = [g.encode_int(latitude,longitude,26)];
         hashNeighbors = g.neighbors_int(hashes[0],26);
         // get a reference to the document at this address in the database.
-        var ref = db.collection('locations').doc(marker.location.address);
+        let ref = db.collection('locations').doc(marker.location.address);
         ref.get()
           .then( doc => {
             // if the document doesnt yet exist, add a new one with base stats.
@@ -640,6 +654,7 @@ export default class MasterView extends React.Component {
                 longitude: longitude,
                 geohash: hashes.concat(hashNeighbors),
                 imagePath: './assets/logs.png',
+                state: state,
                 city: city,
                 street: street,
                 number: number
@@ -657,7 +672,7 @@ export default class MasterView extends React.Component {
       // update votes if user is already in the database
       } else {
         // gets a reference to the document at the address.
-        var ref = db.collection('locations').doc(marker.location.address).collection('votes').doc(uniqueId);
+        let ref = db.collection('locations').doc(marker.location.address).collection('votes').doc(uniqueId);
         return ref.get()
         .then( voteDoc => {
 
@@ -760,6 +775,7 @@ export default class MasterView extends React.Component {
                                  renderImage={this.renderImage}
                                  toggleInfoPage={this.toggleInfoPage}
                                  userCity = {this.state.userLocation.userCity}
+                                 mapRegion = {this.state.mapRegion}
             />}
   
             <AnimatedLeaderboardTab style = {{right:this.state.animatedLeaderboardButton}} 
