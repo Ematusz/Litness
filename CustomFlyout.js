@@ -1,11 +1,5 @@
 import React from 'react';
-import {TouchableOpacity,View,Button,Image,Text,ActivityIndicator} from 'react-native';
-import styles from './styles.js'
-import { VictoryLine, VictoryChart,VictoryLabel, VictoryTooltip,VictoryAxis,VictoryZoomContainer,VictoryVoronoiContainer} from "victory-native";
-import * as d3 from 'd3-time';
-import dateFns from 'date-fns';
-import { ButtonGroup} from 'react-native-elements';
-import Svg, { Circle, Rect,G, Triangle, Line } from 'react-native-svg';
+import { Circle,G, Line } from 'react-native-svg';
 
 export default class CustomFlyout extends React.Component {
     render() {

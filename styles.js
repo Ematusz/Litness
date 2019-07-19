@@ -8,12 +8,6 @@ export default StyleSheet.create({
     right: 0,
     top: '16%',
   }, 
-  animView: {
-    backgroundColor:'blue',
-    flex:.5,
-    borderBottomColor:'black',
-    borderBottomWidth: 5,
-  },
   bigContainer: {
     flex:1,
     flexDirection: 'column',
@@ -49,21 +43,9 @@ export default StyleSheet.create({
     borderColor: 'black',
     backgroundColor:'black'
   },
-  emojiIconHeatMap: {
-    height: 40,
-    resizeMode: 'contain',
-    width: 40,
-    borderRadius: 20,
-    backgroundColor:'transparent'
-  },
   flatListContainer: {
     flex: 1,
     width: '95%',
-  },
-  flight: {
-    width: 30,
-    height: 30,
-    justifyContent:'center'
   },
   ghostMarker: {
     borderRadius: 30,
@@ -137,7 +119,6 @@ export default StyleSheet.create({
     justifyContent: 'flex-start',
     alignItems: 'center',
     borderBottomWidth: 0,
-    // borderRadius: 15,
     backgroundColor:'white'
   },
   leaderboardText: {
@@ -158,35 +139,18 @@ export default StyleSheet.create({
     alignSelf: 'center',
   },
   marker: {
-    // padding: 5,
     borderRadius: 30,
     borderWidth: 2,
-    // backgroundColor:"red",
     borderColor: "transparent",
     position: 'absolute',
     alignItems:'center',
     justifyContent:'center',
-    // flexDirection:"column",
-    // justifyContent: "center",
   },
   markerCost: {
       color: "white",
       fontWeight: "bold",
       fontSize: 16,
       position: 'absolute',
-      // top:'40%'
-  },
-  markerHeatMap: {
-    // padding: 5,
-    borderRadius: 30,
-    height: 60,
-    width: 60,
-    // backgroundColor:"red",
-    borderColor: "transparent",
-    position: 'absolute',
-    alignItems:'center',
-    justifyContent:'center',
-    backgroundColor:'rgba(255,0,0,.3)',
   },
   refresh: {
     position: 'absolute',
@@ -205,7 +169,6 @@ export default StyleSheet.create({
     borderRadius: 10,
     position: 'absolute',
     flex:1,
-    // left: '95%',
     top: '40%',
     flexDirection:'column',
     justifyContent: 'space-evenly',
@@ -214,29 +177,10 @@ export default StyleSheet.create({
   tabStyle: {
     borderRadius: 5,
     borderWidth: 2,
-    // backgroundColor:"red",
     borderColor: "transparent",
     position: 'absolute',
     alignItems:'center',
     justifyContent:'center',
     fontSize: 50,
-  },
-  test: {
-    flex:1,
-    flexDirection:'row',
-    justifyContent: 'space-evenly',
-    width: 100,
-    height: 40,
-    alignItems: 'center',
-    backgroundColor:"white",
-    borderColor:'black',
-    borderWidth: 2,
-    borderRadius: 10
-  },
-
-  text: {
-    color: "#FFF",
-    fontWeight: "bold",
-    fontSize: 20
-  },
+  }
 });

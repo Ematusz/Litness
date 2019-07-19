@@ -1,11 +1,12 @@
 import React from 'react';
-import { TouchableOpacity,FlatList,Animated, StyleSheet,Text, View, Button, Image,SafeAreaView} from 'react-native';
+import {Text, View, Image} from 'react-native';
 import styles from './styles.js'
-import MapView,{ Marker, PROVIDER_GOOGLE,Callout } from 'react-native-maps';
+import MapView,{ Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import ClusteredMapView from 'react-native-maps-super-cluster';
-import {Constants, Location, Permissions,LinearGradient} from 'expo';
+import {Location, Permissions} from 'expo';
 import g from 'ngeohash'
-import * as math from 'mathjs';
+import Hub from './Hub.js'
+
 
 export default class ClusteringMap extends React.Component {
     constructor(props) {
@@ -29,7 +30,7 @@ export default class ClusteringMap extends React.Component {
     }
 
     pressMarker(marker) {
-      this.state.markerToRef[marker.address].showCallout();
+      this.state.markerToRef[marker.location.address].showCallout();
       this.props.openTab(marker);
     }
 
@@ -69,10 +70,6 @@ export default class ClusteringMap extends React.Component {
     }
 
     renderMarker = (marker) => {
-      let points = marker.cost * 5;
-      let red = points;
-      let blue = 255 - points;
-      let color = 'rgba(' + red.toString() +',0,'+ blue.toString()+',.35)';
       if (marker.ghostMarker) {
         return (
           <MapView.Marker
@@ -89,10 +86,8 @@ export default class ClusteringMap extends React.Component {
             showCallout
             cluster = {false}
             // on press should toggle the voter tab. This will happen on close
-            onPress =  {() => this.props.openTab(marker.address,marker.geohash)}
-            // onPress =  {() => this.props.toggleTab(marker.address,marker.geohash)}
+            onPress =  {() => this.props.openTab(marker)}
             onDragStart = { () => {
-              // console.log(this.markerRef)
               this.setState({dragging: true})
               this.markerRef.hideCallout()
               this.props.closeTab(false)
@@ -102,8 +97,7 @@ export default class ClusteringMap extends React.Component {
               this.setState({dragging: false})
               this.props.setGhost(e.nativeEvent.coordinate.latitude,e.nativeEvent.coordinate.longitude)
             }}
-            title = {marker.number + " " + marker.street + "\nDrag me!"} 
-            // title = {"hello"}
+            title = {marker.location.number + " " + marker.location.street + "\nDrag me!"} 
             >
                 <View style={styles.ghostMarker} >
                 <Image
@@ -121,16 +115,15 @@ export default class ClusteringMap extends React.Component {
             {...marker} 
             // on press should toggle the voter tab
             onPress = {() => this.pressMarker(marker)} 
-            title = {marker.number + " " + marker.street}
-            ref={(ref) => this.state.markerToRef[marker.address] = ref}
+            title = {marker.location.number + " " + marker.location.street}
+            ref={(ref) => this.state.markerToRef[marker.location.address] = ref}
             zIndex = {0}
           >
-            {!this.props.switchValue && <View style={{...styles.marker}} >
-                {!this.props.switchValue && this.props.renderImage(marker.cost)}
-                <Text style={styles.markerCost}>{marker.cost}</Text>
-            </View>}
-  
-            {this.props.switchValue && <View style={{...styles.markerHeatMap,backgroundColor: color,shadowColor:color}}/>}
+             <View style={{...styles.marker}} >
+              {this.props.renderImage(marker.stats.cost)}
+              <Text style={styles.markerCost}>{marker.stats.cost}</Text>
+            </View>
+
           </MapView.Marker>
         )
       }
@@ -171,9 +164,6 @@ export default class ClusteringMap extends React.Component {
      toggleTabMapPress = pressinfo => {
       if(pressinfo.nativeEvent.action !== "marker-press") {
         this.props.closeTab(true);
-        this.setState({interaction:true})
-      } else {
-        this.setState({interaction:false})
       }
     }
 
@@ -209,12 +199,6 @@ export default class ClusteringMap extends React.Component {
             zoomEnabled = {true}
             provider = {PROVIDER_GOOGLE}
             showsUserLocation = {true}
-            pitchEnabled={this.state.interaction}
-            scrollEnabled={this.state.interaction}
-            rotateEnabled={this.state.interaction}
-            zoomControlEnabled={this.state.interaction}
-            zoomTapEnabled={this.state.interaction}
-            zoomEnabled={this.state.interaction}
             showsBuildings = {true}
             loadingEnabled={true}
             onPress = {this.toggleTabMapPress}
