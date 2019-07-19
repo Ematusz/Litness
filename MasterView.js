@@ -297,6 +297,11 @@ export default class MasterView extends React.Component {
               this.setState({geoHashGrid: newGrid})
             } else {
               let newDictionary = {};
+              let count = change.doc.data().count;
+              if (count == undefined) {
+                console.log("count is undefined")
+                count = 0;
+              }
               let hub = new Hub(
                 {
                   latitude: change.doc.data().latitude,
@@ -313,7 +318,7 @@ export default class MasterView extends React.Component {
                 false,
                 change.doc.data().geohash[0],
                 {
-                  cost: change.doc.data().count,
+                  cost: count,
                   upVotes: change.doc.data().upVotes,
                   downVotes: change.doc.data().downVotes,
                 },
