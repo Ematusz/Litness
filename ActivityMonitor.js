@@ -1,19 +1,20 @@
 import React from 'react';
-import {TouchableOpacity,Vibration,View,Button,Image,Text,ActivityIndicator} from 'react-native';
+import {TouchableOpacity, View, Image, Text, ActivityIndicator} from 'react-native';
 import styles from './styles.js'
-// import ReactNativeHapticFeedback from "react-native-haptic-feedback";
-import { VictoryLine, VictoryChart,VictoryLabel,VictoryCursorContainer,VictoryTheme, VictoryTooltip,VictoryAxis,VictoryZoomContainer,VictoryVoronoiContainer} from "victory-native";
+import {VictoryLine, VictoryChart, VictoryTooltip,VictoryAxis, VictoryVoronoiContainer} from "victory-native";
 import * as d3 from 'd3-time';
 import dateFns from 'date-fns';
-import { ButtonGroup} from 'react-native-elements';
+import {ButtonGroup} from 'react-native-elements';
 import CustomFlyout from './CustomFlyout.js';
+import {renderLoadingFire, renderRefresh, renderLandmark} from './renderImage'
 
-export default class activityMonitor extends React.Component {
+export default class ActivityMonitor extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
             showChart: false,
             showLine: false,
+            originalData: [],
             processedData:[],
             selectedIndex: 0,
             timeToLit: {},
@@ -21,87 +22,20 @@ export default class activityMonitor extends React.Component {
             maxValue: 0,
             minValue: 0,
         }
-        this.getPercentDifference = this.getPercentDifference.bind(this);
-        this.processDates = this.processDates.bind(this);
-        this.getData = this.getData.bind(this);
-        this.updateIndex = this.updateIndex.bind(this);
-        this.filterDataByInterval = this.filterDataByInterval.bind(this);
-    }
 
-    componentDidMount() {
-        setTimeout(() => {
-            this.getData(); 
-            }, 1000);
-    };
-    componentWillMount() {};
+        this.updateIndex = this.updateIndex.bind(this)
+        this.updateState = this.updateState.bind(this);
+        this.componentDidMount = this.componentDidMount.bind(this);
+        this.filterDataByInterval = this.filterDataByInterval.bind(this);
+        this.getPercentDifference = this.getPercentDifference.bind(this);
+    }
 
     updateIndex (selectedIndex) {
-        this.setState({selectedIndex})
-        this.getData(); 
+        this.setState({selectedIndex},()=>{this.setState({ showLine: false },()=>{this.filterData(this.props.originalData,this.props.timeToLit,this.props.timeToShit,this.updateState)});
+        })
     }
 
-    getPercentDifference(objectArray,val) {
-        // console.log(objectArray)
-        let difference = val - objectArray[0].value;
-        return (difference/objectArray[0].value) * 100;
-    }
-
-    processDates(objectArray,obj1,obj2) {
-        let array = [];
-        let max = objectArray[0].value;
-        let min = objectArray[0].value;
-        for(i = 0; i < objectArray.length;i++) {
-            let obj = objectArray[i];
-            max = Math.max(max,objectArray[i].value)
-            min = Math.min(min,objectArray[i].value)
-            obj.time = parseInt(obj.time);
-
-            if (array.length > 0 && obj.time === array[array.length-1].time) {
-                array[array.length-1] = obj
-            } else {
-                array.push(obj)
-            }
-        }
-        this.setState({ maxValue: max});
-        this.setState({ minValue: min});
-        this.setState({ processedData: array, selectedValue: array[array.length-1].value, selectedTime: array[array.length-1].time,timeToLit:obj1, timeToShit:obj2},()=>this.setState({ showChart: true, showLine:true }));
-    }
-
-    getData() {
-        this.setState({ showLine: false })
-        let data = [];
-        let lastCount = 0;
-        let lastLit = 0
-        let lastShit = 0
-        let timeToLit = {};
-        let timeToShit = {};
-        db.collection("locations").doc(this.props.markerAddress).collection('upvotes_downvotes')
-          .get().then( snapshot => {
-            snapshot.forEach( doc => {
-              vote = {value:doc.data().count, time:doc.id}
-              data.push(vote);
-              lastCount = doc.data().count;
-              lastLit = doc.data().upvotes;
-              lastShit = doc.data().downvotes;
-              timeToLit[parseInt(doc.id)] = doc.data().upvotes
-              timeToShit[parseInt(doc.id)] = doc.data().downvotes
-            })
-            vote = {value:lastCount, time:(Date.now().toString())}
-            data.push(vote);
-            timeToLit[Date.now()] = lastLit
-            timeToShit[Date.now()] = lastShit
-
-            let filteredData = this.filterDataByInterval(this.state.selectedIndex.toString(),data);
-            //no one has voted in past interval then prepend the latest value with time being one interval back
-            if (filteredData.length == 1) {
-                filteredData.unshift({value:filteredData[0].value,time:(parseInt(filteredData[0].time)-(1 * 60 * 60 * 1000)).toString()})
-            }
-            // console.log(filtetedData)
-            this.processDates(filteredData,timeToLit,timeToShit)
-          })
-    }
-
-    filterDataByInterval(selectedIndex,data) {
+    filterDataByInterval(selectedIndex, data) {
         let intervalInMs = 1 * 60 * 1000;
         let currentTime = Date.now();
         let lowerBound = 0;
@@ -134,112 +68,133 @@ export default class activityMonitor extends React.Component {
         return data.filter(x=>parseInt(x.time) > lowerBound);
     }
 
-    render() {
+    getPercentDifference(objectArray, val) {
+        let difference = val - objectArray[0].value;
+        if (objectArray[0].value === 0) {
+            return difference * 100;
+        } else {
+            return (difference/objectArray[0].value) * 100;
+        }
+    }
+
+    updateState(data, timetoLit, timetoShit) {
+        let max = Math.max.apply(Math, data.map(function(o) { return o.value; }))
+        let min = Math.min.apply(Math, data.map(function(o) { return o.value; }))
+        this.setState({ maxValue: max});
+        this.setState({ minValue: min});
+        this.setState({ processedData: data, selectedValue: data[data.length-1].value, selectedTime: data[data.length-1].time,timeToLit:timetoLit, timeToShit:timetoShit},()=>this.setState({ showChart: true, showLine:true }));
+    }
+
+    render() {    
         const buttons = ['1h', '3h', '12h','24h', 'All']
         const { selectedIndex } = this.state
+        let exitOption = this.props.leaderboardStatus ? '<': 'X';
         let percentDifference = 0;
-        if (this.state.processedData.length > 0 && this.state.selectedValue) {
-            percentDifference = this.getPercentDifference(this.state.processedData,this.state.selectedValue);
+
+        if (this.props.processedData.length > 0 && this.state.selectedValue) {
+            percentDifference = this.getPercentDifference(this.props.processedData, this.state.selectedValue);
         }
-        let stringBean = "";
-        let colorString = ""
+
+        let delta = "";
+        let deltaColor = ""
         if (percentDifference >= 0) {
-            stringBean = "+" + percentDifference.toFixed(2).toString() + "%"
-            colorString = "rgb(38,169,113)"
+            delta = "+" + percentDifference.toFixed(2).toString() + "%"
+            deltaColor = "rgb(38,169,113)"
         } else {
-            stringBean = percentDifference.toFixed(2).toString() + "%"
-            colorString = "red"
+            delta = percentDifference.toFixed(2).toString() + "%"
+            deltaColor = "red"
         }
+
         return (
-            <View style ={{backgroundColor:"red"}}>
-                {!this.state.showChart && <View style={{marginTop:20, display: "flex", flexDirection:"row", justifyContent:"flex-start"}}>
-                    <Text style ={{fontWeight:"bold", fontSize: 20}}> Loading Chart </Text>
-                    <ActivityIndicator size="small" color="black" />
-                </View>}
+            <View>
+                <View style = {{marginTop:20}} >
+                    {(this.state.selectedValue!== undefined && this.props.showChart) && <Text style = {{fontSize: 30, alignSelf:"center", color:"black"}}>{this.state.selectedValue.toString() + " LF"}</Text>}
+                    {(this.state.selectedValue!==undefined && this.props.showChart) && <Text style = {{fontSize: 15, alignSelf:"center", color:deltaColor}}>{delta}</Text>}
+                    {(this.state.selectedTime && this.props.showChart) && <Text style = {{fontSize: 15, alignSelf:"center", color:"grey"}}>{dateFns.format(d3.timeSecond(this.state.selectedTime),"hh:mm:ss A")}</Text>}
 
-                <View style = {{marginTop:20}}>
-                {(this.state.selectedValue && this.state.showChart) && <Text style = {{fontSize: 30, alignSelf:"center", color:"black"}}>{this.state.selectedValue.toString() + " LF"}</Text>}
-                {(this.state.selectedValue && this.state.showChart) && <Text style = {{fontSize: 15, alignSelf:"center", color:colorString}}>{stringBean}</Text>}
-                {(this.state.selectedTime && this.state.showChart) && <Text style = {{fontSize: 15, alignSelf:"center", color:"grey"}}>{dateFns.format(d3.timeMinute(this.state.selectedTime),"hh:mm A")}</Text>}
-                {(this.state.selectedTime && this.state.showChart) && <View style = {{display:"flex", 
-                                flexDirection:"row", 
-                                justifyContent:'center', 
-                                alignItems:'center',
-                                }}>
+                    {(this.state.selectedTime && this.props.showChart) && <View style = {{display:"flex", 
+                                    flexDirection:"row", 
+                                    justifyContent:'center', 
+                                    alignItems:'center',
+                    }}>
 
-                    <View style = {{
-                                alignItems:'center',
-                                padding: 5}}>
-                        <Image
-                            style = {{...styles.infoPageIcons}}
-                            source={require('./assets/fire.png')}
-                        />
-                        <Text style = {{...styles.locationText}}>
-                            {this.state.timeToLit[this.state.selectedTime]}          
-                        </Text>
-                    </View>
-                    <View style = {{
-                                alignItems:'center',
-                                padding: 5}}>
-                        <Image
-                            style = {{...styles.infoPageIcons}}
-                            source={require('./assets/poop.png')}
-                        />
-                        <Text style = {{...styles.locationText}}>
-                            {this.state.timeToShit[this.state.selectedTime]}  
-                        </Text>
-                    </View>
-                </View>}
-
-                {this.state.showChart && <VictoryChart
-                    height={350}
-                    width={350}
-                    // padding={{ top: 30, bottom: 10, left: 50, right: 50 }}
-                    scale={{ x: "time", y: "linear" }}
-                    containerComponent={
-                        <VictoryVoronoiContainer
-                        labels={(d) =>"."}
-                        labelComponent={
-                            <VictoryTooltip
-                              flyoutComponent={<CustomFlyout/>}
+                        <View style = {{
+                                    alignItems:'center',
+                                    padding: 5}}>
+                            <Image
+                                style = {{...styles.infoPageIcons}}
+                                source={require('./assets/fire.png')}
                             />
-                          }
-                        onActivated={(points, props) => this.setState({selectedValue: points[0].value, selectedTime: points[0].time})}                    
-                        />
-                      }
-                    >
-                        
-                        {this.state.showLine && <VictoryLine
-                        style={{
-                        data: { stroke: "rgb(240,148,59)" },
-                        }}
-                        data={this.state.processedData}
-                        x="time"
-                        y="value"
-                        animate
-                        />}
 
-                        <VictoryAxis dependentAxis 
-                        standalone={false}
-                        tickFormat={(t) => `${Math.round(t*10)/10}`}
-                        style={{ axis: {stroke: "none"} , tickLabels: {
-                            color: "grey",
-                            fill: "grey",
-                            fontSize: '10px',
-                            fontFamily: 'inherit',
-                            fillOpacity: 1,
-                            margin: 0,
-                            padding: 0
-                          }
-                        }}
-                        offsetX={350}
-                        tickValues = {[this.state.minValue, this.state.maxValue]}
-                        />
+                            <Text style = {{...styles.locationText}}>
+                                {this.props.timeToLit[this.state.selectedTime]}          
+                            </Text>
+                        </View>
+
+                        <View style = {{
+                                    alignItems:'center',
+                                    padding: 5}}>
+                            <Image
+                                style = {{...styles.infoPageIcons}}
+                                source={require('./assets/poop.png')}
+                            />
+
+                            <Text style = {{...styles.locationText}}>
+                                {this.props.timeToShit[this.state.selectedTime]}  
+                            </Text>
+                        </View>
+                    </View>}
+
+                    {this.props.showChart && <VictoryChart
+                        height={375}
+                        width={375}
+                        padding={{ top: 30, bottom: 10, left: 50, right: 50 }}
+                        domain={{y: [this.state.minValue-.5, this.state.maxValue+.5], x: [this.props.processedData[0].time-(1),this.props.processedData[this.props.processedData.length-1].time+(1)]}}
+                        scale={{ x: "time", y: "linear" }}
+                        containerComponent={
+                            <VictoryVoronoiContainer
+                            labels={(d) =>"."}
+                            labelComponent={
+                                <VictoryTooltip
+                                flyoutComponent={<CustomFlyout/>}
+                                />
+                            }
+                            onActivated={(points, props) => this.setState({selectedValue: points[0].value, selectedTime: points[0].time})}                    
+                            />
+                        }
+                        >
+                        
+                            {this.props.showLine && <VictoryLine
+                                style={{
+                                data: { stroke: "black" },
+                                }}
+                                data={this.props.processedData}
+                                x="time"
+                                y="value"
+                                animate
+                            />}
+
+                            <VictoryAxis dependentAxis 
+                                standalone={false}
+                                tickFormat={(t) => `${Math.round(t*10)/10}`}
+                                style={{ axis: {stroke: "none"} , tickLabels: {
+                                    color: "black",
+                                    fill: "black",
+                                    fontSize: '10px',
+                                    fontFamily: 'inherit',
+                                    fillOpacity: 1,
+                                    margin: 0,
+                                    padding: 0
+                                }
+                                }}
+                                offsetX={350}
+                                tickValues = {[this.state.minValue, this.state.maxValue]}
+                            />
 
                     </VictoryChart>}
                 </View>
-                
-                {this.state.showChart && <ButtonGroup
+
+                {this.props.showChart && <ButtonGroup
                         onPress={this.updateIndex}
                         selectedIndex={selectedIndex}
                         buttons={buttons}
@@ -250,23 +205,9 @@ export default class activityMonitor extends React.Component {
                         underlayColor={'black'}
                         innerBorderStyle = {{width:0,color:'transparent'}}
                         containerBorderRadius={10}
-                    />}
-
-                {/* {!this.state.showLine && <View style ={styles.loading}>
-                    <ActivityIndicator size="small" color="white" />
-                </View>} */}
-
-                {/* {this.state.showLine && <TouchableOpacity onPress={() => this.getData()} style={styles.refresh}>
-                    <Image
-                        style = {{flex:1,
-                                height: 20,
-                                resizeMode: 'contain',
-                                width: 20,
-                                alignSelf: 'center'}}
-                        source={require('./assets/refresh.png')}
-                    />
-                </TouchableOpacity>} */}
+                />}
+                                       
             </View>
         );
-    }
+    } 
 }

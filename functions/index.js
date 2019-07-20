@@ -90,29 +90,22 @@ exports.updatedVote = functions.firestore.document('locations/{address}/votes/{v
                  let currentTime = new Date().getTime().toString()
  
                  //compute upVotes if the new vote is an up vote
-                 let upVotes_ = locationDoc.data().upVotes;
- 
-                 if (upVotes_ === undefined) {
-                     upVotes_ = 0;
-                 }
- 
-                 if(newVote === 1) {
+                 let upVotes_ = locationDoc.data().upVotes ? locationDoc.data().upVotes : 0;
+                 let downVotes_ = locationDoc.data().downVotes ? locationDoc.data().downVotes : 0;
+
+                 if (newVote === 1) {
                      upVotes_ += 1;
                  }
-                 if(oldVote === 1) {
+
+                 if (oldVote === 1) {
                      upVotes_ -= 1;
                  }
-                 //compute downVotes
-                 let downVotes_ = locationDoc.data().downVotes;
  
-                 if (downVotes_ === undefined) {
-                     downVotes_ = 0;
-                 }
- 
-                 if(newVote === -1) {
+                 if (newVote === -1) {
                      downVotes_ += 1;
                  }
-                 if(oldVote === -1) {
+
+                 if (oldVote === -1) {
                      downVotes_ -= 1;
                  }
 

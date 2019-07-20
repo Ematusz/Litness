@@ -1,17 +1,13 @@
 import React from 'react';
-import {TouchableOpacity,View,Image,Text,ActivityIndicator} from 'react-native';
+import {TouchableOpacity, View, Image, Text, ActivityIndicator} from 'react-native';
 import styles from './styles.js'
-import { VictoryLine, VictoryChart, VictoryTooltip,VictoryAxis,VictoryZoomContainer,VictoryVoronoiContainer} from "victory-native";
+import {VictoryLine, VictoryChart, VictoryTooltip,VictoryAxis, VictoryVoronoiContainer} from "victory-native";
 import * as d3 from 'd3-time';
 import dateFns from 'date-fns';
-import { ButtonGroup} from 'react-native-elements';
+import {ButtonGroup} from 'react-native-elements';
 import CustomFlyout from './CustomFlyout.js';
+import {renderLoadingFire, renderRefresh, renderLandmark} from './renderImage'
 
-const options = {
-    enableVibrateFallback: true,
-    ignoreAndroidSystemSettings: false
-  };
-   
 export default class InfoPage extends React.Component {
     constructor(props) {
         super(props);
@@ -172,70 +168,71 @@ export default class InfoPage extends React.Component {
             }, 1000);
     };
 
-    componentWillMount() {};
-
     render() {    
         const buttons = ['1h', '3h', '12h','24h', 'All']
         const { selectedIndex } = this.state
-        let string = this.props.leaderboardStatus ? '<': 'X';
+
+        let exitOption = this.props.leaderboardStatus ? '<': 'X';
+
         let percentDifference = 0;
         if (this.state.processedData.length > 0 && this.state.selectedValue) {
             percentDifference = this.getPercentDifference(this.state.processedData,this.state.selectedValue);
         }
-        let stringBean = "";
-        let colorString = ""
+
+        let delta = "";
+        let deltaColor = ""
         if (percentDifference >= 0) {
-            stringBean = "+" + percentDifference.toFixed(2).toString() + "%"
-            colorString = "rgb(38,169,113)"
+            delta = "+" + percentDifference.toFixed(2).toString() + "%"
+            deltaColor = "rgb(38,169,113)"
         } else {
-            stringBean = percentDifference.toFixed(2).toString() + "%"
-            colorString = "red"
+            delta = percentDifference.toFixed(2).toString() + "%"
+            deltaColor = "red"
         }
+
         return (
             <View style={[styles.infoPage,this.props.style]}>
-
                 {!this.state.showChart && <View style={{position:'absolute',top:'50%', display: "flex", flexDirection:"column", justifyContent:"flex-start",alignItems:"center"}}>
-                    <Image
-                        style = {{...styles.emojiIcon,backgroundColor:"white",borderWidth:0, alignSelf:'center'}}
-                        source={{uri:"https://media.giphy.com/media/MFyEVDtwt0gaQ0MGmm/giphy.gif"}}
-                    />
+                    {renderLoadingFire()}
                     <Text style ={{color:"black", fontSize: 17}}> Loading... </Text>
-
                 </View>}
 
                 <View style = {{marginTop:20}} >
-                {(this.state.selectedValue!==null && this.state.showChart) && <Text style = {{fontSize: 30, alignSelf:"center", color:"black"}}>{this.state.selectedValue.toString() + " LF"}</Text>}
-                {(this.state.selectedValue!==null && this.state.showChart) && <Text style = {{fontSize: 15, alignSelf:"center", color:colorString}}>{stringBean}</Text>}
-                {(this.state.selectedTime && this.state.showChart) && <Text style = {{fontSize: 15, alignSelf:"center", color:"grey"}}>{dateFns.format(d3.timeSecond(this.state.selectedTime),"hh:mm:ss A")}</Text>}
-                {(this.state.selectedTime && this.state.showChart) && <View style = {{display:"flex", 
-                                flexDirection:"row", 
-                                justifyContent:'center', 
-                                alignItems:'center',
-                                }}>
+                    {(this.state.selectedValue!==null && this.state.showChart) && <Text style = {{fontSize: 30, alignSelf:"center", color:"black"}}>{this.state.selectedValue.toString() + " LF"}</Text>}
+                    {(this.state.selectedValue!==null && this.state.showChart) && <Text style = {{fontSize: 15, alignSelf:"center", color:deltaColor}}>{delta}</Text>}
+                    {(this.state.selectedTime && this.state.showChart) && <Text style = {{fontSize: 15, alignSelf:"center", color:"grey"}}>{dateFns.format(d3.timeSecond(this.state.selectedTime),"hh:mm:ss A")}</Text>}
 
-                    <View style = {{
-                                alignItems:'center',
-                                padding: 5}}>
-                        <Image
-                            style = {{...styles.infoPageIcons}}
-                            source={require('./assets/fire.png')}
-                        />
-                        <Text style = {{...styles.locationText}}>
-                            {this.state.timeToLit[this.state.selectedTime]}          
-                        </Text>
-                    </View>
-                    <View style = {{
-                                alignItems:'center',
-                                padding: 5}}>
-                        <Image
-                            style = {{...styles.infoPageIcons}}
-                            source={require('./assets/poop.png')}
-                        />
-                        <Text style = {{...styles.locationText}}>
-                            {this.state.timeToShit[this.state.selectedTime]}  
-                        </Text>
-                    </View>
-                </View>}
+                    {(this.state.selectedTime && this.state.showChart) && <View style = {{display:"flex", 
+                                    flexDirection:"row", 
+                                    justifyContent:'center', 
+                                    alignItems:'center',
+                    }}>
+
+                        <View style = {{
+                                    alignItems:'center',
+                                    padding: 5}}>
+                            <Image
+                                style = {{...styles.infoPageIcons}}
+                                source={require('./assets/fire.png')}
+                            />
+
+                            <Text style = {{...styles.locationText}}>
+                                {this.state.timeToLit[this.state.selectedTime]}          
+                            </Text>
+                        </View>
+
+                        <View style = {{
+                                    alignItems:'center',
+                                    padding: 5}}>
+                            <Image
+                                style = {{...styles.infoPageIcons}}
+                                source={require('./assets/poop.png')}
+                            />
+
+                            <Text style = {{...styles.locationText}}>
+                                {this.state.timeToShit[this.state.selectedTime]}  
+                            </Text>
+                        </View>
+                    </View>}
 
                 {this.state.showChart && <VictoryChart
                     height={375}
@@ -284,8 +281,8 @@ export default class InfoPage extends React.Component {
                         />
 
                     </VictoryChart>}
+
                 </View>
-                
                 {this.state.showChart && <ButtonGroup
                         onPress={this.updateIndex}
                         selectedIndex={selectedIndex}
@@ -311,31 +308,16 @@ export default class InfoPage extends React.Component {
                 }}/>}
 
                 {this.state.showLine && <TouchableOpacity onPress={() => this.getData()} style={styles.refresh}>
-                    <Image
-                        style = {{flex:1,
-                                height: 20,
-                                resizeMode: 'contain',
-                                width: 20,
-                                alignSelf: 'center'}}
-                        source={require('./assets/refresh.png')}
-                    />
+                    {renderRefresh()}
                 </TouchableOpacity>}
                 
                 {this.state.showChart&& <View>
-
-                <View style ={{display:"flex", flexDirection:"row", justifyContent: "center"}}>
-                    <TouchableOpacity onPress={this.goToMarker}>
-                        <Image
-                            style = {{
-                                    margin:2,
-                                    height: 50,
-                                    resizeMode: 'contain',
-                                    width: 50,                                    
-                                    }}
-                            source={require('./assets/landmark.png')}
-                        />
-                    </TouchableOpacity>
-                </View>
+                    <View style ={{display:"flex", flexDirection:"row", justifyContent: "center"}}>
+                        <TouchableOpacity onPress={this.goToMarker}>
+                            {renderLandmark()}
+                        </TouchableOpacity>
+                    </View>
+                    
                     <TouchableOpacity onPress={this.goToMarker}>
                         <Text style = {{...styles.locationText, fontSize: 15}}>
                             {this.props.infoPageMarker.location.address}
@@ -344,9 +326,9 @@ export default class InfoPage extends React.Component {
                 </View>}
 
                 {this.state.showChart&&<TouchableOpacity onPress={this.closeInfoPage} style = {styles.closeBar}>
-                    <Text style = {{color:'white',fontWeight:'bold'}}>{string}</Text>
+                    <Text style = {{color:'white',fontWeight:'bold'}}>{exitOption}</Text>
                 </TouchableOpacity>}
             </View>
-            );
-        } 
-    }
+        );
+    } 
+}

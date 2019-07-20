@@ -1,12 +1,11 @@
 import React from 'react';
-import {Text, View, Image} from 'react-native';
+import {Text, View} from 'react-native';
 import styles from './styles.js'
 import MapView,{ Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import ClusteredMapView from 'react-native-maps-super-cluster';
+import {renderMarkerIcon, renderGhostIcon} from './renderImage.js'
 import {Location, Permissions} from 'expo';
 import g from 'ngeohash'
-import Hub from './Hub.js'
-
 
 export default class ClusteringMap extends React.Component {
     constructor(props) {
@@ -85,14 +84,12 @@ export default class ClusteringMap extends React.Component {
             zIndex={10}
             showCallout
             cluster = {false}
-            // on press should toggle the voter tab. This will happen on close
             onPress =  {() => this.props.openTab(marker)}
             onDragStart = { () => {
               this.setState({dragging: true})
               this.markerRef.hideCallout()
               this.props.closeTab(false)
             }}
-            // onRegionChangeComplete getting called here. Not quite sure why
             onDragEnd = { (e) => {
               this.setState({dragging: false})
               this.props.setGhost(e.nativeEvent.coordinate.latitude,e.nativeEvent.coordinate.longitude)
@@ -100,13 +97,9 @@ export default class ClusteringMap extends React.Component {
             title = {marker.location.number + " " + marker.location.street + "\nDrag me!"} 
             >
                 <View style={styles.ghostMarker} >
-                <Image
-                    style = {styles.emojiIcon}
-                    source={require('./assets/poo2.png')}
-                />
-                <Text style={styles.markerCost}>?</Text>
+                  {renderGhostIcon()}
+                  <Text style={styles.markerCost}>?</Text>
                 </View>
-
           </MapView.Marker>
         )
       } else {
@@ -120,17 +113,15 @@ export default class ClusteringMap extends React.Component {
             zIndex = {0}
           >
              <View style={{...styles.marker}} >
-              {this.props.renderImage(marker.stats.cost)}
+               {renderMarkerIcon(marker.stats.cost)}
               <Text style={styles.markerCost}>{marker.stats.cost}</Text>
             </View>
-
           </MapView.Marker>
         )
       }
     }
 
-        // Initializes the ghost marker to closest location in possible current locations
-
+    // Initializes the ghost marker to closest location in possible current locations
     _getLocationAsync = async() => {
       let{ status } = await Permissions.askAsync(Permissions.LOCATION);
       if (status !== 'granted') {
@@ -142,7 +133,7 @@ export default class ClusteringMap extends React.Component {
       let location = await Location.getCurrentPositionAsync({enableHighAccuracy: false});
       this.setState({locationResult:JSON.stringify(location)});
   
-      var initialRegion = {
+      let initialRegion = {
         latitude: JSON.parse(this.state.locationResult).coords.latitude,
         longitude: JSON.parse(this.state.locationResult).coords.longitude,
         latitudeDelta: 0.0005,
@@ -150,29 +141,31 @@ export default class ClusteringMap extends React.Component {
       }
   
       this.props.mapRegionHandler(initialRegion)
-      var currentGeohash = [g.encode_int(initialRegion.latitude,initialRegion.longitude,26)];
-      var currentGrid = g.neighbors_int(currentGeohash[0],26);
+
+      let currentGeohash = [g.encode_int(initialRegion.latitude,initialRegion.longitude,26)];
+      let currentGrid = g.neighbors_int(currentGeohash[0],26);
       currentGrid = currentGeohash.concat(currentGrid);
 
       this.props.currentGridHandler(currentGrid)
-  
+
       this.map.getMapRef().animateToRegion(initialRegion,1);
 
       this.props.mapRegionHandler(initialRegion)
     };
 
-     toggleTabMapPress = pressinfo => {
+    toggleTabMapPress = pressinfo => {
       if(pressinfo.nativeEvent.action !== "marker-press") {
         this.props.closeTab(true);
       }
     }
 
     onRegionChangeComplete = mapRegion => {
-
-      var currentGeohash = [g.encode_int(mapRegion.latitude,mapRegion.longitude,26)];
-      var currentGrid = g.neighbors_int(currentGeohash[0],26);
+      let currentGeohash = [g.encode_int(mapRegion.latitude,mapRegion.longitude,26)];
+      let currentGrid = g.neighbors_int(currentGeohash[0],26);
       currentGrid = currentGeohash.concat(currentGrid);
+
       this.props.currentGridHandler(currentGrid);
+
       let cleanGrid = null;
       Object.keys(this.props.geoHashGrid).map( geohash => {
         if (!currentGrid.includes(Number(geohash))) {
@@ -213,8 +206,7 @@ export default class ClusteringMap extends React.Component {
           data={Object.values(this.props.geoHashGrid).map(x => Object.values(x)).map(x=>x).flat().concat(this.props.ghostMarker)}
           renderMarker={this.renderMarker}
           renderCluster={this.renderCluster}
-          >
-          </ClusteredMapView>
+          />
         );
     }
 }
