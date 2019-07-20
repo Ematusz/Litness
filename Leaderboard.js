@@ -1,7 +1,8 @@
 import React from 'react';
 import Hub from './Hub.js'
-import {TouchableOpacity,View, ActivityIndicator,Button,Image,Text, FlatList} from 'react-native';
+import {TouchableOpacity,View, ActivityIndicator,Text, FlatList} from 'react-native';
 import styles from './styles.js'
+import {renderMarkerIcon, renderLoadingFire, renderRefresh} from './renderImage.js'
 
 export default class Leaderboard extends React.Component {
     constructor(props) {
@@ -97,18 +98,19 @@ export default class Leaderboard extends React.Component {
     }
 
     renderLeaderboardCell =  ({item}) => {
-        return (
-          <TouchableOpacity style = {styles.leaderBoardCell} onPress={()=>this.props.toggleInfoPage(item.hub)}>
-            <Text style = {{...styles.leaderboardText,fontWeight:'bold',color:"black"}}> {item.key} </Text>
-                {this.props.renderImage(item.hub.stats.cost)}
-            <Text style = {styles.leaderboardText}> {item.hub.location.number} {item.hub.location.street}</Text>
-            <View style = {styles.LBinnerBox}>
-              <Text style = {{color:'black',fontSize:20}}>{item.hub.stats.cost}</Text>
-            </View>
-          </TouchableOpacity>
-        )
+      return (
+        <TouchableOpacity style = {styles.leaderBoardCell} onPress={()=>this.props.toggleInfoPage(item.hub)}>
+          <Text style = {{...styles.leaderboardText,fontWeight:'bold',color:"black"}}> {item.key} </Text>
+              {renderMarkerIcon(item.hub.stats.cost)}
+          <Text style = {styles.leaderboardText}> {item.hub.location.number} {item.hub.location.street}</Text>
+  
+          <View style = {styles.LBinnerBox}>
+            <Text style = {{color:'black',fontSize:20}}>{item.hub.stats.cost}</Text>
+          </View>
+        </TouchableOpacity>
+      )
     }
-
+  
     renderSeparator = () => {
       return (
         <View
@@ -121,52 +123,44 @@ export default class Leaderboard extends React.Component {
         />
       );
     };
-
+  
     render() {
-        return (
-            <View style={[styles.leaderboard,this.props.style]}>
-                {this.state.showLeaderboard && <TouchableOpacity onPress={this.props.toggleLeaderBoard} style = {styles.closeBar}>
-                  <Text style = {{color:'white',fontWeight:'bold'}}>X</Text>
-                </TouchableOpacity>}
+      return (
+        <View style={[styles.leaderboard,this.props.style]}>
+            {this.state.showLeaderboard && <TouchableOpacity onPress={this.props.toggleLeaderBoard} style = {styles.closeBar}>
+              <Text style = {{color:'white',fontWeight:'bold'}}>X</Text>
+            </TouchableOpacity>}
+  
+            <TouchableOpacity onPress={this.refresh} style={styles.refresh}>
+                {renderRefresh()}
+            </TouchableOpacity>
+  
+            <Text style = {{...styles.locationText, fontSize: 30, fontWeight:'bold'}}>
+              Leaderboard
+            </Text>
 
-                <TouchableOpacity onPress={this.refresh} style={styles.refresh}>
-                    <Image
-                        style = {{flex:1,
-                                height: 15,
-                                resizeMode: 'contain',
-                                width: 15,
-                                alignSelf: 'center'}}
-                        source={require('./assets/refresh.png')}
-                    />
-                </TouchableOpacity>
-
-                <Text style = {{...styles.locationText, fontSize: 30, fontWeight:'bold'}}>
-                  Leaderboard
-                </Text>
-                {this.state.showLeaderboard && <Text style={{...styles.locationText, fontSize: 20}}>
-                  {this.state.city + ", " + this.state.state}
-                </Text>}
-
-                {!this.state.showLeaderboard && <View style={{position:'absolute',top:'50%', display: "flex", flexDirection:"column", justifyContent:"flex-start",alignItems:"center"}}>
-                    <Image
-                        style = {{...styles.emojiIcon,backgroundColor:"white",borderWidth:0, alignSelf:'center'}}
-                        source={{uri:"https://media.giphy.com/media/MFyEVDtwt0gaQ0MGmm/giphy.gif"}}
-                    />
-                    <Text style ={{color:"black", fontSize: 17}}> Loading... </Text>
-                </View>}
-
-                {this.state.showLeaderboard && <FlatList
-                ItemSeparatorComponent={this.renderSeparator}
-                data = {this.state.processedData}
-                renderItem = {this.renderLeaderboardCell}
-                style={styles.flatListContainer}
-                onRefresh={this.refresh}
-                refreshing={this.state.refreshing}
-                />}
-                {this.state.refreshing && <View style ={styles.loading}>
-                    <ActivityIndicator size="small" color="white" />
-                </View>}
-            </View>
-        );
+            {this.state.showLeaderboard && <Text style={{...styles.locationText, fontSize: 20}}>
+                {this.state.city + ", " + this.state.state}
+            </Text>}
+  
+            {!this.state.showLeaderboard && <View style={{position:'absolute',top:'50%', display: "flex", flexDirection:"column", justifyContent:"flex-start",alignItems:"center"}}>
+                {renderLoadingFire()}
+                <Text style ={{color:"black", fontSize: 17}}> Loading... </Text>
+            </View>}
+  
+            {this.state.showLeaderboard && <FlatList
+            ItemSeparatorComponent={this.renderSeparator}
+            data = {this.state.processedData}
+            renderItem = {this.renderLeaderboardCell}
+            style={styles.flatListContainer}
+            onRefresh={this.refresh}
+            refreshing={this.state.refreshing}
+            />}
+            
+            {this.state.refreshing && <View style ={styles.loading}>
+                <ActivityIndicator size="small" color="white" />
+            </View>}
+        </View>
+      );
     }
-}
+  }
