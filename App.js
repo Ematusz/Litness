@@ -5,7 +5,6 @@ import * as firebase from 'firebase';
 import 'firebase/firestore';
 import styles from './styles.js';
 
-
 // Initialize Firebase
 global.firebaseConfig = {
   apiKey: "AIzaSyD2YhfO1TBYNOAWSxGwXQocAikqLuCRl7Q",

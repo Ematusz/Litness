@@ -1,4 +1,3 @@
-import React from 'react';
 export default class Hub { 
     constructor(coordinate, location, ghostmarker, geohash, stats, id) {
         this.coordinate = coordinate;
