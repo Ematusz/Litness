@@ -92,9 +92,10 @@ export default class MasterView extends React.Component {
     // Checks if marker is a ghost. if a ghostMarker is clicked then call hideTab()
     if(this.state.geoHashGrid[marker.geohash] === undefined || !Object.keys(this.state.geoHashGrid[marker.geohash]).includes(marker.location.address)) {
       this.closeTab(true);
+      console.log("I am in here 1")
     }
     // change selectedAddress to the new address if the selected marker is not at selectedAddress
-    else if(this.state.selectedMarker !== marker) {
+    else {
 
       if(marker.location.address in this.state.userLocation.userAddressDictionary) {
         this.setState({showVotingButtons: true})
@@ -110,8 +111,9 @@ export default class MasterView extends React.Component {
           duration: 200
         }).start();
       }
+
       this.setState({selectedMarker: marker});
-    } 
+    }
   }
 
   closeTab(deleteGhost) {
@@ -225,16 +227,15 @@ export default class MasterView extends React.Component {
       this.toggleLeaderBoard()
     }
 
-    // this.state.geoHashGrid[geohash][markerAddress].borderColor = "#e8b923"
-    this.openTab(marker)
     let locationObj = {};
     locationObj.coordinates = marker.coordinate
     locationObj.coordinates.latitudeDelta = 0.0005
     locationObj.coordinates.longitudeDelta = 0.0005
-    locationObj.address = marker.address
-    this.setState({
-      moveToLocation: locationObj
-    })
+    locationObj.address = marker.location.address
+
+    
+    this.clusterMap.animateToSpecificMarker(locationObj);
+    this.openTab(marker)
   }
 
   _addListener = async() => {
@@ -293,7 +294,7 @@ export default class MasterView extends React.Component {
 
         // delete location from markers_dictionary if document is removed from listener
         else if(change.type === 'removed') {
-          if (this.state.selectedMarker.location.address == change.doc.id) {
+          if (this.state.selectedMarker && this.state.selectedMarker.location.address === change.doc.id) {
             this.closeTab(true);
           }
 
@@ -402,12 +403,12 @@ export default class MasterView extends React.Component {
     if (this.state.infoPage) {
       this.openTab(marker);
       this.setState({infoPageMarker: null});
-      this.setState({selectedMarker: null});
+      // this.setState({selectedMarker: null});
     }
     // re opens the tab when the info page closes
     else {
       this.setState({infoPageMarker: marker});
-      this.setState({selectedMarker: marker});
+      // this.setState({selectedMarker: marker});
       this.closeTab(false)
     }
   }
@@ -461,6 +462,16 @@ export default class MasterView extends React.Component {
   
     // Initializes the ghost marker to closest location in possible current locations
   setGhost(referenceLatitude, referenceLongitude) {
+
+    let locationObj = {};
+    locationObj.coordinates = {};
+    locationObj.coordinates.latitude =  referenceLatitude
+    locationObj.coordinates.longitude =  referenceLongitude
+    locationObj.coordinates.latitudeDelta =  0.0005
+    locationObj.coordinates.longitudeDelta =  0.0005
+
+    this.clusterMap.animateToSpecificMarker(locationObj) 
+
     let ghostAddress = null;
     let currentDistance = null;
 
@@ -547,9 +558,9 @@ export default class MasterView extends React.Component {
   changeLit(marker,vote) {
     // recieve the ID from the user
     // var uniqueId = Constants.installationId;
-    var uniqueId = Math.random().toString();
+    let uniqueId = Math.random().toString();
     // collect timestamp.
-    var time = new Date();
+    let time = new Date();
     
     // Turns a ghostMarker into a regular marker by adding a new location to the database
     if (this.state.geoHashGrid[marker.geohash] == undefined || !Object.keys(this.state.geoHashGrid[marker.geohash]).includes(marker.location.address)){
@@ -619,7 +630,7 @@ export default class MasterView extends React.Component {
   render() {
     return (
       <View style = {styles.bigContainer}>        
-          <ClusteringMap onRef={ref => (this.child = ref)}
+          <ClusteringMap onRef={ref => (this.clusterMap = ref)}
                 geoHashGrid={this.state.geoHashGrid}
                 closeTab={this.closeTab}
                 selectedMarker={this.state.selectedMarker} 
@@ -633,7 +644,6 @@ export default class MasterView extends React.Component {
                 ghostMarkerHandler={this.ghostMarkerHandler} 
                 geoHashGridHandler={this.geoHashGridHandler} 
                 openTab={this.openTab} 
-                moveToLocation={this.state.moveToLocation}
                 setGhost={this.setGhost}
                 clustering={this.state.clustering}
           />
@@ -643,7 +653,7 @@ export default class MasterView extends React.Component {
                             infoPageMarker={this.state.infoPageMarker}
                             data_={this.state.data_}
                             leaderboardStatus = {this.state.leaderBoard}
-                            goToMarker = {this.goToMarker}
+                            goToMarker = {() => this.goToMarker(this.state.infoPageMarker)}
           />}
 
           <AnimatedSideTab style = {{left:this.state.animatedTab}} 
