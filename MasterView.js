@@ -296,7 +296,7 @@ export default class MasterView extends React.Component {
 
         // delete location from markers_dictionary if document is removed from listener
         else if(change.type === 'removed') {
-          if (this.state.selectedMarker.location.address == change.doc.id) {
+          if (this.state.selectedMarker && this.state.selectedMarker.location.address === change.doc.id) {
             this.closeTab(true);
           }
 
@@ -464,6 +464,14 @@ export default class MasterView extends React.Component {
   
     // Initializes the ghost marker to closest location in possible current locations
   setGhost(referenceLatitude, referenceLongitude) {
+
+    this.clusterMap.animateToSpecifiedRegion({
+      latitude: referenceLatitude,
+      longitude: referenceLongitude,
+      latitudeDelta: 0.0005,
+      longitudeDelta: 0.0005
+    }) 
+
     let ghostAddress = null;
     let currentDistance = null;
 
@@ -550,9 +558,9 @@ export default class MasterView extends React.Component {
   changeLit(marker,vote) {
     // recieve the ID from the user
     // var uniqueId = Constants.installationId;
-    var uniqueId = Math.random().toString();
+    let uniqueId = Math.random().toString();
     // collect timestamp.
-    var time = new Date();
+    let time = new Date();
     
     // Turns a ghostMarker into a regular marker by adding a new location to the database
     if (this.state.geoHashGrid[marker.geohash] == undefined || !Object.keys(this.state.geoHashGrid[marker.geohash]).includes(marker.location.address)){
@@ -622,7 +630,7 @@ export default class MasterView extends React.Component {
   render() {
     return (
       <View style = {styles.bigContainer}>        
-          <ClusteringMap onRef={ref => (this.child = ref)}
+          <ClusteringMap onRef={ref => (this.clusterMap = ref)}
                 geoHashGrid={this.state.geoHashGrid}
                 closeTab={this.closeTab}
                 selectedMarker={this.state.selectedMarker} 
