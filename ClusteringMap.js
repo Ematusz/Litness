@@ -160,8 +160,9 @@ export default class ClusteringMap extends React.Component {
     }
 
     onRegionChangeComplete = mapRegion => {
-      let currentGeohash = [g.encode_int(mapRegion.latitude,mapRegion.longitude,26)];
-      let currentGrid = g.neighbors_int(currentGeohash[0],26);
+      this.props.mapRegionHandler(mapRegion);
+      var currentGeohash = [g.encode_int(mapRegion.latitude,mapRegion.longitude,26)];
+      var currentGrid = g.neighbors_int(currentGeohash[0],26);
       currentGrid = currentGeohash.concat(currentGrid);
 
       this.props.currentGridHandler(currentGrid);
