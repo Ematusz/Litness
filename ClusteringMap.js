@@ -24,9 +24,8 @@ export default class ClusteringMap extends React.Component {
         this.onRegionChangeComplete = this.onRegionChangeComplete.bind(this);
         this.renderMarker = this.renderMarker.bind(this)
         this.renderCluster = this.renderCluster.bind(this)
-        this.componentDidUpdate = this.componentDidUpdate.bind(this);
         this.pressMarker = this.pressMarker.bind(this);
-        this.animateToSpecifiedRegion = this.animateToSpecifiedRegion.bind(this);
+        this.animateToSpecificMarker = this.animateToSpecificMarker.bind(this);
     }
 
     pressMarker(marker) {
@@ -44,18 +43,13 @@ export default class ClusteringMap extends React.Component {
       this.props.onRef(undefined)
     }
 
-    componentDidUpdate(prevProps, prevState, snapshot) {
-      if (prevProps.moveToLocation != this.props.moveToLocation ) {
-        this.map.getMapRef().animateToRegion(this.props.moveToLocation.coordinates,1);
-
+    animateToSpecificMarker(locationObj) {
+      this.map.getMapRef().animateToRegion(locationObj.coordinates,1);
+      if (locationObj.address) {
         setTimeout(() => {
-          this.state.markerToRef[this.props.moveToLocation.address].showCallout();
+          this.state.markerToRef[locationObj.address].showCallout();
         }, 500);
-      } 
-    }
-
-    animateToSpecifiedRegion(coordinates) {
-      this.map.getMapRef().animateToRegion(coordinates);
+      }
     }
 
     renderCluster = (cluster, onPress) => {

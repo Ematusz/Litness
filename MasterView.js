@@ -227,17 +227,15 @@ export default class MasterView extends React.Component {
       this.toggleLeaderBoard()
     }
 
-    this.openTab(marker)
-
     let locationObj = {};
     locationObj.coordinates = marker.coordinate
     locationObj.coordinates.latitudeDelta = 0.0005
     locationObj.coordinates.longitudeDelta = 0.0005
     locationObj.address = marker.location.address
 
-    this.setState({
-      moveToLocation: locationObj
-    })
+    
+    this.clusterMap.animateToSpecificMarker(locationObj);
+    this.openTab(marker)
   }
 
   _addListener = async() => {
@@ -465,12 +463,14 @@ export default class MasterView extends React.Component {
     // Initializes the ghost marker to closest location in possible current locations
   setGhost(referenceLatitude, referenceLongitude) {
 
-    this.clusterMap.animateToSpecifiedRegion({
-      latitude: referenceLatitude,
-      longitude: referenceLongitude,
-      latitudeDelta: 0.0005,
-      longitudeDelta: 0.0005
-    }) 
+    let locationObj = {};
+    locationObj.coordinates = {};
+    locationObj.coordinates.latitude =  referenceLatitude
+    locationObj.coordinates.longitude =  referenceLongitude
+    locationObj.coordinates.latitudeDelta =  0.0005
+    locationObj.coordinates.longitudeDelta =  0.0005
+
+    this.clusterMap.animateToSpecificMarker(locationObj) 
 
     let ghostAddress = null;
     let currentDistance = null;
@@ -644,7 +644,6 @@ export default class MasterView extends React.Component {
                 ghostMarkerHandler={this.ghostMarkerHandler} 
                 geoHashGridHandler={this.geoHashGridHandler} 
                 openTab={this.openTab} 
-                moveToLocation={this.state.moveToLocation}
                 setGhost={this.setGhost}
                 clustering={this.state.clustering}
           />
