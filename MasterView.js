@@ -92,9 +92,10 @@ export default class MasterView extends React.Component {
     // Checks if marker is a ghost. if a ghostMarker is clicked then call hideTab()
     if(this.state.geoHashGrid[marker.geohash] === undefined || !Object.keys(this.state.geoHashGrid[marker.geohash]).includes(marker.location.address)) {
       this.closeTab(true);
+      console.log("I am in here 1")
     }
     // change selectedAddress to the new address if the selected marker is not at selectedAddress
-    else if(this.state.selectedMarker !== marker) {
+    else {
 
       if(marker.location.address in this.state.userLocation.userAddressDictionary) {
         this.setState({showVotingButtons: true})
@@ -110,8 +111,9 @@ export default class MasterView extends React.Component {
           duration: 200
         }).start();
       }
+
       this.setState({selectedMarker: marker});
-    } 
+    }
   }
 
   closeTab(deleteGhost) {
@@ -225,13 +227,14 @@ export default class MasterView extends React.Component {
       this.toggleLeaderBoard()
     }
 
-    // this.state.geoHashGrid[geohash][markerAddress].borderColor = "#e8b923"
     this.openTab(marker)
+
     let locationObj = {};
     locationObj.coordinates = marker.coordinate
     locationObj.coordinates.latitudeDelta = 0.0005
     locationObj.coordinates.longitudeDelta = 0.0005
-    locationObj.address = marker.address
+    locationObj.address = marker.location.address
+
     this.setState({
       moveToLocation: locationObj
     })
@@ -402,12 +405,12 @@ export default class MasterView extends React.Component {
     if (this.state.infoPage) {
       this.openTab(marker);
       this.setState({infoPageMarker: null});
-      this.setState({selectedMarker: null});
+      // this.setState({selectedMarker: null});
     }
     // re opens the tab when the info page closes
     else {
       this.setState({infoPageMarker: marker});
-      this.setState({selectedMarker: marker});
+      // this.setState({selectedMarker: marker});
       this.closeTab(false)
     }
   }
@@ -643,7 +646,7 @@ export default class MasterView extends React.Component {
                             infoPageMarker={this.state.infoPageMarker}
                             data_={this.state.data_}
                             leaderboardStatus = {this.state.leaderBoard}
-                            goToMarker = {this.goToMarker}
+                            goToMarker = {() => this.goToMarker(this.state.infoPageMarker)}
           />}
 
           <AnimatedSideTab style = {{left:this.state.animatedTab}} 

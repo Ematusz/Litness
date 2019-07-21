@@ -37,7 +37,7 @@ export default class InfoPage extends React.Component {
 
     goToMarker() {
         this.setState({ showChart: false },
-            this.props.goToMarker(this.props.infoPageMarker))
+            this.props.goToMarker())
     }
 
     closeInfoPage() {

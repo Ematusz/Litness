@@ -46,9 +46,10 @@ export default class ClusteringMap extends React.Component {
     componentDidUpdate(prevProps, prevState, snapshot) {
       if (prevProps.moveToLocation != this.props.moveToLocation ) {
         this.map.getMapRef().animateToRegion(this.props.moveToLocation.coordinates,1);
+
         setTimeout(() => {
           this.state.markerToRef[this.props.moveToLocation.address].showCallout();
-        }, 5000);
+        }, 500);
       } 
     }
 
