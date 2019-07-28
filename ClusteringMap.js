@@ -140,17 +140,8 @@ export default class ClusteringMap extends React.Component {
         longitudeDelta: 0.0005,
       }
   
-      this.props.mapRegionHandler(initialRegion)
-
-      let currentGeohash = [g.encode_int(initialRegion.latitude,initialRegion.longitude,26)];
-      let currentGrid = g.neighbors_int(currentGeohash[0],26);
-      currentGrid = currentGeohash.concat(currentGrid);
-
-      this.props.currentGridHandler(currentGrid)
-
+      this.props.mapRegionHandler(initialRegion);
       this.map.getMapRef().animateToRegion(initialRegion,1);
-
-      this.props.mapRegionHandler(initialRegion)
     };
 
     toggleTabMapPress = pressinfo => {
@@ -161,24 +152,7 @@ export default class ClusteringMap extends React.Component {
 
     onRegionChangeComplete = mapRegion => {
       this.props.mapRegionHandler(mapRegion);
-      var currentGeohash = [g.encode_int(mapRegion.latitude,mapRegion.longitude,26)];
-      var currentGrid = g.neighbors_int(currentGeohash[0],26);
-      currentGrid = currentGeohash.concat(currentGrid);
-
-      this.props.currentGridHandler(currentGrid);
-
-      let cleanGrid = null;
-      Object.keys(this.props.geoHashGrid).map( geohash => {
-        if (!currentGrid.includes(Number(geohash))) {
-          if (cleanGrid === null) {
-            cleanGrid = {...this.props.geoHashGrid};
-          }
-          delete cleanGrid[geohash];
-        }
-      })
-      if (cleanGrid !== null) {
-        this.props.geoHashGridHandler(cleanGrid);
-      }
+      this.props.addListenerHandler(mapRegion.latitude,mapRegion.longitude);
     }
 
     render() {
@@ -204,7 +178,8 @@ export default class ClusteringMap extends React.Component {
                 latitudeDelta: 0.01,
                 longitudeDelta: 0.01,
             }}
-          data={Object.values(this.props.geoHashGrid).map(x => Object.values(x)).map(x=>x).flat().concat(this.props.ghostMarker)}
+          // data={Object.values(this.props.geoHashGrid).map(x => Object.values(x)).map(x=>x).flat().concat(this.props.ghostMarker)}
+          data = {Object.values(this.props.hubs).map(x => x).flat().concat(this.props.ghostMarker)}
           renderMarker={this.renderMarker}
           renderCluster={this.renderCluster}
           />

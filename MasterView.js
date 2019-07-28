@@ -14,6 +14,8 @@ import * as firebase from 'firebase';
 import 'firebase/firestore';
 import ClusteringMap from './ClusteringMap.js';
 import styles from './styles.js';
+import { GeoCollectionReference, GeoFirestore, GeoQuery, GeoQuerySnapshot } from 'geofirestore';
+
 
 function getRandomInt(min,max) {
   min = Math.ceil(min);
@@ -44,6 +46,7 @@ export default class MasterView extends React.Component {
       error: null,
       geoHashGrid: {},
       ghostMarker: [],
+      hubs: {},
       infoPage: false,
       infoPageMarker: null,
       leaderBoard: false,
@@ -55,7 +58,6 @@ export default class MasterView extends React.Component {
         longitude: null,
         longitudeDelta: null
       },
-      markers_: {},
       selectedMarker: null,
       showVotingButtons: true,
       tabVal: false,
@@ -75,6 +77,7 @@ export default class MasterView extends React.Component {
     this.geoHashGridHandler = this.geoHashGridHandler.bind(this);
 
     this._addListener = this._addListener.bind(this);
+    this.addListenerHandler = this.addListenerHandler.bind(this);
     this.componentDidMount = this.componentDidMount.bind(this);
     this.changeLit = this.changeLit.bind(this);
     this.toggleInfoPage = this.toggleInfoPage.bind(this);
@@ -90,7 +93,7 @@ export default class MasterView extends React.Component {
 
   openTab(marker) {
     // Checks if marker is a ghost. if a ghostMarker is clicked then call hideTab()
-    if(this.state.geoHashGrid[marker.geohash] === undefined || !Object.keys(this.state.geoHashGrid[marker.geohash]).includes(marker.location.address)) {
+    if(!Object.keys(this.state.hubs).includes(marker.location.address)) {
       this.closeTab(true);
       console.log("I am in here 1")
     }
@@ -168,6 +171,8 @@ export default class MasterView extends React.Component {
       let userAddressDictionary = {}
       // creates a dictionary of all possible locations returned by the fetch
       // TODO: trim down results to only important ones. Remove results that are renages of numbers and limit returns
+      // getting warning about unhandled promise. result.addres_components[counter].types "undefined is not an object" some results may not have components?
+
       results.forEach( result => {
           let state, city, street, number = null;
           counter = 0
@@ -238,13 +243,18 @@ export default class MasterView extends React.Component {
     this.openTab(marker)
   }
 
-  _addListener = async() => {
-    listener = db.collection('locations')
-    .where("geohash", "array-contains", await this.state.currentGrid[0])
+  _addListener = async(latitude,longitude) => {
+    if (Object.keys(this.state.hubs).length > 10) {
+      console.log("wipe");
+      let cleanHubs = {};
+      this.setState({hubs: cleanHubs})
+      hubListener();
+    }
+    hubListener = hubs
+    .near({center: new firebase.firestore.GeoPoint(latitude, longitude), radius: 1000})
     .onSnapshot(snapshot => {
       snapshot.docChanges().forEach(change => {
-        let newGrid = {...this.state.geoHashGrid};
-        let newDictionary = {}
+        let newHubsDictionary = {...this.state.hubs};
 
         // Create a new location and add it to the markers dictionary when a new document is added to the listener.
         if (change.type === 'added'){
@@ -277,19 +287,15 @@ export default class MasterView extends React.Component {
             change.doc.id,
           )
           
-          if (change.doc.data().geohash[0] in newGrid) {
-            newDictionary = {...newGrid[change.doc.data().geohash[0]]}
-          }
-          newDictionary[change.doc.id] = hub
+          newHubsDictionary[change.doc.id] = hub;
         } 
 
         else if(change.type === 'modified'){
           // update the data in the markers dictionary if a document in the listener has been modified.
-          // this if statement may be redundant
-          newDictionary = newGrid[change.doc.data().geohash[0]];
-          newDictionary[change.doc.id].stats.cost = change.doc.data().count;
-          newDictionary[change.doc.id].stats.upVotes = change.doc.data().upVotes;
-          newDictionary[change.doc.id].stats.downVotes = change.doc.data().downVotes;
+
+          newHubsDictionary[change.doc.id].stats.cost = change.doc.data().count;
+          newHubsDictionary[change.doc.id].stats.upVotes = change.doc.data().upVotes;
+          newHubsDictionary[change.doc.id].stats.downVotes = change.doc.data().downVotes;
         }
 
         // delete location from markers_dictionary if document is removed from listener
@@ -297,13 +303,10 @@ export default class MasterView extends React.Component {
           if (this.state.selectedMarker && this.state.selectedMarker.location.address === change.doc.id) {
             this.closeTab(true);
           }
-
-          newDictionary = newGrid[change.doc.data().geohash[0]];
-          delete newDictionary[change.doc.id];
+          delete newHubsDictionary[change.doc.id];
         }
-
-        newGrid[change.doc.data().geohash[0]] = newDictionary;
-        this.setState({geoHashGrid: newGrid})
+        this.setState({hubs: newHubsDictionary});
+        // console.log(this.state.hubs)
       })
     })
   }
@@ -368,6 +371,10 @@ export default class MasterView extends React.Component {
     this.setState({
       geoHashGrid: someValue
     })
+  }
+
+  addListenerHandler(latitude,longitude) {
+    this._addListener(latitude,longitude);
   }
 
   // Toggles the info page on a hub
@@ -482,10 +489,8 @@ export default class MasterView extends React.Component {
       if (this.state.ghostMarker.length == 0) {
         return address;
       }
-      else if (this.state.geoHashGrid[this.state.userLocation.userAddressDictionary[address].geohash] == undefined) {
-        return address;
-      }
-      else if (!(address in this.state.geoHashGrid[this.state.userLocation.userAddressDictionary[address].geohash])||
+
+      else if (!(address in this.state.hubs)||
                 address == this.state.ghostMarker[0].location.address) {
         return address;
       } else {
@@ -562,29 +567,28 @@ export default class MasterView extends React.Component {
     // collect timestamp.
     let time = new Date();
     
-    // Turns a ghostMarker into a regular marker by adding a new location to the database
-    if (this.state.geoHashGrid[marker.geohash] == undefined || !Object.keys(this.state.geoHashGrid[marker.geohash]).includes(marker.location.address)){
+    if (!Object.keys(this.state.hubs).includes(marker.location.address)){
       let latitude = this.state.ghostMarker[0].coordinate.latitude;
       let longitude = this.state.ghostMarker[0].coordinate.longitude;
       let state = this.state.ghostMarker[0].location.state;
       let city = this.state.ghostMarker[0].location.city;
       let street = this.state.ghostMarker[0].location.street;
       let number = this.state.ghostMarker[0].location.number;
-      hashes = [g.encode_int(latitude,longitude,26)];
-      hashNeighbors = g.neighbors_int(hashes[0],26);
+      geohash = [g.encode_int(latitude,longitude,26)];
+
       // get a reference to the document at this address in the database.
-      let ref = db.collection('locations').doc(marker.location.address);
-      ref.get()
+
+      hubs.doc(marker.location.address).get()
         .then( doc => {
+          console.log(doc.exists)
           // if the document doesnt yet exist, add a new one with base stats.
           if (!doc.exists) {
-            ref.set({
-              percentVotesLastThirty: 0,
-              percentVotesLastHour: 0,
+            hubs.doc(marker.location.address).set({
+              coordinates: new firebase.firestore.GeoPoint(latitude, longitude),
               timeCreated: time,
               latitude:  latitude,
               longitude: longitude,
-              geohash: hashes.concat(hashNeighbors),
+              geohash: geohash,
               imagePath: './assets/logs.png',
               state: state,
               city: city,
@@ -592,7 +596,8 @@ export default class MasterView extends React.Component {
               number: number
             })
             // add a new vote to the votes on this document with the users uniqueID.
-            ref.collection('votes').doc(uniqueId).set({
+            hubs.doc(marker.location.address).collection('votes').doc(uniqueId).set({
+              coordinates: new firebase.firestore.GeoPoint(latitude, longitude),
               voteTime: time,
               vote: vote,
             })
@@ -604,20 +609,22 @@ export default class MasterView extends React.Component {
     // update votes if user is already in the database
     } else {
       // gets a reference to the document at the address.
-      let ref = db.collection('locations').doc(marker.location.address).collection('votes').doc(uniqueId);
-      return ref.get()
+      // let georef = GeoFirestoreDB.collection('locations').doc(marker.location.address).collection('votes').doc(uniqueId);
+      hubs.doc(marker.location.address).collection('votes').doc(uniqueId).get()
       .then( voteDoc => {
         // Do not let user vote multiple times but allow them to update an old vote
         if (voteDoc.exists) {
           // change vote to the opposite of the previous vote
-          if (voteDoc.data().vote != vote) {
-            ref.set({
+          if (voteDoc.data().d.vote != vote) {
+            hubs.doc(marker.location.address).set({
+              coordinates: new firebase.firestore.GeoPoint(10, 20),
               voteTime: time,
               vote: vote,
             })
           }
         } else {
-          db.collection('locations').doc(marker.location.address).collection('votes').doc(uniqueId).set({
+          hubs.doc(marker.location.address).collection('votes').doc(uniqueId).set({
+            coordinates: new firebase.firestore.GeoPoint(10, 20),
             voteTime: time,
             vote: vote,
           })
@@ -632,7 +639,9 @@ export default class MasterView extends React.Component {
       <View style = {styles.bigContainer}>        
           <ClusteringMap onRef={ref => (this.clusterMap = ref)}
                 geoHashGrid={this.state.geoHashGrid}
+                hubs = {this.state.hubs}
                 closeTab={this.closeTab}
+                addListenerHandler={this.addListenerHandler}
                 selectedMarker={this.state.selectedMarker} 
                 selectedMarkerHandler={this.selectedMarkerHandler}
                 tabValHandler={this.tabValHandler}
