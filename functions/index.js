@@ -70,6 +70,7 @@ exports.DBupdate = functions.https.onRequest((req, res) => {
         snapshot.forEach( address => {
             hubs.doc(address.id).collection('votes').get().then(query => {
                 if (query.size <=0) {
+                    console.log("here");
                     hubs.doc(address.id).collection('upvotes_downvotes').get()
                     .then( snapshot__ => {
                         snapshot__.forEach( count => {
@@ -78,12 +79,14 @@ exports.DBupdate = functions.https.onRequest((req, res) => {
                         hubs.doc(address.id).delete();
                         return "";
                     }).catch( reason => {
-                        res.send(reason);
+                        console.log(reason);
+                        // res.send(reason);
                     })
                 }
                 return "";
             }).catch( reason => {
-                res.send(reason);
+                // res.send(reason);
+                console.log(reason);
             });
             hubs.doc(address.id).collection('votes').where('voteTime', '<', twoHoursAgo_).get()
                 .then( snapshot_ => {
@@ -92,13 +95,16 @@ exports.DBupdate = functions.https.onRequest((req, res) => {
                     })
                     return "";
                 }).catch( reason => {
-                    res.send(reason);
+                    console.log(reason);
+                    // res.send(reason);
                 })
         })
-        res.send("success!");
+        // res.send("success!");
+        console.log("success!")
         return "";
     }).catch( reason => {
-        res.send(reason);
+        // res.send(reason);
+        console.log(reason);
     })
 });
 

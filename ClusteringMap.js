@@ -152,6 +152,7 @@ export default class ClusteringMap extends React.Component {
 
     onRegionChangeComplete = mapRegion => {
       this.props.mapRegionHandler(mapRegion);
+      console.log("longitude", mapRegion.longitude)
       this.props.addListenerHandler(mapRegion.latitude,mapRegion.longitude);
     }
 
@@ -161,7 +162,7 @@ export default class ClusteringMap extends React.Component {
           style={{flex: 1}}
           ref={ref => {this.map = ref;}} 
             clusteringEnabled={this.props.clustering} 
-            minZoomLevel = {12}
+            // minZoomLevel = {12}
             maxZoomLevel = {19}
             showsMyLocationButton = {true}          
             zoomEnabled = {true}
