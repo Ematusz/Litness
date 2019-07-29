@@ -60,7 +60,7 @@ export default class Leaderboard extends React.Component {
           })
         })
         let data = [];
-       hubs.where("city", "==", city).where("state", "==", state)/*.orderBy('count', 'desc')*/.limit(25).get()
+        db.collection('locations').where("city", "==", city).where("state", "==", state).orderBy('count', 'desc').limit(25).get()
           .then( snapshot => {
             let counter = 1;
             snapshot.forEach( doc => {
