@@ -467,16 +467,6 @@ export default class MasterView extends React.Component {
       }
     }
   }
-
-  checkGhost(referenceLatitude, referenceLongitude) {
-    let locationObj = {};
-    locationObj.coordinates = {};
-    locationObj.coordinates.latitude =  referenceLatitude
-    locationObj.coordinates.longitude =  referenceLongitude
-    locationObj.coordinates.latitudeDelta =  0.0005
-    locationObj.coordinates.longitudeDelta =  0.0005
-  }
-  
     // Initializes the ghost marker to closest location in possible current locations
   setGhost(referenceLatitude, referenceLongitude) {
 
@@ -519,7 +509,7 @@ export default class MasterView extends React.Component {
               latitude: this.state.userLocation.userAddressDictionary[address].coord.lat,
               longitude: this.state.userLocation.userAddressDictionary[address].coord.lng
             },
-            ghostMarker: "yo",
+            ghostMarker: "possible location",
             key: Math.random()        
           }
 
