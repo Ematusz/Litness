@@ -46,6 +46,7 @@ export default class MasterView extends React.Component {
       error: null,
       geoHashGrid: {},
       ghostMarker: [],
+      possibleLocationMarker: [],
       hubs: {},
       infoPage: false,
       infoPageMarker: null,
@@ -131,8 +132,8 @@ export default class MasterView extends React.Component {
     
     if (deleteGhost) {
       this.setState({selectedMarker: null});
-      var deleteGhost = []
-      this.ghostMarkerHandler(deleteGhost)
+      this.setState({possibleLocationMarker: []});
+      this.ghostMarkerHandler([])
     }
   }
   
@@ -466,6 +467,15 @@ export default class MasterView extends React.Component {
       }
     }
   }
+
+  checkGhost(referenceLatitude, referenceLongitude) {
+    let locationObj = {};
+    locationObj.coordinates = {};
+    locationObj.coordinates.latitude =  referenceLatitude
+    locationObj.coordinates.longitude =  referenceLongitude
+    locationObj.coordinates.latitudeDelta =  0.0005
+    locationObj.coordinates.longitudeDelta =  0.0005
+  }
   
     // Initializes the ghost marker to closest location in possible current locations
   setGhost(referenceLatitude, referenceLongitude) {
@@ -481,9 +491,6 @@ export default class MasterView extends React.Component {
 
     let ghostAddress = null;
     let currentDistance = null;
-
-    navigator.geolocation.clearWatch(this.watchId);
-    this._addWatchPosition();
     
     let availableLocations = Object.keys(this.state.userLocation.userAddressDictionary).map( address => {
       if (this.state.ghostMarker.length == 0) {
@@ -500,32 +507,45 @@ export default class MasterView extends React.Component {
 
     console.log(availableLocations);
     if (availableLocations != undefined) {
+      let possibleMarkers = []
       availableLocations.forEach(address => {
         if (address != null) {
+          let marker = {
+            coordinate: {
+              latitude: this.state.userLocation.userAddressDictionary[address].coord.lat,
+              longitude: this.state.userLocation.userAddressDictionary[address].coord.lng
+            }, 
+            location: {
+              latitude: this.state.userLocation.userAddressDictionary[address].coord.lat,
+              longitude: this.state.userLocation.userAddressDictionary[address].coord.lng
+            },
+            ghostMarker: "yo",
+            key: Math.random()        
+          }
+
+          possibleMarkers.push(marker)
 
           let distance = math.sqrt(
             math.square(referenceLatitude-this.state.userLocation.userAddressDictionary[address].coord.lat)
             + math.square(referenceLongitude-this.state.userLocation.userAddressDictionary[address].coord.lng)
           )
 
-          if (ghostAddress == null) {
+          if (ghostAddress == null || distance < currentDistance) {
             ghostAddress = address;
             currentDistance = distance
-          } else if (distance < currentDistance){
-            ghostAddress = address;
-            currentDistance = distance;
-          }
+          } 
         }
       })
+
       if (ghostAddress != null ) {
         
         let newGhostMarker = [];
         let hub = new Hub(
           {
             latitude: this.state.userLocation.userAddressDictionary[ghostAddress].coord.lat,
-            longitude: this.state.userLocation.userAddressDictionary[ghostAddress].coord.lng
+            longitude: this.state.userLocation.userAddressDictionary[ghostAddress].coord.lng,
           },
-            {
+          {
             latitude: this.state.userLocation.userAddressDictionary[ghostAddress].coord.lat,
             longitude: this.state.userLocation.userAddressDictionary[ghostAddress].coord.lng,
             address: ghostAddress,
@@ -544,12 +564,22 @@ export default class MasterView extends React.Component {
           Math.random()        
         )
 
+        possibleMarkers = possibleMarkers.filter((marker) => {
+          return (marker.coordinate.latitude !== hub.coordinate.latitude &&
+                  marker.coordinate.longitude !== hub.coordinate.longitude
+          )
+        })
+
         newGhostMarker.push(hub);
 
         this.showVotingButtonsHandler(false)
         this.tabValHandler()
         this.selectedMarkerHandler(hub)
         this.ghostMarkerHandler(newGhostMarker)
+
+        this.setState({
+          possibleLocationMarker: possibleMarkers
+        })
 
       } else {
         // show popup "move closer to location"
@@ -647,6 +677,7 @@ export default class MasterView extends React.Component {
                 tabValHandler={this.tabValHandler}
                 showVotingButtonsHandler={this.showVotingButtonsHandler} 
                 ghostMarker={this.state.ghostMarker}
+                possibleLocationMarker = {this.state.possibleLocationMarker}
                 mapRegionHandler={this.mapRegionHandler} 
                 currentGridHandler={this.currentGridHandler}
                 userLocation={this.state.userLocation} 
