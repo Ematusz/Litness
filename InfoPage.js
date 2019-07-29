@@ -99,7 +99,7 @@ export default class InfoPage extends React.Component {
         let lastShit = 0
         let timeToLit = {};
         let timeToShit = {};
-        db.collection("locations").doc(this.props.infoPageMarker.location.address).collection('upvotes_downvotes')
+        hubs.doc(this.props.infoPageMarker.location.address).collection('upvotes_downvotes')
           .get().then( snapshot => {
             snapshot.forEach( doc => {
               vote = {value:doc.data().count, time:doc.id}
