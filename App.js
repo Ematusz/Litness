@@ -4,7 +4,6 @@ import MasterView from './MasterView.js';
 import * as firebase from 'firebase';
 import 'firebase/firestore';
 import styles from './styles.js';
-import { GeoCollectionReference, GeoFirestore, GeoQuery, GeoQuerySnapshot } from 'geofirestore';
 
 // Initialize Firebase
 global.firebaseConfig = {
@@ -18,10 +17,6 @@ global.firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 global.db = firebase.firestore();
-
-const geofirestore = new GeoFirestore(db);
-
-global.hubs = geofirestore.collection('hubs')
 
 // const uniqueId = DeviceInfo.getUniqueID();
 
