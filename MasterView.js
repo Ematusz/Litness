@@ -104,8 +104,10 @@ export default class MasterView extends React.Component {
 
       if(marker.location.address in this.state.userLocation.userAddressDictionary) {
         this.setState({showVotingButtons: true})
+        console.log(true);
       } else {
-        this.setState({showVotingButtons: true})
+        this.setState({showVotingButtons: false})
+        console.log(false);
       }
 
       if (!this.state.tabVal) {
@@ -570,7 +572,7 @@ export default class MasterView extends React.Component {
 
         newGhostMarker.push(hub);
 
-        this.showVotingButtonsHandler(false)
+        this.showVotingButtonsHandler(true)
         this.tabValHandler()
         this.selectedMarkerHandler(hub)
         this.ghostMarkerHandler(newGhostMarker)
@@ -698,6 +700,7 @@ export default class MasterView extends React.Component {
                             clickInfo = {()=>this.toggleInfoPage(this.state.selectedMarker)} 
                             clickFire={()=>this.changeLit(this.state.selectedMarker,1)}
                             clickShit={()=>this.changeLit(this.state.selectedMarker,-1)}
+                            showVotingButtons={this.state.showVotingButtons}
           />
 
           {this.state.leaderBoard && <AnimatedLeaderboard style = {{top:this.state.animatedLeaderboard}} 
