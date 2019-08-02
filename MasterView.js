@@ -708,6 +708,7 @@ export default class MasterView extends React.Component {
                                 leaderBoard_={this.state.leaderBoard_}
                                 toggleInfoPage={this.toggleInfoPage}
                                 mapRegion = {this.state.mapRegion}
+                                userLocation = {this.state.userLocation}
           />}
 
           <AnimatedLeaderboardTab style = {{right:this.state.animatedLeaderboardButton}} 
