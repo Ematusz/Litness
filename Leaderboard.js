@@ -60,37 +60,38 @@ export default class Leaderboard extends React.Component {
           })
         })
         let data = [];
-       hubs.where("city", "==", city).where("state", "==", state)/*.orderBy('count', 'desc')*/.limit(25).get()
-          .then( snapshot => {
+       db.collection('leaderboard').where("city", "==", city).where("state", "==", state).orderBy('count', 'desc').limit(25).get()
+          .then( leaderBoardSnapshot => {
             let counter = 1;
-            snapshot.forEach( doc => {
-              let hub = new Hub(
-                {
-                  latitude: doc.data().latitude,
-                  longitude: doc.data().longitude
-                },
-                {
-                  latitude: doc.data().latitude,
-                  longitude: doc.data().longitude,
-                  address: doc.id,
-                  city: doc.data().city,
-                  street: doc.data().street,
-                  number: doc.data().number,
-                },
-                false,
-                doc.data().geohash[0],
-                {
-                  cost: doc.data().count,
-                  upVotes: doc.data().upVotes,
-                  downVotes: doc.data().downVotes,
-                },
-                doc.id,
-              )
-              data.push({hub:hub,key:counter.toString()});
-              counter = counter + 1;
+            leaderBoardSnapshot.forEach( leaderBoardHub => {
+              hubs.doc(leaderBoardHub.id).get().then( doc => {
+                let hub = new Hub(
+                  {
+                    latitude: doc.data().latitude,
+                    longitude: doc.data().longitude
+                  },
+                  {
+                    latitude: doc.data().latitude,
+                    longitude: doc.data().longitude,
+                    address: doc.id,
+                    city: doc.data().city,
+                    street: doc.data().street,
+                    number: doc.data().number,
+                  },
+                  false,
+                  doc.data().geohash[0],
+                  {
+                    cost: doc.data().count,
+                    upVotes: doc.data().upVotes,
+                    downVotes: doc.data().downVotes,
+                  },
+                  doc.id,
+                )
+                data.push({hub:hub,key:counter.toString()});
+                counter = counter + 1;
+                this.setState({ processedData: data },()=>this.setState({ showLeaderboard: true,refreshing:false }));
+              }).catch( error => {console.log(error)});
             })
-
-          this.setState({ processedData: data },()=>this.setState({ showLeaderboard: true,refreshing:false }));
           }).catch( error =>{
             console.log(error)
           })

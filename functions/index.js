@@ -65,7 +65,7 @@ exports.DBupdate = functions.https.onRequest((req, res) => {
 
     // for geofirestore
     hubs.get().then(snapshot => {
-        let twoHoursAgo = Date.now() - (1 * 60 * 1000);
+        let twoHoursAgo = Date.now() - (5 * 60 * 60 * 1000);
         let twoHoursAgo_ = new Date(twoHoursAgo);
         snapshot.forEach( address => {
             hubs.doc(address.id).collection('votes').get().then(query => {
@@ -77,6 +77,7 @@ exports.DBupdate = functions.https.onRequest((req, res) => {
                             hubs.doc(address.id).collection('upvotes_downvotes').doc(count.id).delete();
                         })
                         hubs.doc(address.id).delete();
+                        ref.collection('leaderboard').doc(address.id).delete();
                         return "";
                     }).catch( reason => {
                         console.log(reason);
@@ -130,6 +131,9 @@ exports.updatedVoteHubs = functions.firestore.document('hubs/{address}/votes/{vo
         let locationRef = hubs.doc(context.params.address);
         console.log(locationRef);
 
+        let leaderBoardRef = ref.collection('leaderboard').doc(context.params.address);
+        console.log("leaderboard");
+
         //update count at current location based on either an update of a vote or a new vote
         return geofirestore.runTransaction(transaction => {
             const geotransaction = new GeoTransaction(transaction);
@@ -172,9 +176,15 @@ exports.updatedVoteHubs = functions.firestore.document('hubs/{address}/votes/{vo
                     downvotes: downVotes_,
                     count: currentCount
                 });
- 
+
+                //update info in the leaderboard collection
+                leaderBoardRef.set( {
+                    count: currentCount,
+                    state: locationDoc.data().state,
+                    city: locationDoc.data().city
+                });
                  //update location info
-                 return geotransaction.update(locationRef, {
+                return geotransaction.update(locationRef, {
                      count: currentCount,
                      upVotes: upVotes_,
                      downVotes: downVotes_,

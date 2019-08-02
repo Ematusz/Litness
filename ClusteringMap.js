@@ -171,7 +171,7 @@ export default class ClusteringMap extends React.Component {
           style={{flex: 1}}
           ref={ref => {this.map = ref;}} 
             clusteringEnabled={this.props.clustering} 
-            // minZoomLevel = {12}
+            minZoomLevel = {12}
             maxZoomLevel = {19}
             showsMyLocationButton = {true}          
             zoomEnabled = {true}

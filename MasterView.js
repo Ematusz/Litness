@@ -89,6 +89,7 @@ export default class MasterView extends React.Component {
     this._addWatchPosition = this._addWatchPosition.bind(this);
 
     this.setGhost = this.setGhost.bind(this);
+    this.refreshWatchPosition = this.refreshWatchPosition.bind(this);
     this.success = this.success.bind(this);
   }
 
@@ -216,6 +217,13 @@ export default class MasterView extends React.Component {
       this.setState({userLocation: userCoordinates});
     })
   }
+
+  refreshWatchPosition = async() => {
+    console.log("refresh watch position")
+    navigator.geolocation.clearWatch(this.watchId);
+    this._addWatchPosition()
+  }
+
   _addWatchPosition = async() => {
     // updates the userLocation prop when the user moves a significant amount
     this.watchID = navigator.geolocation.watchPosition(
@@ -469,7 +477,7 @@ export default class MasterView extends React.Component {
   }
     // Initializes the ghost marker to closest location in possible current locations
   setGhost(referenceLatitude, referenceLongitude) {
-
+    this.refreshWatchPosition();
     let locationObj = {};
     locationObj.coordinates = {};
     locationObj.coordinates.latitude =  referenceLatitude
