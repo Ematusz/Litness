@@ -3,6 +3,8 @@ import Hub from './Hub.js'
 import {TouchableOpacity,View, ActivityIndicator,Text, FlatList} from 'react-native';
 import styles from './styles.js'
 import {renderMarkerIcon, renderLoadingFire, renderRefresh} from './renderImage.js'
+import { getDistance } from 'geolib';
+import * as math from 'mathjs';
 
 export default class Leaderboard extends React.Component {
     constructor(props) {
@@ -19,7 +21,8 @@ export default class Leaderboard extends React.Component {
         this.renderLeaderboardCell = this.renderLeaderboardCell.bind(this);
         this.getData = this.getData.bind(this);
         this.refresh = this.refresh.bind(this);
-        this.updateIndex = this.updateIndex.bind(this)
+        this.updateIndex = this.updateIndex.bind(this);
+        this.distanceFromUser = this.distanceFromUser.bind(this);
     }
 
     updateIndex (selectedIndex) {
@@ -98,12 +101,24 @@ export default class Leaderboard extends React.Component {
         })
     }
 
+    distanceFromUser(hub) {
+      let distance = math.round(getDistance({latitude: this.props.userLocation.latitude,longitude: this.props.userLocation.longitude},
+          {latitude: hub.coordinate.latitude,longitude: hub.coordinate.longitude})*3.28084);
+      if (distance <= 1000) {
+        return distance.toString().concat(" ft");
+      } else {
+        distance = distance/5280
+        return distance.toFixed(1).concat(" mi");
+      }
+    }
+
     renderLeaderboardCell =  ({item}) => {
+      console.log("hub", item.hub)
       return (
         <TouchableOpacity style = {styles.leaderBoardCell} onPress={()=>this.props.toggleInfoPage(item.hub)}>
           <Text style = {{...styles.leaderboardText,fontWeight:'bold',color:"black"}}> {item.key} </Text>
               {renderMarkerIcon(item.hub.stats.cost)}
-          <Text style = {styles.leaderboardText}> {item.hub.location.number} {item.hub.location.street}</Text>
+          <Text style = {styles.leaderboardText}> {item.hub.location.number} {item.hub.location.street}{"\n"}{this.distanceFromUser(item.hub)}</Text>
   
           <View style = {styles.LBinnerBox}>
             <Text style = {{color:'black',fontSize:20}}>{item.hub.stats.cost}</Text>
