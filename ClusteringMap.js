@@ -59,8 +59,8 @@ export default class ClusteringMap extends React.Component {
   
       return (
         <Marker identifier={`cluster-${clusterId}`} coordinate={coordinate} onPress={onPress}>
-          <View style={{...styles.marker,width:40,height:40, backgroundColor:"white",borderWidth:2, borderColor:"black"}}>
-            <Text style={{...styles.markerCost,color:"black"}}>
+          <View style={{...styles.marker,width:40,height:40, backgroundColor:"black",borderWidth:2, borderColor:"white"}}>
+            <Text style={{...styles.markerCost,color:"white"}}>
               {pointCount}
             </Text>
           </View>
@@ -161,7 +161,7 @@ export default class ClusteringMap extends React.Component {
 
     onRegionChangeComplete = mapRegion => {
       this.props.mapRegionHandler(mapRegion);
-      console.log("longitude", mapRegion.longitude)
+      // console.log("longitude", mapRegion.longitude)
       this.props.addListenerHandler(mapRegion.latitude,mapRegion.longitude);
     }
 

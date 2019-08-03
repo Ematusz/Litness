@@ -41,7 +41,7 @@ export default class InfoPage extends React.Component {
     }
 
     closeInfoPage() {
-        this.setState({ showChart: false },()=>{this.props.toggleInfoPage()});
+        this.setState({ showChart: false },this.props.toggleInfoPage(this.props.infoPageMarker));
     }
 
     updateIndex (selectedIndex) {

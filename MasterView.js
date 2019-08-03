@@ -97,7 +97,7 @@ export default class MasterView extends React.Component {
     // Checks if marker is a ghost. if a ghostMarker is clicked then call hideTab()
     if(!Object.keys(this.state.hubs).includes(marker.location.address)) {
       this.closeTab(true);
-      console.log("I am in here 1")
+      // console.log("I am in here 1")
     }
     // change selectedAddress to the new address if the selected marker is not at selectedAddress
     else {
@@ -418,7 +418,7 @@ export default class MasterView extends React.Component {
       
     }
     // closes the vote tab when the info page is up so that its not distracting.
-    if (this.state.infoPage) {
+    if (this.state.infoPage && !this.state.leaderBoard) {
       this.openTab(marker);
       this.setState({infoPageMarker: null});
       // this.setState({selectedMarker: null});
@@ -689,7 +689,7 @@ export default class MasterView extends React.Component {
           />
 
           {this.state.infoPage && <AnimatedInfoPage style = {{top:this.state.animatedTop}}
-                            toggleInfoPage={() => this.toggleInfoPage(this.state.selectedMarker)}
+                            toggleInfoPage={this.toggleInfoPage}
                             infoPageMarker={this.state.infoPageMarker}
                             data_={this.state.data_}
                             leaderboardStatus = {this.state.leaderBoard}

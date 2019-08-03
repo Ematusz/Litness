@@ -9,6 +9,7 @@ import * as math from 'mathjs';
 export default class Leaderboard extends React.Component {
     constructor(props) {
         super(props);
+        this._isMounted = false;
         this.state = {
           processedData:[],
           refreshing: true,
@@ -23,18 +24,26 @@ export default class Leaderboard extends React.Component {
         this.refresh = this.refresh.bind(this);
         this.updateIndex = this.updateIndex.bind(this);
         this.distanceFromUser = this.distanceFromUser.bind(this);
+        this.componentWillUnmount = this.componentWillUnmount.bind(this);
+        this._isMounted = false;
+
     }
 
     updateIndex (selectedIndex) {
       this.setState({selectedIndex})
   }
 
-    componentDidMount() {
-        setTimeout(() => {
-            this.getData();            
-            }, 1000);
+    componentWillMount() {
+      this._isMounted = true;
+      setTimeout(() => {
+        this._isMounted && this.getData();            
+          }, 1000);
     };
-    componentWillMount() {};
+    // componentWillMount() {};
+
+    componentWillUnmount() {
+      this._isMounted = false;
+    };
 
     refresh() {
       this.setState({refreshing:true});
@@ -53,12 +62,12 @@ export default class Leaderboard extends React.Component {
           component.types.forEach( type => {
             if (type == "administrative_area_level_1") {
               state = component.short_name;
-              this.setState({state});
+              this._isMounted && this.setState({state});
             }
             if (type == "locality") {
               // might need to change this to neighborhood work on tuning
               city = component.long_name;
-              this.setState({city});
+              this._isMounted && this.setState({city});
             }
           })
         })
@@ -92,7 +101,7 @@ export default class Leaderboard extends React.Component {
                 )
                 data.push({hub:hub,key:counter.toString()});
                 counter = counter + 1;
-                this.setState({ processedData: data },()=>this.setState({ showLeaderboard: true,refreshing:false }));
+                this._isMounted && this.setState({ processedData: data },()=>this.setState({ showLeaderboard: true,refreshing:false }));
               }).catch( error => {console.log(error)});
             })
           }).catch( error =>{
@@ -118,10 +127,13 @@ export default class Leaderboard extends React.Component {
         <TouchableOpacity style = {styles.leaderBoardCell} onPress={()=>this.props.toggleInfoPage(item.hub)}>
           <Text style = {{...styles.leaderboardText,fontWeight:'bold',color:"black"}}> {item.key} </Text>
               {renderMarkerIcon(item.hub.stats.cost)}
-          <Text style = {styles.leaderboardText}> {item.hub.location.number} {item.hub.location.street}{"\n"}{this.distanceFromUser(item.hub)}</Text>
+          <View style = {{display:'flex', flexDirection:'column'}}>
+            <Text style = {styles.leaderboardText}> {item.hub.location.number} {item.hub.location.street} </Text>
+            <Text style = {{...styles.leaderboardText, fontSize: 12, color:'grey'}}> {this.distanceFromUser(item.hub)} </Text>
+          </View>
   
           <View style = {styles.LBinnerBox}>
-            <Text style = {{color:'black',fontSize:20}}>{item.hub.stats.cost}</Text>
+            <Text style = {{color:'black',fontSize:20, fontWeight:'bold'}}>{item.hub.stats.cost}</Text>
           </View>
         </TouchableOpacity>
       )
@@ -143,9 +155,9 @@ export default class Leaderboard extends React.Component {
     render() {
       return (
         <View style={[styles.leaderboard,this.props.style]}>
-            {this.state.showLeaderboard && <TouchableOpacity onPress={this.props.toggleLeaderBoard} style = {styles.closeBar}>
+            <TouchableOpacity onPress={this.props.toggleLeaderBoard} style = {styles.closeBar}>
               <Text style = {{color:'white',fontWeight:'bold'}}>X</Text>
-            </TouchableOpacity>}
+            </TouchableOpacity>
   
             <TouchableOpacity onPress={this.refresh} style={styles.refresh}>
                 {renderRefresh()}
