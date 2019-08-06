@@ -162,6 +162,15 @@ export default StyleSheet.create({
     height: 30,
     justifyContent:'center'
   }, 
+  refreshPositionButton: {
+    backgroundColor:"white",
+    borderColor:'black',
+    borderWidth: 2,
+    position: 'absolute',
+    flex:1,
+    right: 0,
+    top: '20%',
+  },
   tab: {
     backgroundColor:"white",
     borderColor:'black',

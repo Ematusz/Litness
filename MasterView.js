@@ -6,6 +6,7 @@ import Leaderboard from './Leaderboard.js';
 import LeaderboardTab from './LeaderboardTab.js';
 import AddHubTab from './AddHubTab.js'
 import Hub from './Hub.js'
+import RefreshPositionTab from './RefreshPositionTab.js'
 import './renderImage.js'
 import {Constants} from 'expo';
 import g from 'ngeohash'
@@ -15,6 +16,7 @@ import 'firebase/firestore';
 import ClusteringMap from './ClusteringMap.js';
 import styles from './styles.js';
 import { GeoCollectionReference, GeoFirestore, GeoQuery, GeoQuerySnapshot } from 'geofirestore';
+import AppLink from 'react-native-app-link';
 
 
 function getRandomInt(min,max) {
@@ -28,11 +30,13 @@ const AnimatedInfoPage = Animated.createAnimatedComponent(InfoPage);
 const AnimatedLeaderboard = Animated.createAnimatedComponent(Leaderboard);
 const AnimatedLeaderboardTab = Animated.createAnimatedComponent(LeaderboardTab);
 const AnimatedAddHubTab = Animated.createAnimatedComponent(AddHubTab);
+const AnimatedRefresPositionTab = Animated.createAnimatedComponent(RefreshPositionTab)
 
 export default class MasterView extends React.Component {
   constructor(props) {
     super(props);
     this.state = { 
+      animatedRefreshPositionTab: new Animated.Value(-3),
       animatedAddHubTab: new Animated.Value(-3),
       animatedFlex: new Animated.Value(.5),
       animatedHeight: new Animated.Value(30),
@@ -430,6 +434,16 @@ export default class MasterView extends React.Component {
       this.closeTab(false)
     }
   }
+
+  openMaps(marker) {
+    let appName = 'Google Maps - Transit & Food'
+    let appStoreId = '585027354'
+    let appStoreLocale = 'us'
+    let playStoreId = 'com.google.android.apps.maps'
+    AppLink.maybeOpenURL("comgooglemaps://?daddr=" + marker.location.address + "&directionsmode=driving", { appName, appStoreId, appStoreLocale, playStoreId }).then(() => {
+      console.log("redirected");
+    })
+  }
   
   toggleLeaderBoard() {
     if (!this.state.leaderBoard) {
@@ -479,7 +493,6 @@ export default class MasterView extends React.Component {
   }
     // Initializes the ghost marker to closest location in possible current locations
   setGhost(referenceLatitude, referenceLongitude) {
-    this.refreshWatchPosition();
     let locationObj = {};
     locationObj.coordinates = {};
     locationObj.coordinates.latitude =  referenceLatitude
@@ -700,6 +713,7 @@ export default class MasterView extends React.Component {
                             clickInfo = {()=>this.toggleInfoPage(this.state.selectedMarker)} 
                             clickFire={()=>this.changeLit(this.state.selectedMarker,1)}
                             clickShit={()=>this.changeLit(this.state.selectedMarker,-1)}
+                            clickNavigate={()=>this.openMaps(this.state.selectedMarker)}
                             showVotingButtons={this.state.showVotingButtons}
           />
 
@@ -715,9 +729,12 @@ export default class MasterView extends React.Component {
                                   toggleLeaderBoard={this.toggleLeaderBoard}
           />
 
-          <AnimatedAddHubTab style ={{right:this.state.animatedLeaderboardButton}}
+          <AnimatedAddHubTab style ={{right:this.state.animatedAddHubTab}}
                       setGhost={() => this.setGhost(this.state.userLocation.latitude, this.state.userLocation.longitude)}
           />     
+          <AnimatedRefresPositionTab style ={{right:this.state.animatedRefreshPositionTab}}
+                      refreshWatchPosition={() => this.refreshWatchPosition()}
+          />  
         </View>
     );
   }
