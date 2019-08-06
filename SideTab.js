@@ -1,7 +1,7 @@
 import React from 'react';
 import {View, TouchableOpacity, Button} from 'react-native';
 import styles from './styles.js'
-import {renderVotingLit, renderVotingShit} from './renderImage.js'
+import {renderVotingLit, renderVotingShit, renderNavigationIcon} from './renderImage.js'
 
 export default class sideTab extends React.Component {
     constructor(props) {
@@ -19,6 +19,10 @@ export default class sideTab extends React.Component {
                 </TouchableOpacity>}
 
                 <Button style={styles.tabStyle} title = 'ⓘ' onPress= {this.props.clickInfo} />
+                
+                {<TouchableOpacity onPress= {this.props.clickNavigate}>
+                    {renderNavigationIcon()}
+                </TouchableOpacity>}
             </View>
         );
     }

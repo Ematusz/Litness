@@ -76,6 +76,17 @@ export function renderVotingShit() {
             />
 }
 
+export function renderNavigationIcon() {
+        return <Image
+                style = {{
+                        height: 40,
+                        resizeMode: 'contain',
+                        width: 30,}}
+                // this is a place holder. Make sure to find something open source or make our own
+                source={require('./assets/navigation.png')}
+                />
+}
+
 export function renderAddMarkerIcon() {
     return  <Image
             style = {{flex:1,
@@ -94,6 +105,17 @@ export function renderLeaderboardTabIcon() {
                     width: 30,}}
             source={require('./assets/medal.png')}
             />
+}
+
+export function renderRefreshPositionTabIcon() {
+        return <Image
+                style = {{flex:1,
+                        height: 30,
+                        resizeMode: 'contain',
+                        width: 30,}}
+                        // this is a place holder. Make sure to find something open source or make our own
+                source={require('./assets/refreshButton.png')}
+                />
 }
 
 export function renderLandmark() {
