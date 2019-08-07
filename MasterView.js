@@ -1,5 +1,5 @@
 import React from 'react';
-import {Animated, View ,AppState} from 'react-native';
+import {Animated, View ,AppState, Platform} from 'react-native';
 import SideTab from './SideTab.js';
 import InfoPage from './InfoPage.js';
 import Leaderboard from './Leaderboard.js';
@@ -15,9 +15,7 @@ import * as firebase from 'firebase';
 import 'firebase/firestore';
 import ClusteringMap from './ClusteringMap.js';
 import styles from './styles.js';
-import { GeoCollectionReference, GeoFirestore, GeoQuery, GeoQuerySnapshot } from 'geofirestore';
 import AppLink from 'react-native-app-link';
-
 
 function getRandomInt(min,max) {
   min = Math.ceil(min);
@@ -117,7 +115,7 @@ export default class MasterView extends React.Component {
       if (!this.state.tabVal) {
         this.setState({tabVal:true})
         Animated.timing(this.state.animatedTab, {
-          toValue: 370,
+          toValue: Platform.OS === 'ios' ? 370 : 320,
           friction: 100,
           duration: 200
         }).start();
@@ -145,6 +143,7 @@ export default class MasterView extends React.Component {
   }
   
   componentDidMount() {
+    console.log("componentDidMount")
     this._addWatchPosition()
     AppState.addEventListener('change', this._handleAppStateChange)
   }
@@ -168,6 +167,7 @@ export default class MasterView extends React.Component {
   }
 
   success = position => {
+    console.log("success");
     const { latitude, longitude } = position.coords;
     let ghostGeohash = g.encode_int(latitude,longitude,26)
     // Fetch curent location
@@ -211,7 +211,9 @@ export default class MasterView extends React.Component {
           street: street,
           number: number,
         };
+        // console.log(userAddressDictionary)
       })
+      console.log(Object.keys(userAddressDictionary));
 
       // saves address, latitude, and longitude in a coordinate object
       const userCoordinates = {
@@ -231,11 +233,13 @@ export default class MasterView extends React.Component {
   }
 
   _addWatchPosition = async() => {
+    console.log("addWatchPosition")
     // updates the userLocation prop when the user moves a significant amount
+    console.log()
     this.watchID = navigator.geolocation.watchPosition(
       (position) => this.success(position),
       (error) => console.log(error),
-      {enableHighAccuracy: true, distanceFilter: 0, timeout:5000}
+      {enableHighAccuracy: true, distanceFilter: 0, timeout:15000}
     )
   }
 
@@ -359,7 +363,7 @@ export default class MasterView extends React.Component {
 
   tabValHandler() {
     Animated.timing(this.state.animatedTab, {
-      toValue: 370,
+      toValue: Platform.OS === 'ios' ? 370 : 320,
       friction: 100,
       duration: 200
       }).start();
@@ -394,8 +398,10 @@ export default class MasterView extends React.Component {
 
   // Toggles the info page on a hub
   toggleInfoPage (marker) {
+    console.log("toggleInfoPage", marker.location.address);
     // if infoPage is currently listed as false, open the page. Otherwise close it.
     if (!this.state.infoPage) {
+      console.log(1);
       this.setState({infoPage: true});
       Animated.timing(this.state.animatedTop, {
         toValue: 50,
@@ -406,15 +412,37 @@ export default class MasterView extends React.Component {
         toValue: -50,
         duration: 300
       }).start();
+
+      Animated.timing(this.state.animatedAddHubTab, {
+        toValue: -50,
+        duration: 300
+      }).start();
+
+      Animated.timing(this.state.animatedRefreshPositionTab, {
+        toValue: -50,
+        duration: 300
+      }).start();
     
     } else {
+      console.log(2);
       Animated.timing(this.state.animatedTop, {
         toValue: 1000,
         duration: 300
       }).start(()=>this.setState({infoPage: false}));
       
       if (!this.state.leaderBoard) {
+        console.log(3);
         Animated.timing(this.state.animatedLeaderboardButton, {
+          toValue: -3,
+          duration: 300
+        }).start();
+
+        Animated.timing(this.state.animatedAddHubTab, {
+          toValue: -3,
+          duration: 300
+        }).start();
+
+        Animated.timing(this.state.animatedRefreshPositionTab, {
           toValue: -3,
           duration: 300
         }).start();
@@ -423,12 +451,14 @@ export default class MasterView extends React.Component {
     }
     // closes the vote tab when the info page is up so that its not distracting.
     if (this.state.infoPage && !this.state.leaderBoard) {
+      console.log(4);
       this.openTab(marker);
       this.setState({infoPageMarker: null});
       // this.setState({selectedMarker: null});
     }
     // re opens the tab when the info page closes
     else {
+      console.log(5);
       this.setState({infoPageMarker: marker});
       // this.setState({selectedMarker: marker});
       this.closeTab(false)
@@ -436,11 +466,11 @@ export default class MasterView extends React.Component {
   }
 
   openMaps(marker) {
-    let appName = 'Google Maps - Transit & Food'
+    let appName = Platform.OS === 'ios' ? 'Google Maps - Transit & Food' : 'Maps'
     let appStoreId = '585027354'
     let appStoreLocale = 'us'
     let playStoreId = 'com.google.android.apps.maps'
-    AppLink.maybeOpenURL("comgooglemaps://?daddr=" + marker.location.address + "&directionsmode=driving", { appName, appStoreId, appStoreLocale, playStoreId }).then(() => {
+    AppLink.maybeOpenURL("https://www.google.com/maps/dir/?api=1&destination="+marker.location.address+"&travelmode=driving" , { appName, appStoreId, appStoreLocale, playStoreId }).then(() => {
       console.log("redirected");
     })
   }
@@ -460,6 +490,16 @@ export default class MasterView extends React.Component {
         friction: 100,
         duration: 300
       }).start();
+      
+      Animated.timing(this.state.animatedAddHubTab, {
+        toValue: -50,
+        duration: 300
+      }).start();
+
+      Animated.timing(this.state.animatedRefreshPositionTab, {
+        toValue: -50,
+        duration: 300
+      }).start();
 
       if (this.state.tabVal) {
         Animated.timing(this.state.animatedTab, {
@@ -468,6 +508,7 @@ export default class MasterView extends React.Component {
           duration: 200
         }).start();
       }
+
 
     } else {
       Animated.timing(this.state.animatedLeaderboard, {
@@ -481,10 +522,19 @@ export default class MasterView extends React.Component {
         friction: 100,
         duration: 200
       }).start();
+      Animated.timing(this.state.animatedAddHubTab, {
+        toValue: -3,
+        duration: 300
+      }).start();
+
+      Animated.timing(this.state.animatedRefreshPositionTab, {
+        toValue: -3,
+        duration: 300
+      }).start();
 
       if (this.state.tabVal) {
         Animated.timing(this.state.animatedTab, {
-          toValue: 370,
+          toValue: Platform.OS === 'ios' ? 370 : 320,
           friction: 100,
           duration: 200
         }).start();

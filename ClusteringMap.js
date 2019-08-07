@@ -11,6 +11,7 @@ export default class ClusteringMap extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
+          flex: 0,
           error: null,
           dragging: false,
           interaction: true,
@@ -34,6 +35,7 @@ export default class ClusteringMap extends React.Component {
     }
 
     componentDidMount() {
+      setTimeout(()=>this.setState({flex: 1}),500);
       this.props.onRef(this);
     };
     componentWillMount() {
@@ -168,7 +170,7 @@ export default class ClusteringMap extends React.Component {
     render() {
         return (
           <ClusteredMapView
-          style={{flex: 1}}
+          style={{flex: this.state.flex}}
           ref={ref => {this.map = ref;}} 
             clusteringEnabled={this.props.clustering} 
             minZoomLevel = {12}

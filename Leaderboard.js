@@ -51,6 +51,9 @@ export default class Leaderboard extends React.Component {
     }
 
     getData() {
+
+      console.ignoredYellowBox = ['Setting a timer'];
+      
       myApiKey = 'AIzaSyBkwazID1O1ryFhdC6mgSR4hJY2-GdVPmE';
       fetch('https://maps.googleapis.com/maps/api/geocode/json?latlng=' + this.props.mapRegion.latitude + ',' + this.props.mapRegion.longitude + '&key=' + myApiKey)
       .then((response) => response.json())
