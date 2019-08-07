@@ -23,6 +23,7 @@ const geofirestore = new GeoFirestore(db);
 
 global.hubs = geofirestore.collection('hubs')
 
+
 // const uniqueId = DeviceInfo.getUniqueID();
 
 // console.log(uniqueID);
@@ -30,7 +31,6 @@ global.hubs = geofirestore.collection('hubs')
 //import Panel from './components/Panel';  // Step 1
 
 export default class App extends React.Component {
-
   constructor(props) {
     super(props);
     this.state = { 

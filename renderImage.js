@@ -34,6 +34,8 @@ export function renderMarkerIcon(count) {
 export function renderGhostIcon() { 
     return  <Image
             style = {styles.emojiIcon}
+        //     resizeMode = "cover"
+            borderRadius = {20}
             source={require('./assets/poo2.png')}
             />
 }

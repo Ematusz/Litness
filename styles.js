@@ -48,7 +48,6 @@ export default StyleSheet.create({
     width: '95%',
   },
   ghostMarker: {
-    borderRadius: 30,
     borderWidth: 2,
     borderColor: "transparent",
     position: 'absolute',
