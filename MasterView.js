@@ -61,6 +61,7 @@ export default class MasterView extends React.Component {
         longitude: null,
         longitudeDelta: null
       },
+      refreshingPosition: true,
       selectedMarker: null,
       showVotingButtons: true,
       tabVal: false,
@@ -144,7 +145,6 @@ export default class MasterView extends React.Component {
   
   componentDidMount() {
     console.log("componentDidMount")
-    this._addWatchPosition()
     AppState.addEventListener('change', this._handleAppStateChange)
   }
 
@@ -154,6 +154,7 @@ export default class MasterView extends React.Component {
   }
 
   componentWillMount() {
+    this._addWatchPosition()
     this._getDeviceInfoAsync();
   }
 
@@ -223,19 +224,29 @@ export default class MasterView extends React.Component {
       };
       // sets new userLocation based on previously created coordinate object
       this.setState({userLocation: userCoordinates});
+      this.setState({refreshingPosition: false})
     })
   }
 
   refreshWatchPosition = async() => {
+    this.setState({refreshingPosition: true});
     console.log("refresh watch position")
     navigator.geolocation.clearWatch(this.watchId);
     this._addWatchPosition()
+
+    let locationObj = {};
+    locationObj.coordinates = {};
+    locationObj.coordinates.latitude =  this.state.userLocation.latitude
+    locationObj.coordinates.longitude =  this.state.userLocation.longitude
+    locationObj.coordinates.latitudeDelta =  0.0005
+    locationObj.coordinates.longitudeDelta =  0.0005
+
+    this.clusterMap.animateToSpecificMarker(locationObj) 
   }
 
   _addWatchPosition = async() => {
     console.log("addWatchPosition")
     // updates the userLocation prop when the user moves a significant amount
-    console.log()
     this.watchID = navigator.geolocation.watchPosition(
       (position) => this.success(position),
       (error) => console.log(error),
@@ -398,10 +409,15 @@ export default class MasterView extends React.Component {
 
   // Toggles the info page on a hub
   toggleInfoPage (marker) {
+    // temporary measure until we can get the z stacking to work
+    if(Platform !== 'ios') {
+      if (this.state.leaderBoard) {
+        this.toggleLeaderBoard()
+      }
+    }
     console.log("toggleInfoPage", marker.location.address);
     // if infoPage is currently listed as false, open the page. Otherwise close it.
     if (!this.state.infoPage) {
-      console.log(1);
       this.setState({infoPage: true});
       Animated.timing(this.state.animatedTop, {
         toValue: 50,
@@ -424,14 +440,12 @@ export default class MasterView extends React.Component {
       }).start();
     
     } else {
-      console.log(2);
       Animated.timing(this.state.animatedTop, {
         toValue: 1000,
         duration: 300
       }).start(()=>this.setState({infoPage: false}));
       
       if (!this.state.leaderBoard) {
-        console.log(3);
         Animated.timing(this.state.animatedLeaderboardButton, {
           toValue: -3,
           duration: 300
@@ -451,14 +465,12 @@ export default class MasterView extends React.Component {
     }
     // closes the vote tab when the info page is up so that its not distracting.
     if (this.state.infoPage && !this.state.leaderBoard) {
-      console.log(4);
       this.openTab(marker);
       this.setState({infoPageMarker: null});
       // this.setState({selectedMarker: null});
     }
     // re opens the tab when the info page closes
     else {
-      console.log(5);
       this.setState({infoPageMarker: marker});
       // this.setState({selectedMarker: marker});
       this.closeTab(false)
@@ -543,14 +555,6 @@ export default class MasterView extends React.Component {
   }
     // Initializes the ghost marker to closest location in possible current locations
   setGhost(referenceLatitude, referenceLongitude) {
-    let locationObj = {};
-    locationObj.coordinates = {};
-    locationObj.coordinates.latitude =  referenceLatitude
-    locationObj.coordinates.longitude =  referenceLongitude
-    locationObj.coordinates.latitudeDelta =  0.0005
-    locationObj.coordinates.longitudeDelta =  0.0005
-
-    this.clusterMap.animateToSpecificMarker(locationObj) 
 
     let ghostAddress = null;
     let currentDistance = null;
@@ -635,7 +639,16 @@ export default class MasterView extends React.Component {
 
         newGhostMarker.push(hub);
 
-        this.showVotingButtonsHandler(true)
+        let locationObj = {};
+        locationObj.coordinates = {};
+        locationObj.coordinates.latitude =  hub.coordinate.latitude
+        locationObj.coordinates.longitude =  hub.coordinate.longitude
+        locationObj.coordinates.latitudeDelta =  0.0005
+        locationObj.coordinates.longitudeDelta =  0.0005
+    
+        this.clusterMap.animateToSpecificMarker(locationObj) 
+
+        this.showVotingButtonsHandler(!(hub.location.address in this.state.hubs));
         this.tabValHandler()
         this.selectedMarkerHandler(hub)
         this.ghostMarkerHandler(newGhostMarker)
@@ -784,6 +797,7 @@ export default class MasterView extends React.Component {
           />     
           <AnimatedRefresPositionTab style ={{right:this.state.animatedRefreshPositionTab}}
                       refreshWatchPosition={() => this.refreshWatchPosition()}
+                      refreshingPosition = {this.state.refreshingPosition}
           />  
         </View>
     );

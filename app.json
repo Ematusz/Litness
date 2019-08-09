@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "litness",
+    "name": "lit?",
     "slug": "litness",
     "privacy": "unlisted",
     "sdkVersion": "32.0.0",
@@ -23,7 +23,8 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": false,
+      "bundleIdentifier": "com.litness.lit"
     }
   }
 }
