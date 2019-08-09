@@ -1,15 +1,19 @@
 import React from 'react';
-import {TouchableOpacity, View} from 'react-native';
+import {TouchableOpacity, View, ActivityIndicator} from 'react-native';
 import styles from './styles.js'
 import {renderRefreshPositionTabIcon} from './renderImage.js'
 
 export default class RefreshPositionTab extends React.Component {
+    constructor(props) {
+        super(props);
+    }
     render() {
         return (
             <View style= {[styles.refreshPositionButton,this.props.style]}>
-                <TouchableOpacity onPress={this.props.refreshWatchPosition}>
+                {!this.props.refreshingPosition && <TouchableOpacity onPress={this.props.refreshWatchPosition}>
                     {renderRefreshPositionTabIcon()}
-                </TouchableOpacity>
+                </TouchableOpacity>}
+                {this.props.refreshingPosition && <ActivityIndicator />}
             </View>
         );
     }
