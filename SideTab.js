@@ -1,21 +1,28 @@
 import React from 'react';
 import {View, TouchableOpacity, Button} from 'react-native';
 import styles from './styles.js'
-import {renderVotingLit, renderVotingShit} from './renderImage.js'
+import {renderVotingLit, renderVotingShit, renderNavigationIcon} from './renderImage.js'
 
 export default class sideTab extends React.Component {
+    constructor(props) {
+        super(props);
+    }
     render() {
         return (
             <View style = {[styles.tab,this.props.style]}> 
-                <TouchableOpacity onPress= {this.props.clickFire}>
+                {this.props.showVotingButtons && <TouchableOpacity onPress= {this.props.clickFire}>
                     {renderVotingLit()}
-                </TouchableOpacity>
+                </TouchableOpacity>}
 
-                <TouchableOpacity onPress= {this.props.clickShit}>
+                {this.props.showVotingButtons && <TouchableOpacity onPress= {this.props.clickShit}>
                     {renderVotingShit()}
-                </TouchableOpacity>
+                </TouchableOpacity>}
 
                 <Button style={styles.tabStyle} title = 'ⓘ' onPress= {this.props.clickInfo} />
+                
+                {<TouchableOpacity onPress= {this.props.clickNavigate}>
+                    {renderNavigationIcon()}
+                </TouchableOpacity>}
             </View>
         );
     }

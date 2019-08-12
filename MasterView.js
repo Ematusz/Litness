@@ -1,19 +1,22 @@
 import React from 'react';
-import {Animated, View ,AppState} from 'react-native';
+import {Animated, View ,AppState, Platform} from 'react-native';
 import SideTab from './SideTab.js';
 import InfoPage from './InfoPage.js';
 import Leaderboard from './Leaderboard.js';
 import LeaderboardTab from './LeaderboardTab.js';
 import AddHubTab from './AddHubTab.js'
 import Hub from './Hub.js'
+import RefreshPositionTab from './RefreshPositionTab.js'
 import './renderImage.js'
-import {Constants} from 'expo';
+import Constants from 'expo-constants';
 import g from 'ngeohash'
 import * as math from 'mathjs';
 import * as firebase from 'firebase';
 import 'firebase/firestore';
 import ClusteringMap from './ClusteringMap.js';
 import styles from './styles.js';
+import AppLink from 'react-native-app-link';
+import * as Location from 'expo-location';
 
 function getRandomInt(min,max) {
   min = Math.ceil(min);
@@ -26,11 +29,13 @@ const AnimatedInfoPage = Animated.createAnimatedComponent(InfoPage);
 const AnimatedLeaderboard = Animated.createAnimatedComponent(Leaderboard);
 const AnimatedLeaderboardTab = Animated.createAnimatedComponent(LeaderboardTab);
 const AnimatedAddHubTab = Animated.createAnimatedComponent(AddHubTab);
+const AnimatedRefresPositionTab = Animated.createAnimatedComponent(RefreshPositionTab)
 
 export default class MasterView extends React.Component {
   constructor(props) {
     super(props);
     this.state = { 
+      animatedRefreshPositionTab: new Animated.Value(-3),
       animatedAddHubTab: new Animated.Value(-3),
       animatedFlex: new Animated.Value(.5),
       animatedHeight: new Animated.Value(30),
@@ -44,6 +49,8 @@ export default class MasterView extends React.Component {
       error: null,
       geoHashGrid: {},
       ghostMarker: [],
+      possibleLocationMarker: [],
+      hubs: {},
       infoPage: false,
       infoPageMarker: null,
       leaderBoard: false,
@@ -55,7 +62,7 @@ export default class MasterView extends React.Component {
         longitude: null,
         longitudeDelta: null
       },
-      markers_: {},
+      refreshingPosition: true,
       selectedMarker: null,
       showVotingButtons: true,
       tabVal: false,
@@ -64,6 +71,7 @@ export default class MasterView extends React.Component {
         latitude: null,
         longitude: null
       },
+      watchID: null,
     };
   
     this.showVotingButtonsHandler = this.showVotingButtonsHandler.bind(this);
@@ -75,6 +83,7 @@ export default class MasterView extends React.Component {
     this.geoHashGridHandler = this.geoHashGridHandler.bind(this);
 
     this._addListener = this._addListener.bind(this);
+    this.addListenerHandler = this.addListenerHandler.bind(this);
     this.componentDidMount = this.componentDidMount.bind(this);
     this.changeLit = this.changeLit.bind(this);
     this.toggleInfoPage = this.toggleInfoPage.bind(this);
@@ -85,28 +94,31 @@ export default class MasterView extends React.Component {
     this._addWatchPosition = this._addWatchPosition.bind(this);
 
     this.setGhost = this.setGhost.bind(this);
+    this.refreshWatchPosition = this.refreshWatchPosition.bind(this);
     this.success = this.success.bind(this);
   }
 
   openTab(marker) {
     // Checks if marker is a ghost. if a ghostMarker is clicked then call hideTab()
-    if(this.state.geoHashGrid[marker.geohash] === undefined || !Object.keys(this.state.geoHashGrid[marker.geohash]).includes(marker.location.address)) {
+    if(!Object.keys(this.state.hubs).includes(marker.location.address)) {
       this.closeTab(true);
-      console.log("I am in here 1")
+      // console.log("I am in here 1")
     }
     // change selectedAddress to the new address if the selected marker is not at selectedAddress
     else {
 
       if(marker.location.address in this.state.userLocation.userAddressDictionary) {
         this.setState({showVotingButtons: true})
+        console.log(true);
       } else {
-        this.setState({showVotingButtons: true})
+        this.setState({showVotingButtons: false})
+        console.log(false);
       }
 
       if (!this.state.tabVal) {
         this.setState({tabVal:true})
         Animated.timing(this.state.animatedTab, {
-          toValue: 370,
+          toValue: Platform.OS === 'ios' ? 370 : 320,
           friction: 100,
           duration: 200
         }).start();
@@ -128,22 +140,24 @@ export default class MasterView extends React.Component {
     
     if (deleteGhost) {
       this.setState({selectedMarker: null});
-      var deleteGhost = []
-      this.ghostMarkerHandler(deleteGhost)
+      this.setState({possibleLocationMarker: []});
+      this.ghostMarkerHandler([])
     }
   }
   
   componentDidMount() {
-    this._addWatchPosition()
+    console.log("componentDidMount")
     AppState.addEventListener('change', this._handleAppStateChange)
   }
 
   componentWillUnmount() {
-    navigator.geolocation.clearWatch(this.watchId);
+    // navigator.geolocation.clearWatch(this.watchId);
+    this.state.watchID;
     AppState.removeEventListener('change',this._handleAppStateChange)
   }
 
   componentWillMount() {
+    this._addWatchPosition()
     this._getDeviceInfoAsync();
   }
 
@@ -152,71 +166,98 @@ export default class MasterView extends React.Component {
     if (nextAppState == 'active') {
       this._addWatchPosition()
     } else if(nextAppState == 'background') {
-      navigator.geolocation.clearWatch(this.watchId);
+      this.state.watchID
     }
   }
 
   success = position => {
-    const { latitude, longitude } = position.coords;
-    let ghostGeohash = g.encode_int(latitude,longitude,26)
-    // Fetch curent location
-    myApiKey = 'AIzaSyBkwazID1O1ryFhdC6mgSR4hJY2-GdVPmE';
-    fetch('https://maps.googleapis.com/maps/api/geocode/json?latlng=' + latitude + ',' + longitude + '&location_type=ROOFTOP&result_type=street_address|premise&key=' + myApiKey)
-    .then((response) => response.json())
-    .then((responseJson) => {
-      let results = JSON.parse(JSON.stringify(responseJson)).results
-      let userAddressDictionary = {}
-      // creates a dictionary of all possible locations returned by the fetch
-      // TODO: trim down results to only important ones. Remove results that are renages of numbers and limit returns
-      results.forEach( result => {
-          let state, city, street, number = null;
-          counter = 0
-          while (!state || !city || !street || !number) {
-            result.address_components[counter].types.forEach(type => {
-              if (type == "administrative_area_level_1") {
-                state = result.address_components[counter].short_name;
-              }
-              if (type == "locality") {
-                // might need to change this to neighborhood work on tuning
-                city = result.address_components[counter].long_name;
-              }
-              if (type == "route") {
-                street = result.address_components[counter].short_name;
-              }
-              if (type == "street_number") {
-                number = result.address_components[counter].long_name;
-              }
-            })
-            counter+=1;
-          }
-          
-        userAddressDictionary[result.formatted_address] = {
-          coord: result.geometry.location,
-          geohash: ghostGeohash,
-          state: state,
-          city: city,
-          street: street,
-          number: number,
+    console.log("success");
+    console.log(position.coords.accuracy)
+    if (position.coords.accuracy <= 10) {
+      let { latitude, longitude } = position.coords;
+      let ghostGeohash = g.encode_int(latitude,longitude,26)
+      // Fetch curent location
+      myApiKey = 'AIzaSyBkwazID1O1ryFhdC6mgSR4hJY2-GdVPmE';
+      fetch('https://maps.googleapis.com/maps/api/geocode/json?latlng=' + latitude + ',' + longitude + '&location_type=ROOFTOP&result_type=street_address|premise&key=' + myApiKey)
+      .then((response) => response.json())
+      .then((responseJson) => {
+        let results = JSON.parse(JSON.stringify(responseJson)).results
+        let userAddressDictionary = {}
+        // creates a dictionary of all possible locations returned by the fetch
+        // TODO: trim down results to only important ones. Remove results that are renages of numbers and limit returns
+        // getting warning about unhandled promise. result.addres_components[counter].types "undefined is not an object" some results may not have components?
+  
+        results.forEach( result => {
+            let state, city, street, number = null;
+            counter = 0
+            while (!state || !city || !street || !number) {
+              result.address_components[counter].types.forEach(type => {
+                if (type == "administrative_area_level_1") {
+                  state = result.address_components[counter].short_name;
+                }
+                if (type == "locality") {
+                  // might need to change this to neighborhood work on tuning
+                  city = result.address_components[counter].long_name;
+                }
+                if (type == "route") {
+                  street = result.address_components[counter].short_name;
+                }
+                if (type == "street_number") {
+                  number = result.address_components[counter].long_name;
+                }
+              })
+              counter+=1;
+            }
+            
+          userAddressDictionary[result.formatted_address] = {
+            coord: result.geometry.location,
+            geohash: ghostGeohash,
+            state: state,
+            city: city,
+            street: street,
+            number: number,
+          };
+          // console.log(userAddressDictionary)
+        })
+        console.log(Object.keys(userAddressDictionary));
+  
+        // saves address, latitude, and longitude in a coordinate object
+        const userCoordinates = {
+          userAddressDictionary,
+          latitude,
+          longitude
         };
+        // sets new userLocation based on previously created coordinate object
+        this.setState({userLocation: userCoordinates});
+        this.setState({refreshingPosition: false})
       })
-
-      // saves address, latitude, and longitude in a coordinate object
-      const userCoordinates = {
-        userAddressDictionary,
-        latitude,
-        longitude
-      };
-      // sets new userLocation based on previously created coordinate object
-      this.setState({userLocation: userCoordinates});
-    })
+    }
   }
+
+  refreshWatchPosition = async() => {
+    this.setState({refreshingPosition: true});
+    console.log("refresh watch position")
+    this.state.watchID;
+    this._addWatchPosition()
+
+    let locationObj = {};
+    locationObj.coordinates = {};
+    locationObj.coordinates.latitude =  this.state.userLocation.latitude
+    locationObj.coordinates.longitude =  this.state.userLocation.longitude
+    locationObj.coordinates.latitudeDelta =  0.0005
+    locationObj.coordinates.longitudeDelta =  0.0005
+
+    this.clusterMap.animateToSpecificMarker(locationObj) 
+  }
+
   _addWatchPosition = async() => {
+    console.log("addWatchPosition")
     // updates the userLocation prop when the user moves a significant amount
-    this.watchID = navigator.geolocation.watchPosition(
-      (position) => this.success(position),
-      (error) => console.log(error),
-      {enableHighAccuracy: true, distanceFilter: 0, timeout:5000}
+    let watchID = await Location.watchPositionAsync(
+      {accuracy: 5, setInterval: 10000, distanceInterval: 3},
+      (position) => this.success(position)
     )
+    this.setState({watchID});
   }
 
   goToMarker(marker) {
@@ -238,13 +279,18 @@ export default class MasterView extends React.Component {
     this.openTab(marker)
   }
 
-  _addListener = async() => {
-    listener = db.collection('locations')
-    .where("geohash", "array-contains", await this.state.currentGrid[0])
+  _addListener = async(latitude,longitude) => {
+    if (Object.keys(this.state.hubs).length > 10) {
+      console.log("wipe");
+      let cleanHubs = {};
+      this.setState({hubs: cleanHubs})
+      hubListener();
+    }
+    hubListener = hubs
+    .near({center: new firebase.firestore.GeoPoint(latitude, longitude), radius: 1000})
     .onSnapshot(snapshot => {
       snapshot.docChanges().forEach(change => {
-        let newGrid = {...this.state.geoHashGrid};
-        let newDictionary = {}
+        let newHubsDictionary = {...this.state.hubs};
 
         // Create a new location and add it to the markers dictionary when a new document is added to the listener.
         if (change.type === 'added'){
@@ -277,19 +323,15 @@ export default class MasterView extends React.Component {
             change.doc.id,
           )
           
-          if (change.doc.data().geohash[0] in newGrid) {
-            newDictionary = {...newGrid[change.doc.data().geohash[0]]}
-          }
-          newDictionary[change.doc.id] = hub
+          newHubsDictionary[change.doc.id] = hub;
         } 
 
         else if(change.type === 'modified'){
           // update the data in the markers dictionary if a document in the listener has been modified.
-          // this if statement may be redundant
-          newDictionary = newGrid[change.doc.data().geohash[0]];
-          newDictionary[change.doc.id].stats.cost = change.doc.data().count;
-          newDictionary[change.doc.id].stats.upVotes = change.doc.data().upVotes;
-          newDictionary[change.doc.id].stats.downVotes = change.doc.data().downVotes;
+
+          newHubsDictionary[change.doc.id].stats.cost = change.doc.data().count;
+          newHubsDictionary[change.doc.id].stats.upVotes = change.doc.data().upVotes;
+          newHubsDictionary[change.doc.id].stats.downVotes = change.doc.data().downVotes;
         }
 
         // delete location from markers_dictionary if document is removed from listener
@@ -297,13 +339,10 @@ export default class MasterView extends React.Component {
           if (this.state.selectedMarker && this.state.selectedMarker.location.address === change.doc.id) {
             this.closeTab(true);
           }
-
-          newDictionary = newGrid[change.doc.data().geohash[0]];
-          delete newDictionary[change.doc.id];
+          delete newHubsDictionary[change.doc.id];
         }
-
-        newGrid[change.doc.data().geohash[0]] = newDictionary;
-        this.setState({geoHashGrid: newGrid})
+        this.setState({hubs: newHubsDictionary});
+        // console.log(this.state.hubs)
       })
     })
   }
@@ -341,7 +380,7 @@ export default class MasterView extends React.Component {
 
   tabValHandler() {
     Animated.timing(this.state.animatedTab, {
-      toValue: 370,
+      toValue: Platform.OS === 'ios' ? 370 : 320,
       friction: 100,
       duration: 200
       }).start();
@@ -370,8 +409,19 @@ export default class MasterView extends React.Component {
     })
   }
 
+  addListenerHandler(latitude,longitude) {
+    this._addListener(latitude,longitude);
+  }
+
   // Toggles the info page on a hub
   toggleInfoPage (marker) {
+    // temporary measure until we can get the z stacking to work
+    if(Platform.OS !== 'ios') {
+      if (this.state.leaderBoard) {
+        this.toggleLeaderBoard()
+      }
+    }
+    console.log("toggleInfoPage", marker.location.address);
     // if infoPage is currently listed as false, open the page. Otherwise close it.
     if (!this.state.infoPage) {
       this.setState({infoPage: true});
@@ -381,6 +431,16 @@ export default class MasterView extends React.Component {
       }).start();
 
       Animated.timing(this.state.animatedLeaderboardButton, {
+        toValue: -50,
+        duration: 300
+      }).start();
+
+      Animated.timing(this.state.animatedAddHubTab, {
+        toValue: -50,
+        duration: 300
+      }).start();
+
+      Animated.timing(this.state.animatedRefreshPositionTab, {
         toValue: -50,
         duration: 300
       }).start();
@@ -396,11 +456,21 @@ export default class MasterView extends React.Component {
           toValue: -3,
           duration: 300
         }).start();
+
+        Animated.timing(this.state.animatedAddHubTab, {
+          toValue: -3,
+          duration: 300
+        }).start();
+
+        Animated.timing(this.state.animatedRefreshPositionTab, {
+          toValue: -3,
+          duration: 300
+        }).start();
       }
       
     }
     // closes the vote tab when the info page is up so that its not distracting.
-    if (this.state.infoPage) {
+    if (this.state.infoPage && !this.state.leaderBoard) {
       this.openTab(marker);
       this.setState({infoPageMarker: null});
       // this.setState({selectedMarker: null});
@@ -411,6 +481,16 @@ export default class MasterView extends React.Component {
       // this.setState({selectedMarker: marker});
       this.closeTab(false)
     }
+  }
+
+  openMaps(marker) {
+    let appName = Platform.OS === 'ios' ? 'Google Maps - Transit & Food' : 'Maps'
+    let appStoreId = '585027354'
+    let appStoreLocale = 'us'
+    let playStoreId = 'com.google.android.apps.maps'
+    AppLink.maybeOpenURL("https://www.google.com/maps/dir/?api=1&destination="+marker.location.address+"&travelmode=driving" , { appName, appStoreId, appStoreLocale, playStoreId }).then(() => {
+      console.log("redirected");
+    })
   }
   
   toggleLeaderBoard() {
@@ -428,6 +508,16 @@ export default class MasterView extends React.Component {
         friction: 100,
         duration: 300
       }).start();
+      
+      Animated.timing(this.state.animatedAddHubTab, {
+        toValue: -50,
+        duration: 300
+      }).start();
+
+      Animated.timing(this.state.animatedRefreshPositionTab, {
+        toValue: -50,
+        duration: 300
+      }).start();
 
       if (this.state.tabVal) {
         Animated.timing(this.state.animatedTab, {
@@ -436,6 +526,7 @@ export default class MasterView extends React.Component {
           duration: 200
         }).start();
       }
+
 
     } else {
       Animated.timing(this.state.animatedLeaderboard, {
@@ -449,108 +540,135 @@ export default class MasterView extends React.Component {
         friction: 100,
         duration: 200
       }).start();
+      Animated.timing(this.state.animatedAddHubTab, {
+        toValue: -3,
+        duration: 300
+      }).start();
+
+      Animated.timing(this.state.animatedRefreshPositionTab, {
+        toValue: -3,
+        duration: 300
+      }).start();
 
       if (this.state.tabVal) {
         Animated.timing(this.state.animatedTab, {
-          toValue: 370,
+          toValue: Platform.OS === 'ios' ? 370 : 320,
           friction: 100,
           duration: 200
         }).start();
       }
     }
   }
-  
     // Initializes the ghost marker to closest location in possible current locations
   setGhost(referenceLatitude, referenceLongitude) {
+    if(!this.state.tabVal) {
+      let ghostAddress = null;
+      let currentDistance = null;
+      
+      let availableLocations = Object.keys(this.state.userLocation.userAddressDictionary).map( address => {
+        if (this.state.ghostMarker.length == 0) {
+          return address;
+        }
 
-    let locationObj = {};
-    locationObj.coordinates = {};
-    locationObj.coordinates.latitude =  referenceLatitude
-    locationObj.coordinates.longitude =  referenceLongitude
-    locationObj.coordinates.latitudeDelta =  0.0005
-    locationObj.coordinates.longitudeDelta =  0.0005
-
-    this.clusterMap.animateToSpecificMarker(locationObj) 
-
-    let ghostAddress = null;
-    let currentDistance = null;
-
-    navigator.geolocation.clearWatch(this.watchId);
-    this._addWatchPosition();
-    
-    let availableLocations = Object.keys(this.state.userLocation.userAddressDictionary).map( address => {
-      if (this.state.ghostMarker.length == 0) {
-        return address;
-      }
-      else if (this.state.geoHashGrid[this.state.userLocation.userAddressDictionary[address].geohash] == undefined) {
-        return address;
-      }
-      else if (!(address in this.state.geoHashGrid[this.state.userLocation.userAddressDictionary[address].geohash])||
-                address == this.state.ghostMarker[0].location.address) {
-        return address;
-      } else {
-        return null;
-      }
-    })
-
-    console.log(availableLocations);
-    if (availableLocations != undefined) {
-      availableLocations.forEach(address => {
-        if (address != null) {
-
-          let distance = math.sqrt(
-            math.square(referenceLatitude-this.state.userLocation.userAddressDictionary[address].coord.lat)
-            + math.square(referenceLongitude-this.state.userLocation.userAddressDictionary[address].coord.lng)
-          )
-
-          if (ghostAddress == null) {
-            ghostAddress = address;
-            currentDistance = distance
-          } else if (distance < currentDistance){
-            ghostAddress = address;
-            currentDistance = distance;
-          }
+        else if (!(address in this.state.hubs)||
+                  address == this.state.ghostMarker[0].location.address) {
+          return address;
+        } else {
+          return null;
         }
       })
-      if (ghostAddress != null ) {
-        
-        let newGhostMarker = [];
-        let hub = new Hub(
-          {
-            latitude: this.state.userLocation.userAddressDictionary[ghostAddress].coord.lat,
-            longitude: this.state.userLocation.userAddressDictionary[ghostAddress].coord.lng
-          },
+
+      console.log(availableLocations);
+      if (availableLocations != undefined) {
+        let possibleMarkers = []
+        availableLocations.forEach(address => {
+          if (address != null) {
+            let marker = {
+              coordinate: {
+                latitude: this.state.userLocation.userAddressDictionary[address].coord.lat,
+                longitude: this.state.userLocation.userAddressDictionary[address].coord.lng
+              }, 
+              location: {
+                latitude: this.state.userLocation.userAddressDictionary[address].coord.lat,
+                longitude: this.state.userLocation.userAddressDictionary[address].coord.lng
+              },
+              ghostMarker: "possible location",
+              key: Math.random()        
+            }
+
+            possibleMarkers.push(marker)
+
+            let distance = math.sqrt(
+              math.square(referenceLatitude-this.state.userLocation.userAddressDictionary[address].coord.lat)
+              + math.square(referenceLongitude-this.state.userLocation.userAddressDictionary[address].coord.lng)
+            )
+
+            if (ghostAddress == null || distance < currentDistance) {
+              ghostAddress = address;
+              currentDistance = distance
+            } 
+          }
+        })
+
+        if (ghostAddress != null ) {
+          
+          let newGhostMarker = [];
+          let hub = new Hub(
             {
-            latitude: this.state.userLocation.userAddressDictionary[ghostAddress].coord.lat,
-            longitude: this.state.userLocation.userAddressDictionary[ghostAddress].coord.lng,
-            address: ghostAddress,
-            state: this.state.userLocation.userAddressDictionary[ghostAddress].state,
-            city: this.state.userLocation.userAddressDictionary[ghostAddress].city,
-            street: this.state.userLocation.userAddressDictionary[ghostAddress].street,
-            number: this.state.userLocation.userAddressDictionary[ghostAddress].number,
-          },
-          true,
-          this.state.userLocation.userAddressDictionary[ghostAddress].geohash,
-          {
-            cost: 0,
-            upVotes: 0,
-            downVotes: 0,
-          },
-          Math.random()        
-        )
+              latitude: this.state.userLocation.userAddressDictionary[ghostAddress].coord.lat,
+              longitude: this.state.userLocation.userAddressDictionary[ghostAddress].coord.lng,
+            },
+            {
+              latitude: this.state.userLocation.userAddressDictionary[ghostAddress].coord.lat,
+              longitude: this.state.userLocation.userAddressDictionary[ghostAddress].coord.lng,
+              address: ghostAddress,
+              state: this.state.userLocation.userAddressDictionary[ghostAddress].state,
+              city: this.state.userLocation.userAddressDictionary[ghostAddress].city,
+              street: this.state.userLocation.userAddressDictionary[ghostAddress].street,
+              number: this.state.userLocation.userAddressDictionary[ghostAddress].number,
+            },
+            true,
+            this.state.userLocation.userAddressDictionary[ghostAddress].geohash,
+            {
+              cost: 0,
+              upVotes: 0,
+              downVotes: 0,
+            },
+            Math.random()        
+          )
 
-        newGhostMarker.push(hub);
+          possibleMarkers = possibleMarkers.filter((marker) => {
+            return (marker.coordinate.latitude !== hub.coordinate.latitude &&
+                    marker.coordinate.longitude !== hub.coordinate.longitude
+            )
+          })
 
-        this.showVotingButtonsHandler(false)
-        this.tabValHandler()
-        this.selectedMarkerHandler(hub)
-        this.ghostMarkerHandler(newGhostMarker)
+          newGhostMarker.push(hub);
 
+          let locationObj = {};
+          locationObj.coordinates = {};
+          locationObj.coordinates.latitude =  hub.coordinate.latitude
+          locationObj.coordinates.longitude =  hub.coordinate.longitude
+          locationObj.coordinates.latitudeDelta =  0.0005
+          locationObj.coordinates.longitudeDelta =  0.0005
+      
+          this.clusterMap.animateToSpecificMarker(locationObj) 
+
+          this.showVotingButtonsHandler(!(hub.location.address in this.state.hubs));
+          this.tabValHandler()
+          this.selectedMarkerHandler(hub)
+          this.ghostMarkerHandler(newGhostMarker)
+
+          this.setState({
+            possibleLocationMarker: possibleMarkers
+          })
+
+        } else {
+          // show popup "move closer to location"
+        }
       } else {
         // show popup "move closer to location"
       }
-    } else {
-      // show popup "move closer to location"
     }
   }
 
@@ -562,29 +680,28 @@ export default class MasterView extends React.Component {
     // collect timestamp.
     let time = new Date();
     
-    // Turns a ghostMarker into a regular marker by adding a new location to the database
-    if (this.state.geoHashGrid[marker.geohash] == undefined || !Object.keys(this.state.geoHashGrid[marker.geohash]).includes(marker.location.address)){
+    if (!Object.keys(this.state.hubs).includes(marker.location.address)){
       let latitude = this.state.ghostMarker[0].coordinate.latitude;
       let longitude = this.state.ghostMarker[0].coordinate.longitude;
       let state = this.state.ghostMarker[0].location.state;
       let city = this.state.ghostMarker[0].location.city;
       let street = this.state.ghostMarker[0].location.street;
       let number = this.state.ghostMarker[0].location.number;
-      hashes = [g.encode_int(latitude,longitude,26)];
-      hashNeighbors = g.neighbors_int(hashes[0],26);
+      geohash = [g.encode_int(latitude,longitude,26)];
+
       // get a reference to the document at this address in the database.
-      let ref = db.collection('locations').doc(marker.location.address);
-      ref.get()
+
+      hubs.doc(marker.location.address).get()
         .then( doc => {
+          console.log(doc.exists)
           // if the document doesnt yet exist, add a new one with base stats.
           if (!doc.exists) {
-            ref.set({
-              percentVotesLastThirty: 0,
-              percentVotesLastHour: 0,
+            hubs.doc(marker.location.address).set({
+              coordinates: new firebase.firestore.GeoPoint(latitude, longitude),
               timeCreated: time,
               latitude:  latitude,
               longitude: longitude,
-              geohash: hashes.concat(hashNeighbors),
+              geohash: geohash,
               imagePath: './assets/logs.png',
               state: state,
               city: city,
@@ -592,7 +709,8 @@ export default class MasterView extends React.Component {
               number: number
             })
             // add a new vote to the votes on this document with the users uniqueID.
-            ref.collection('votes').doc(uniqueId).set({
+            hubs.doc(marker.location.address).collection('votes').doc(uniqueId).set({
+              coordinates: new firebase.firestore.GeoPoint(latitude, longitude),
               voteTime: time,
               vote: vote,
             })
@@ -604,20 +722,22 @@ export default class MasterView extends React.Component {
     // update votes if user is already in the database
     } else {
       // gets a reference to the document at the address.
-      let ref = db.collection('locations').doc(marker.location.address).collection('votes').doc(uniqueId);
-      return ref.get()
+      // let georef = GeoFirestoreDB.collection('locations').doc(marker.location.address).collection('votes').doc(uniqueId);
+      hubs.doc(marker.location.address).collection('votes').doc(uniqueId).get()
       .then( voteDoc => {
         // Do not let user vote multiple times but allow them to update an old vote
         if (voteDoc.exists) {
           // change vote to the opposite of the previous vote
-          if (voteDoc.data().vote != vote) {
-            ref.set({
+          if (voteDoc.data().d.vote != vote) {
+            hubs.doc(marker.location.address).set({
+              coordinates: new firebase.firestore.GeoPoint(10, 20),
               voteTime: time,
               vote: vote,
             })
           }
         } else {
-          db.collection('locations').doc(marker.location.address).collection('votes').doc(uniqueId).set({
+          hubs.doc(marker.location.address).collection('votes').doc(uniqueId).set({
+            coordinates: new firebase.firestore.GeoPoint(10, 20),
             voteTime: time,
             vote: vote,
           })
@@ -632,12 +752,15 @@ export default class MasterView extends React.Component {
       <View style = {styles.bigContainer}>        
           <ClusteringMap onRef={ref => (this.clusterMap = ref)}
                 geoHashGrid={this.state.geoHashGrid}
+                hubs = {this.state.hubs}
                 closeTab={this.closeTab}
+                addListenerHandler={this.addListenerHandler}
                 selectedMarker={this.state.selectedMarker} 
                 selectedMarkerHandler={this.selectedMarkerHandler}
                 tabValHandler={this.tabValHandler}
                 showVotingButtonsHandler={this.showVotingButtonsHandler} 
                 ghostMarker={this.state.ghostMarker}
+                possibleLocationMarker = {this.state.possibleLocationMarker}
                 mapRegionHandler={this.mapRegionHandler} 
                 currentGridHandler={this.currentGridHandler}
                 userLocation={this.state.userLocation} 
@@ -649,7 +772,7 @@ export default class MasterView extends React.Component {
           />
 
           {this.state.infoPage && <AnimatedInfoPage style = {{top:this.state.animatedTop}}
-                            toggleInfoPage={() => this.toggleInfoPage(this.state.selectedMarker)}
+                            toggleInfoPage={this.toggleInfoPage}
                             infoPageMarker={this.state.infoPageMarker}
                             data_={this.state.data_}
                             leaderboardStatus = {this.state.leaderBoard}
@@ -660,6 +783,8 @@ export default class MasterView extends React.Component {
                             clickInfo = {()=>this.toggleInfoPage(this.state.selectedMarker)} 
                             clickFire={()=>this.changeLit(this.state.selectedMarker,1)}
                             clickShit={()=>this.changeLit(this.state.selectedMarker,-1)}
+                            clickNavigate={()=>this.openMaps(this.state.selectedMarker)}
+                            showVotingButtons={this.state.showVotingButtons}
           />
 
           {this.state.leaderBoard && <AnimatedLeaderboard style = {{top:this.state.animatedLeaderboard}} 
@@ -667,15 +792,20 @@ export default class MasterView extends React.Component {
                                 leaderBoard_={this.state.leaderBoard_}
                                 toggleInfoPage={this.toggleInfoPage}
                                 mapRegion = {this.state.mapRegion}
+                                userLocation = {this.state.userLocation}
           />}
 
           <AnimatedLeaderboardTab style = {{right:this.state.animatedLeaderboardButton}} 
                                   toggleLeaderBoard={this.toggleLeaderBoard}
           />
 
-          <AnimatedAddHubTab style ={{right:this.state.animatedLeaderboardButton}}
+          <AnimatedAddHubTab style ={{right:this.state.animatedAddHubTab}}
                       setGhost={() => this.setGhost(this.state.userLocation.latitude, this.state.userLocation.longitude)}
           />     
+          <AnimatedRefresPositionTab style ={{right:this.state.animatedRefreshPositionTab}}
+                      refreshWatchPosition={() => this.refreshWatchPosition()}
+                      refreshingPosition = {this.state.refreshingPosition}
+          />  
         </View>
     );
   }

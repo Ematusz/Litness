@@ -4,6 +4,7 @@ import MasterView from './MasterView.js';
 import * as firebase from 'firebase';
 import 'firebase/firestore';
 import styles from './styles.js';
+import { GeoCollectionReference, GeoFirestore, GeoQuery, GeoQuerySnapshot } from 'geofirestore';
 
 // Initialize Firebase
 global.firebaseConfig = {
@@ -18,6 +19,11 @@ global.firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 global.db = firebase.firestore();
 
+const geofirestore = new GeoFirestore(db);
+
+global.hubs = geofirestore.collection('hubs')
+
+
 // const uniqueId = DeviceInfo.getUniqueID();
 
 // console.log(uniqueID);
@@ -25,7 +31,6 @@ global.db = firebase.firestore();
 //import Panel from './components/Panel';  // Step 1
 
 export default class App extends React.Component {
-
   constructor(props) {
     super(props);
     this.state = { 

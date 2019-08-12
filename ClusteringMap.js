@@ -4,13 +4,15 @@ import styles from './styles.js'
 import MapView,{ Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import ClusteredMapView from 'react-native-maps-super-cluster';
 import {renderMarkerIcon, renderGhostIcon} from './renderImage.js'
-import {Location, Permissions} from 'expo';
+import * as Location from 'expo-location';
+import * as Permissions from 'expo-permissions';
 import g from 'ngeohash'
 
 export default class ClusteringMap extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
+          flex: 0,
           error: null,
           dragging: false,
           interaction: true,
@@ -34,6 +36,7 @@ export default class ClusteringMap extends React.Component {
     }
 
     componentDidMount() {
+      setTimeout(()=>this.setState({flex: 1}),500);
       this.props.onRef(this);
     };
     componentWillMount() {
@@ -59,8 +62,8 @@ export default class ClusteringMap extends React.Component {
   
       return (
         <Marker identifier={`cluster-${clusterId}`} coordinate={coordinate} onPress={onPress}>
-          <View style={{...styles.marker,width:40,height:40, backgroundColor:"white",borderWidth:2, borderColor:"black"}}>
-            <Text style={{...styles.markerCost,color:"black"}}>
+          <View style={{...styles.marker,width:40,height:40, backgroundColor:"black",borderWidth:2, borderColor:"white"}}>
+            <Text style={{...styles.markerCost,color:"white"}}>
               {pointCount}
             </Text>
           </View>
@@ -69,7 +72,7 @@ export default class ClusteringMap extends React.Component {
     }
 
     renderMarker = (marker) => {
-      if (marker.ghostMarker) {
+      if (marker.ghostMarker === true) {
         return (
           <MapView.Marker
             {...marker} 
@@ -102,7 +105,7 @@ export default class ClusteringMap extends React.Component {
                 </View>
           </MapView.Marker>
         )
-      } else {
+      } else if (marker.ghostMarker === false)  {
         return (
           <MapView.Marker 
             {...marker} 
@@ -110,12 +113,21 @@ export default class ClusteringMap extends React.Component {
             onPress = {() => this.pressMarker(marker)} 
             title = {marker.location.number + " " + marker.location.street}
             ref={(ref) => this.state.markerToRef[marker.location.address] = ref}
-            zIndex = {0}
+            zIndex = {5}
           >
              <View style={{...styles.marker}} >
                {renderMarkerIcon(marker.stats.cost)}
               <Text style={styles.markerCost}>{marker.stats.cost}</Text>
             </View>
+          </MapView.Marker>
+        )
+      } else {
+        return (
+          <MapView.Marker 
+            {...marker} 
+            zIndex = {0}
+          >
+            <View style={{...styles.marker, backgroundColor: "red", width: 20, height: 20}} />
           </MapView.Marker>
         )
       }
@@ -140,17 +152,8 @@ export default class ClusteringMap extends React.Component {
         longitudeDelta: 0.0005,
       }
   
-      this.props.mapRegionHandler(initialRegion)
-
-      let currentGeohash = [g.encode_int(initialRegion.latitude,initialRegion.longitude,26)];
-      let currentGrid = g.neighbors_int(currentGeohash[0],26);
-      currentGrid = currentGeohash.concat(currentGrid);
-
-      this.props.currentGridHandler(currentGrid)
-
+      this.props.mapRegionHandler(initialRegion);
       this.map.getMapRef().animateToRegion(initialRegion,1);
-
-      this.props.mapRegionHandler(initialRegion)
     };
 
     toggleTabMapPress = pressinfo => {
@@ -161,30 +164,14 @@ export default class ClusteringMap extends React.Component {
 
     onRegionChangeComplete = mapRegion => {
       this.props.mapRegionHandler(mapRegion);
-      var currentGeohash = [g.encode_int(mapRegion.latitude,mapRegion.longitude,26)];
-      var currentGrid = g.neighbors_int(currentGeohash[0],26);
-      currentGrid = currentGeohash.concat(currentGrid);
-
-      this.props.currentGridHandler(currentGrid);
-
-      let cleanGrid = null;
-      Object.keys(this.props.geoHashGrid).map( geohash => {
-        if (!currentGrid.includes(Number(geohash))) {
-          if (cleanGrid === null) {
-            cleanGrid = {...this.props.geoHashGrid};
-          }
-          delete cleanGrid[geohash];
-        }
-      })
-      if (cleanGrid !== null) {
-        this.props.geoHashGridHandler(cleanGrid);
-      }
+      // console.log("longitude", mapRegion.longitude)
+      this.props.addListenerHandler(mapRegion.latitude,mapRegion.longitude);
     }
 
     render() {
         return (
           <ClusteredMapView
-          style={{flex: 1}}
+          style={{flex: this.state.flex}}
           ref={ref => {this.map = ref;}} 
             clusteringEnabled={this.props.clustering} 
             minZoomLevel = {12}
@@ -204,7 +191,8 @@ export default class ClusteringMap extends React.Component {
                 latitudeDelta: 0.01,
                 longitudeDelta: 0.01,
             }}
-          data={Object.values(this.props.geoHashGrid).map(x => Object.values(x)).map(x=>x).flat().concat(this.props.ghostMarker)}
+          // data={Object.values(this.props.geoHashGrid).map(x => Object.values(x)).map(x=>x).flat().concat(this.props.ghostMarker)}
+          data = {Object.values(this.props.hubs).map(x => x).flat().concat(this.props.ghostMarker).concat(this.props.possibleLocationMarker)}
           renderMarker={this.renderMarker}
           renderCluster={this.renderCluster}
           />

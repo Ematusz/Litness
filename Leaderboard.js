@@ -3,10 +3,13 @@ import Hub from './Hub.js'
 import {TouchableOpacity,View, ActivityIndicator,Text, FlatList} from 'react-native';
 import styles from './styles.js'
 import {renderMarkerIcon, renderLoadingFire, renderRefresh} from './renderImage.js'
+import { getDistance } from 'geolib';
+import * as math from 'mathjs';
 
 export default class Leaderboard extends React.Component {
     constructor(props) {
         super(props);
+        this._isMounted = false;
         this.state = {
           processedData:[],
           refreshing: true,
@@ -19,19 +22,28 @@ export default class Leaderboard extends React.Component {
         this.renderLeaderboardCell = this.renderLeaderboardCell.bind(this);
         this.getData = this.getData.bind(this);
         this.refresh = this.refresh.bind(this);
-        this.updateIndex = this.updateIndex.bind(this)
+        this.updateIndex = this.updateIndex.bind(this);
+        this.distanceFromUser = this.distanceFromUser.bind(this);
+        this.componentWillUnmount = this.componentWillUnmount.bind(this);
+        this._isMounted = false;
+
     }
 
     updateIndex (selectedIndex) {
       this.setState({selectedIndex})
   }
 
-    componentDidMount() {
-        setTimeout(() => {
-            this.getData();            
-            }, 1000);
+    componentWillMount() {
+      this._isMounted = true;
+      setTimeout(() => {
+        this._isMounted && this.getData();            
+          }, 1000);
     };
-    componentWillMount() {};
+    // componentWillMount() {};
+
+    componentWillUnmount() {
+      this._isMounted = false;
+    };
 
     refresh() {
       this.setState({refreshing:true});
@@ -39,6 +51,9 @@ export default class Leaderboard extends React.Component {
     }
 
     getData() {
+
+      console.ignoredYellowBox = ['Setting a timer'];
+      
       myApiKey = 'AIzaSyBkwazID1O1ryFhdC6mgSR4hJY2-GdVPmE';
       fetch('https://maps.googleapis.com/maps/api/geocode/json?latlng=' + this.props.mapRegion.latitude + ',' + this.props.mapRegion.longitude + '&key=' + myApiKey)
       .then((response) => response.json())
@@ -50,62 +65,78 @@ export default class Leaderboard extends React.Component {
           component.types.forEach( type => {
             if (type == "administrative_area_level_1") {
               state = component.short_name;
-              this.setState({state});
+              this._isMounted && this.setState({state});
             }
             if (type == "locality") {
               // might need to change this to neighborhood work on tuning
               city = component.long_name;
-              this.setState({city});
+              this._isMounted && this.setState({city});
             }
           })
         })
         let data = [];
-        db.collection('locations').where("city", "==", city).where("state", "==", state).orderBy('count', 'desc').limit(25).get()
-          .then( snapshot => {
+       db.collection('leaderboard').where("city", "==", city).where("state", "==", state).orderBy('count', 'desc').limit(25).get()
+          .then( leaderBoardSnapshot => {
             let counter = 1;
-            snapshot.forEach( doc => {
-              let hub = new Hub(
-                {
-                  latitude: doc.data().latitude,
-                  longitude: doc.data().longitude
-                },
-                {
-                  latitude: doc.data().latitude,
-                  longitude: doc.data().longitude,
-                  address: doc.id,
-                  city: doc.data().city,
-                  street: doc.data().street,
-                  number: doc.data().number,
-                },
-                false,
-                doc.data().geohash[0],
-                {
-                  cost: doc.data().count,
-                  upVotes: doc.data().upVotes,
-                  downVotes: doc.data().downVotes,
-                },
-                doc.id,
-              )
-              data.push({hub:hub,key:counter.toString()});
-              counter = counter + 1;
+            leaderBoardSnapshot.forEach( leaderBoardHub => {
+              hubs.doc(leaderBoardHub.id).get().then( doc => {
+                let hub = new Hub(
+                  {
+                    latitude: doc.data().latitude,
+                    longitude: doc.data().longitude
+                  },
+                  {
+                    latitude: doc.data().latitude,
+                    longitude: doc.data().longitude,
+                    address: doc.id,
+                    city: doc.data().city,
+                    street: doc.data().street,
+                    number: doc.data().number,
+                  },
+                  false,
+                  doc.data().geohash[0],
+                  {
+                    cost: doc.data().count,
+                    upVotes: doc.data().upVotes,
+                    downVotes: doc.data().downVotes,
+                  },
+                  doc.id,
+                )
+                data.push({hub:hub,key:counter.toString()});
+                counter = counter + 1;
+                this._isMounted && this.setState({ processedData: data },()=>this.setState({ showLeaderboard: true,refreshing:false }));
+              }).catch( error => {console.log(error)});
             })
-
-          this.setState({ processedData: data },()=>this.setState({ showLeaderboard: true,refreshing:false }));
           }).catch( error =>{
             console.log(error)
           })
         })
     }
 
+    distanceFromUser(hub) {
+      let distance = math.round(getDistance({latitude: this.props.userLocation.latitude,longitude: this.props.userLocation.longitude},
+          {latitude: hub.coordinate.latitude,longitude: hub.coordinate.longitude})*3.28084);
+      if (distance <= 1000) {
+        return distance.toString().concat(" ft");
+      } else {
+        distance = distance/5280
+        return distance.toFixed(1).concat(" mi");
+      }
+    }
+
     renderLeaderboardCell =  ({item}) => {
+      console.log("hub", item.hub)
       return (
         <TouchableOpacity style = {styles.leaderBoardCell} onPress={()=>this.props.toggleInfoPage(item.hub)}>
           <Text style = {{...styles.leaderboardText,fontWeight:'bold',color:"black"}}> {item.key} </Text>
               {renderMarkerIcon(item.hub.stats.cost)}
-          <Text style = {styles.leaderboardText}> {item.hub.location.number} {item.hub.location.street}</Text>
+          <View style = {{display:'flex', flexDirection:'column'}}>
+            <Text style = {styles.leaderboardText}> {item.hub.location.number} {item.hub.location.street} </Text>
+            <Text style = {{...styles.leaderboardText, fontSize: 12, color:'grey'}}> {this.distanceFromUser(item.hub)} </Text>
+          </View>
   
           <View style = {styles.LBinnerBox}>
-            <Text style = {{color:'black',fontSize:20}}>{item.hub.stats.cost}</Text>
+            <Text style = {{color:'black',fontSize:20, fontWeight:'bold'}}>{item.hub.stats.cost}</Text>
           </View>
         </TouchableOpacity>
       )
@@ -127,9 +158,9 @@ export default class Leaderboard extends React.Component {
     render() {
       return (
         <View style={[styles.leaderboard,this.props.style]}>
-            {this.state.showLeaderboard && <TouchableOpacity onPress={this.props.toggleLeaderBoard} style = {styles.closeBar}>
+            <TouchableOpacity onPress={this.props.toggleLeaderBoard} style = {styles.closeBar}>
               <Text style = {{color:'white',fontWeight:'bold'}}>X</Text>
-            </TouchableOpacity>}
+            </TouchableOpacity>
   
             <TouchableOpacity onPress={this.refresh} style={styles.refresh}>
                 {renderRefresh()}

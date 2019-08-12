@@ -1,5 +1,5 @@
 import React from 'react';
-import {TouchableOpacity, View, Image, Text, ActivityIndicator} from 'react-native';
+import {TouchableOpacity, View, Image, Text, ActivityIndicator, Platform} from 'react-native';
 import styles from './styles.js'
 import {VictoryLine, VictoryChart, VictoryTooltip,VictoryAxis, VictoryVoronoiContainer} from "victory-native";
 import * as d3 from 'd3-time';
@@ -41,7 +41,7 @@ export default class InfoPage extends React.Component {
     }
 
     closeInfoPage() {
-        this.setState({ showChart: false },()=>{this.props.toggleInfoPage()});
+        this.setState({ showChart: false },this.props.toggleInfoPage(this.props.infoPageMarker));
     }
 
     updateIndex (selectedIndex) {
@@ -92,6 +92,7 @@ export default class InfoPage extends React.Component {
     }
 
     getData() {
+        console.log("leaderboardStatus", this.props.leaderboardStatus)
         this.setState({ showLine: false })
         let data = [];
         let lastCount = 0;
@@ -99,7 +100,7 @@ export default class InfoPage extends React.Component {
         let lastShit = 0
         let timeToLit = {};
         let timeToShit = {};
-        db.collection("locations").doc(this.props.infoPageMarker.location.address).collection('upvotes_downvotes')
+        hubs.doc(this.props.infoPageMarker.location.address).collection('upvotes_downvotes')
           .get().then( snapshot => {
             snapshot.forEach( doc => {
               vote = {value:doc.data().count, time:doc.id}
@@ -235,8 +236,8 @@ export default class InfoPage extends React.Component {
                     </View>}
 
                 {this.state.showChart && <VictoryChart
-                    height={375}
-                    width={375}
+                    height = {Platform.OS === 'ios' ? 375 : 300}
+                    width={Platform.OS === 'ios' ? 375 : 350}
                     padding={{ top: 30, bottom: 10, left: 50, right: 50 }}
                     domain={{y: [this.state.minValue-.5, this.state.maxValue+.5], x: [this.state.processedData[0].time-(1),this.state.processedData[this.state.processedData.length-1].time+(1)]}}
                     scale={{ x: "time", y: "linear" }}
@@ -276,7 +277,7 @@ export default class InfoPage extends React.Component {
                             padding: 0
                           }
                         }}
-                        offsetX={350}
+                        offsetX={Platform.OS === 'ios' ? 350 : 325}
                         tickValues = {[this.state.minValue, this.state.maxValue]}
                         />
 
