@@ -413,8 +413,8 @@ export default class MasterView extends React.Component {
   // Toggles the info page on a hub
   toggleInfoPage (marker) {
     // temporary measure until we can get the z stacking to work
-    if(Platform !== 'ios') {
-      if (!this.state.leaderBoard) {
+    if(Platform.OS !== 'ios') {
+      if (this.state.leaderBoard) {
         this.toggleLeaderBoard()
       }
     }
