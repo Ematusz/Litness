@@ -555,113 +555,114 @@ export default class MasterView extends React.Component {
   }
     // Initializes the ghost marker to closest location in possible current locations
   setGhost(referenceLatitude, referenceLongitude) {
+    if(!this.state.tabVal) {
+      let ghostAddress = null;
+      let currentDistance = null;
+      
+      let availableLocations = Object.keys(this.state.userLocation.userAddressDictionary).map( address => {
+        if (this.state.ghostMarker.length == 0) {
+          return address;
+        }
 
-    let ghostAddress = null;
-    let currentDistance = null;
-    
-    let availableLocations = Object.keys(this.state.userLocation.userAddressDictionary).map( address => {
-      if (this.state.ghostMarker.length == 0) {
-        return address;
-      }
-
-      else if (!(address in this.state.hubs)||
-                address == this.state.ghostMarker[0].location.address) {
-        return address;
-      } else {
-        return null;
-      }
-    })
-
-    console.log(availableLocations);
-    if (availableLocations != undefined) {
-      let possibleMarkers = []
-      availableLocations.forEach(address => {
-        if (address != null) {
-          let marker = {
-            coordinate: {
-              latitude: this.state.userLocation.userAddressDictionary[address].coord.lat,
-              longitude: this.state.userLocation.userAddressDictionary[address].coord.lng
-            }, 
-            location: {
-              latitude: this.state.userLocation.userAddressDictionary[address].coord.lat,
-              longitude: this.state.userLocation.userAddressDictionary[address].coord.lng
-            },
-            ghostMarker: "possible location",
-            key: Math.random()        
-          }
-
-          possibleMarkers.push(marker)
-
-          let distance = math.sqrt(
-            math.square(referenceLatitude-this.state.userLocation.userAddressDictionary[address].coord.lat)
-            + math.square(referenceLongitude-this.state.userLocation.userAddressDictionary[address].coord.lng)
-          )
-
-          if (ghostAddress == null || distance < currentDistance) {
-            ghostAddress = address;
-            currentDistance = distance
-          } 
+        else if (!(address in this.state.hubs)||
+                  address == this.state.ghostMarker[0].location.address) {
+          return address;
+        } else {
+          return null;
         }
       })
 
-      if (ghostAddress != null ) {
-        
-        let newGhostMarker = [];
-        let hub = new Hub(
-          {
-            latitude: this.state.userLocation.userAddressDictionary[ghostAddress].coord.lat,
-            longitude: this.state.userLocation.userAddressDictionary[ghostAddress].coord.lng,
-          },
-          {
-            latitude: this.state.userLocation.userAddressDictionary[ghostAddress].coord.lat,
-            longitude: this.state.userLocation.userAddressDictionary[ghostAddress].coord.lng,
-            address: ghostAddress,
-            state: this.state.userLocation.userAddressDictionary[ghostAddress].state,
-            city: this.state.userLocation.userAddressDictionary[ghostAddress].city,
-            street: this.state.userLocation.userAddressDictionary[ghostAddress].street,
-            number: this.state.userLocation.userAddressDictionary[ghostAddress].number,
-          },
-          true,
-          this.state.userLocation.userAddressDictionary[ghostAddress].geohash,
-          {
-            cost: 0,
-            upVotes: 0,
-            downVotes: 0,
-          },
-          Math.random()        
-        )
+      console.log(availableLocations);
+      if (availableLocations != undefined) {
+        let possibleMarkers = []
+        availableLocations.forEach(address => {
+          if (address != null) {
+            let marker = {
+              coordinate: {
+                latitude: this.state.userLocation.userAddressDictionary[address].coord.lat,
+                longitude: this.state.userLocation.userAddressDictionary[address].coord.lng
+              }, 
+              location: {
+                latitude: this.state.userLocation.userAddressDictionary[address].coord.lat,
+                longitude: this.state.userLocation.userAddressDictionary[address].coord.lng
+              },
+              ghostMarker: "possible location",
+              key: Math.random()        
+            }
 
-        possibleMarkers = possibleMarkers.filter((marker) => {
-          return (marker.coordinate.latitude !== hub.coordinate.latitude &&
-                  marker.coordinate.longitude !== hub.coordinate.longitude
+            possibleMarkers.push(marker)
+
+            let distance = math.sqrt(
+              math.square(referenceLatitude-this.state.userLocation.userAddressDictionary[address].coord.lat)
+              + math.square(referenceLongitude-this.state.userLocation.userAddressDictionary[address].coord.lng)
+            )
+
+            if (ghostAddress == null || distance < currentDistance) {
+              ghostAddress = address;
+              currentDistance = distance
+            } 
+          }
+        })
+
+        if (ghostAddress != null ) {
+          
+          let newGhostMarker = [];
+          let hub = new Hub(
+            {
+              latitude: this.state.userLocation.userAddressDictionary[ghostAddress].coord.lat,
+              longitude: this.state.userLocation.userAddressDictionary[ghostAddress].coord.lng,
+            },
+            {
+              latitude: this.state.userLocation.userAddressDictionary[ghostAddress].coord.lat,
+              longitude: this.state.userLocation.userAddressDictionary[ghostAddress].coord.lng,
+              address: ghostAddress,
+              state: this.state.userLocation.userAddressDictionary[ghostAddress].state,
+              city: this.state.userLocation.userAddressDictionary[ghostAddress].city,
+              street: this.state.userLocation.userAddressDictionary[ghostAddress].street,
+              number: this.state.userLocation.userAddressDictionary[ghostAddress].number,
+            },
+            true,
+            this.state.userLocation.userAddressDictionary[ghostAddress].geohash,
+            {
+              cost: 0,
+              upVotes: 0,
+              downVotes: 0,
+            },
+            Math.random()        
           )
-        })
 
-        newGhostMarker.push(hub);
+          possibleMarkers = possibleMarkers.filter((marker) => {
+            return (marker.coordinate.latitude !== hub.coordinate.latitude &&
+                    marker.coordinate.longitude !== hub.coordinate.longitude
+            )
+          })
 
-        let locationObj = {};
-        locationObj.coordinates = {};
-        locationObj.coordinates.latitude =  hub.coordinate.latitude
-        locationObj.coordinates.longitude =  hub.coordinate.longitude
-        locationObj.coordinates.latitudeDelta =  0.0005
-        locationObj.coordinates.longitudeDelta =  0.0005
-    
-        this.clusterMap.animateToSpecificMarker(locationObj) 
+          newGhostMarker.push(hub);
 
-        this.showVotingButtonsHandler(!(hub.location.address in this.state.hubs));
-        this.tabValHandler()
-        this.selectedMarkerHandler(hub)
-        this.ghostMarkerHandler(newGhostMarker)
+          let locationObj = {};
+          locationObj.coordinates = {};
+          locationObj.coordinates.latitude =  hub.coordinate.latitude
+          locationObj.coordinates.longitude =  hub.coordinate.longitude
+          locationObj.coordinates.latitudeDelta =  0.0005
+          locationObj.coordinates.longitudeDelta =  0.0005
+      
+          this.clusterMap.animateToSpecificMarker(locationObj) 
 
-        this.setState({
-          possibleLocationMarker: possibleMarkers
-        })
+          this.showVotingButtonsHandler(!(hub.location.address in this.state.hubs));
+          this.tabValHandler()
+          this.selectedMarkerHandler(hub)
+          this.ghostMarkerHandler(newGhostMarker)
 
+          this.setState({
+            possibleLocationMarker: possibleMarkers
+          })
+
+        } else {
+          // show popup "move closer to location"
+        }
       } else {
         // show popup "move closer to location"
       }
-    } else {
-      // show popup "move closer to location"
     }
   }
 
