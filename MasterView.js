@@ -8,7 +8,7 @@ import AddHubTab from './AddHubTab.js'
 import Hub from './Hub.js'
 import RefreshPositionTab from './RefreshPositionTab.js'
 import './renderImage.js'
-import {Constants} from 'expo';
+import Constants from 'expo-constants';
 import g from 'ngeohash'
 import * as math from 'mathjs';
 import * as firebase from 'firebase';
@@ -16,6 +16,7 @@ import 'firebase/firestore';
 import ClusteringMap from './ClusteringMap.js';
 import styles from './styles.js';
 import AppLink from 'react-native-app-link';
+import * as Location from 'expo-location';
 
 function getRandomInt(min,max) {
   min = Math.ceil(min);
@@ -70,6 +71,7 @@ export default class MasterView extends React.Component {
         latitude: null,
         longitude: null
       },
+      watchID: null,
     };
   
     this.showVotingButtonsHandler = this.showVotingButtonsHandler.bind(this);
@@ -149,7 +151,8 @@ export default class MasterView extends React.Component {
   }
 
   componentWillUnmount() {
-    navigator.geolocation.clearWatch(this.watchId);
+    // navigator.geolocation.clearWatch(this.watchId);
+    this.state.watchID;
     AppState.removeEventListener('change',this._handleAppStateChange)
   }
 
@@ -163,13 +166,13 @@ export default class MasterView extends React.Component {
     if (nextAppState == 'active') {
       this._addWatchPosition()
     } else if(nextAppState == 'background') {
-      navigator.geolocation.clearWatch(this.watchId);
+      this.state.watchID
     }
   }
 
   success = position => {
     console.log("success");
-    const { latitude, longitude } = position.coords;
+    let { latitude, longitude } = position.coords;
     let ghostGeohash = g.encode_int(latitude,longitude,26)
     // Fetch curent location
     myApiKey = 'AIzaSyBkwazID1O1ryFhdC6mgSR4hJY2-GdVPmE';
@@ -231,7 +234,7 @@ export default class MasterView extends React.Component {
   refreshWatchPosition = async() => {
     this.setState({refreshingPosition: true});
     console.log("refresh watch position")
-    navigator.geolocation.clearWatch(this.watchId);
+    this.state.watchID;
     this._addWatchPosition()
 
     let locationObj = {};
@@ -247,11 +250,11 @@ export default class MasterView extends React.Component {
   _addWatchPosition = async() => {
     console.log("addWatchPosition")
     // updates the userLocation prop when the user moves a significant amount
-    this.watchID = navigator.geolocation.watchPosition(
-      (position) => this.success(position),
-      (error) => console.log(error),
-      {enableHighAccuracy: true, distanceFilter: 0, timeout:15000}
+    let watchID = await Location.watchPositionAsync(
+      {accuracy: 5, setInterval: 10000, distanceInterval: 1},
+      (position) => this.success(position)
     )
+    this.setState({watchID});
   }
 
   goToMarker(marker) {

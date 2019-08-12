@@ -4,7 +4,8 @@ import styles from './styles.js'
 import MapView,{ Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import ClusteredMapView from 'react-native-maps-super-cluster';
 import {renderMarkerIcon, renderGhostIcon} from './renderImage.js'
-import {Location, Permissions} from 'expo';
+import * as Location from 'expo-location';
+import * as Permissions from 'expo-permissions';
 import g from 'ngeohash'
 
 export default class ClusteringMap extends React.Component {
