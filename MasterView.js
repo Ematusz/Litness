@@ -414,7 +414,7 @@ export default class MasterView extends React.Component {
   toggleInfoPage (marker) {
     // temporary measure until we can get the z stacking to work
     if(Platform !== 'ios') {
-      if (this.state.leaderBoard) {
+      if (!this.state.leaderBoard) {
         this.toggleLeaderBoard()
       }
     }
