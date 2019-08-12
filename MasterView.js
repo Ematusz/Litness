@@ -172,63 +172,66 @@ export default class MasterView extends React.Component {
 
   success = position => {
     console.log("success");
-    let { latitude, longitude } = position.coords;
-    let ghostGeohash = g.encode_int(latitude,longitude,26)
-    // Fetch curent location
-    myApiKey = 'AIzaSyBkwazID1O1ryFhdC6mgSR4hJY2-GdVPmE';
-    fetch('https://maps.googleapis.com/maps/api/geocode/json?latlng=' + latitude + ',' + longitude + '&location_type=ROOFTOP&result_type=street_address|premise&key=' + myApiKey)
-    .then((response) => response.json())
-    .then((responseJson) => {
-      let results = JSON.parse(JSON.stringify(responseJson)).results
-      let userAddressDictionary = {}
-      // creates a dictionary of all possible locations returned by the fetch
-      // TODO: trim down results to only important ones. Remove results that are renages of numbers and limit returns
-      // getting warning about unhandled promise. result.addres_components[counter].types "undefined is not an object" some results may not have components?
-
-      results.forEach( result => {
-          let state, city, street, number = null;
-          counter = 0
-          while (!state || !city || !street || !number) {
-            result.address_components[counter].types.forEach(type => {
-              if (type == "administrative_area_level_1") {
-                state = result.address_components[counter].short_name;
-              }
-              if (type == "locality") {
-                // might need to change this to neighborhood work on tuning
-                city = result.address_components[counter].long_name;
-              }
-              if (type == "route") {
-                street = result.address_components[counter].short_name;
-              }
-              if (type == "street_number") {
-                number = result.address_components[counter].long_name;
-              }
-            })
-            counter+=1;
-          }
-          
-        userAddressDictionary[result.formatted_address] = {
-          coord: result.geometry.location,
-          geohash: ghostGeohash,
-          state: state,
-          city: city,
-          street: street,
-          number: number,
+    console.log(position.coords.accuracy)
+    if (position.coords.accuracy <= 10) {
+      let { latitude, longitude } = position.coords;
+      let ghostGeohash = g.encode_int(latitude,longitude,26)
+      // Fetch curent location
+      myApiKey = 'AIzaSyBkwazID1O1ryFhdC6mgSR4hJY2-GdVPmE';
+      fetch('https://maps.googleapis.com/maps/api/geocode/json?latlng=' + latitude + ',' + longitude + '&location_type=ROOFTOP&result_type=street_address|premise&key=' + myApiKey)
+      .then((response) => response.json())
+      .then((responseJson) => {
+        let results = JSON.parse(JSON.stringify(responseJson)).results
+        let userAddressDictionary = {}
+        // creates a dictionary of all possible locations returned by the fetch
+        // TODO: trim down results to only important ones. Remove results that are renages of numbers and limit returns
+        // getting warning about unhandled promise. result.addres_components[counter].types "undefined is not an object" some results may not have components?
+  
+        results.forEach( result => {
+            let state, city, street, number = null;
+            counter = 0
+            while (!state || !city || !street || !number) {
+              result.address_components[counter].types.forEach(type => {
+                if (type == "administrative_area_level_1") {
+                  state = result.address_components[counter].short_name;
+                }
+                if (type == "locality") {
+                  // might need to change this to neighborhood work on tuning
+                  city = result.address_components[counter].long_name;
+                }
+                if (type == "route") {
+                  street = result.address_components[counter].short_name;
+                }
+                if (type == "street_number") {
+                  number = result.address_components[counter].long_name;
+                }
+              })
+              counter+=1;
+            }
+            
+          userAddressDictionary[result.formatted_address] = {
+            coord: result.geometry.location,
+            geohash: ghostGeohash,
+            state: state,
+            city: city,
+            street: street,
+            number: number,
+          };
+          // console.log(userAddressDictionary)
+        })
+        console.log(Object.keys(userAddressDictionary));
+  
+        // saves address, latitude, and longitude in a coordinate object
+        const userCoordinates = {
+          userAddressDictionary,
+          latitude,
+          longitude
         };
-        // console.log(userAddressDictionary)
+        // sets new userLocation based on previously created coordinate object
+        this.setState({userLocation: userCoordinates});
+        this.setState({refreshingPosition: false})
       })
-      console.log(Object.keys(userAddressDictionary));
-
-      // saves address, latitude, and longitude in a coordinate object
-      const userCoordinates = {
-        userAddressDictionary,
-        latitude,
-        longitude
-      };
-      // sets new userLocation based on previously created coordinate object
-      this.setState({userLocation: userCoordinates});
-      this.setState({refreshingPosition: false})
-    })
+    }
   }
 
   refreshWatchPosition = async() => {
@@ -251,7 +254,7 @@ export default class MasterView extends React.Component {
     console.log("addWatchPosition")
     // updates the userLocation prop when the user moves a significant amount
     let watchID = await Location.watchPositionAsync(
-      {accuracy: 5, setInterval: 10000, distanceInterval: 1},
+      {accuracy: 5, setInterval: 10000, distanceInterval: 3},
       (position) => this.success(position)
     )
     this.setState({watchID});
