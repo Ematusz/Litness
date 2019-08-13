@@ -7,6 +7,7 @@ import dateFns from 'date-fns';
 import {ButtonGroup} from 'react-native-elements';
 import CustomFlyout from './CustomFlyout.js';
 import {renderLoadingFire, renderRefresh, renderLandmark} from './renderImage'
+import Dimensions from 'Dimensions';
 
 export default class InfoPage extends React.Component {
     constructor(props) {
@@ -197,7 +198,7 @@ export default class InfoPage extends React.Component {
                     <Text style ={{color:"black", fontSize: 17}}> Loading... </Text>
                 </View>}
 
-                <View style = {{marginTop:20}} >
+                <View style = {{marginTop:"3%"}} >
                     {(this.state.selectedValue!==null && this.state.showChart) && <Text style = {{fontSize: 30, alignSelf:"center", color:"black"}}>{this.state.selectedValue.toString() + " LF"}</Text>}
                     {(this.state.selectedValue!==null && this.state.showChart) && <Text style = {{fontSize: 15, alignSelf:"center", color:deltaColor}}>{delta}</Text>}
                     {(this.state.selectedTime && this.state.showChart) && <Text style = {{fontSize: 15, alignSelf:"center", color:"grey"}}>{dateFns.format(d3.timeSecond(this.state.selectedTime),"hh:mm:ss A")}</Text>}
@@ -236,9 +237,9 @@ export default class InfoPage extends React.Component {
                     </View>}
 
                 {this.state.showChart && <VictoryChart
-                    height = {Platform.OS === 'ios' ? 375 : 300}
-                    width={Platform.OS === 'ios' ? 375 : 350}
-                    padding={{ top: 30, bottom: 10, left: 50, right: 50 }}
+                    height = {(Dimensions.get('window').height*.5)}
+                    width={(Dimensions.get('window').width*.9)}
+                    padding={{ top: (Dimensions.get('window').height*.0401), bottom: (Dimensions.get('window').height*.013), left: (Dimensions.get('window').width*.12) , right: Dimensions.get('window').width*.12 }}
                     domain={{y: [this.state.minValue-.5, this.state.maxValue+.5], x: [this.state.processedData[0].time-(1),this.state.processedData[this.state.processedData.length-1].time+(1)]}}
                     scale={{ x: "time", y: "linear" }}
                     containerComponent={
@@ -277,7 +278,7 @@ export default class InfoPage extends React.Component {
                             padding: 0
                           }
                         }}
-                        offsetX={Platform.OS === 'ios' ? 350 : 325}
+                        offsetX={(Dimensions.get('window').width*.841)}
                         tickValues = {[this.state.minValue, this.state.maxValue]}
                         />
 
@@ -288,7 +289,7 @@ export default class InfoPage extends React.Component {
                         onPress={this.updateIndex}
                         selectedIndex={selectedIndex}
                         buttons={buttons}
-                        containerStyle={{height: 20,backgroundColor:"transparent",borderColor:"transparent",width:'100%',alignSelf:'center'}}
+                        containerStyle={{height: "3%",backgroundColor:"transparent",borderColor:"transparent",width:'100%',alignSelf:'center'}}
                         selectedButtonStyle={{backgroundColor:"transparent"}}
                         selectedTextStyle = {{color: "black"}}
                         textStyle={{color:"lightgrey",fontSize:12,fontWeight:"bold"}}
@@ -303,7 +304,7 @@ export default class InfoPage extends React.Component {
                 </View>}
 
                 {this.state.showChart && <View style={{
-                    height:1,
+                    height:".1%",
                     width:"100%",
                     backgroundColor:"lightgrey"
                 }}/>}

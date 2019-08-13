@@ -1,6 +1,7 @@
 import React from 'react';
 import {Image} from 'react-native';
-import styles from './styles.js'
+import styles from './styles.js';
+import Dimensions from 'Dimensions';
 
 export function renderMarkerIcon(count) { 
     if (count < 0) {
@@ -35,7 +36,7 @@ export function renderGhostIcon() {
     return  <Image
             style = {styles.emojiIcon}
         //     resizeMode = "cover"
-            borderRadius = {20}
+            borderRadius = {Dimensions.get('window').height*.0272}
             source={require('./assets/poo2.png')}
             />
 }
@@ -50,9 +51,9 @@ export function renderLoadingFire() {
 export function renderRefresh() {
     return <Image
             style = {{flex:1,
-                    height: 15,
+                    height: Dimensions.get('window').height*.0204,
                     resizeMode: 'contain',
-                    width: 15,
+                    width: Dimensions.get('window').height*.0204,
                     alignSelf: 'center'}}
             source={require('./assets/refresh.png')}
             />
@@ -61,9 +62,9 @@ export function renderRefresh() {
 export function renderVotingLit() {
     return <Image
             style = {{
-                height: 40,
+                height: Dimensions.get('window').height*.0543,
                 resizeMode: 'contain',
-                width: 35,}}
+                width: Dimensions.get('window').width*.0725,}}
             source={require('./assets/fire.png')}
             />
 }
@@ -71,9 +72,9 @@ export function renderVotingLit() {
 export function renderVotingShit() {
     return <Image
             style = {{
-                height: 40,
+                height: Dimensions.get('window').height*.0543,
                 resizeMode: 'contain',
-                width: 30,}}
+                width: Dimensions.get('window').width*.0725,}}
             source={require('./assets/poop.png')}
             />
 }
@@ -81,9 +82,9 @@ export function renderVotingShit() {
 export function renderNavigationIcon() {
         return <Image
                 style = {{
-                        height: 40,
+                        height: Dimensions.get('window').height*.0543,
                         resizeMode: 'contain',
-                        width: 30,}}
+                        width: Dimensions.get('window').width*.0725}}
                 // this is a place holder. Make sure to find something open source or make our own
                 source={require('./assets/navigation.png')}
                 />
@@ -92,9 +93,9 @@ export function renderNavigationIcon() {
 export function renderAddMarkerIcon() {
     return  <Image
             style = {{flex:1,
-                    height: 30,
+                    height: (Dimensions.get('window').height*.038),
                     resizeMode: 'contain',
-                    width: 30,}}
+                    width: (Dimensions.get('window').width*.068)}}
             source={require('./assets/insertMarker.png')}
             />
 }
@@ -102,9 +103,9 @@ export function renderAddMarkerIcon() {
 export function renderLeaderboardTabIcon() {
     return <Image
             style = {{flex:1,
-                    height: 30,
+                    height: (Dimensions.get('window').height*.038),
                     resizeMode: 'contain',
-                    width: 30,}}
+                    width: (Dimensions.get('window').width*.068)}}
             source={require('./assets/medal.png')}
             />
 }
@@ -112,9 +113,9 @@ export function renderLeaderboardTabIcon() {
 export function renderRefreshPositionTabIcon() {
         return <Image
                 style = {{flex:1,
-                        height: 30,
+                        height: (Dimensions.get('window').height*.038),
                         resizeMode: 'contain',
-                        width: 30,}}
+                        width: (Dimensions.get('window').width*.068)}}
                         // this is a place holder. Make sure to find something open source or make our own
                 source={require('./assets/refreshButton.png')}
                 />
@@ -124,9 +125,9 @@ export function renderLandmark() {
     return <Image
             style = {{
                     margin:2,
-                    height: 50,
+                    height: Dimensions.get('window').height*.0679,
                     resizeMode: 'contain',
-                    width: 50,                                    
+                    width: Dimensions.get('window').width*.1208,                                    
                     }}
             source={require('./assets/landmark.png')}
             />
