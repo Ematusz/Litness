@@ -17,6 +17,7 @@ import ClusteringMap from './ClusteringMap.js';
 import styles from './styles.js';
 import AppLink from 'react-native-app-link';
 import * as Location from 'expo-location';
+import Dimensions from 'Dimensions';
 
 function getRandomInt(min,max) {
   min = Math.ceil(min);
@@ -35,14 +36,14 @@ export default class MasterView extends React.Component {
   constructor(props) {
     super(props);
     this.state = { 
-      animatedRefreshPositionTab: new Animated.Value(-3),
-      animatedAddHubTab: new Animated.Value(-3),
+      animatedRefreshPositionTab: new Animated.Value(-.75),
+      animatedAddHubTab: new Animated.Value(-.75),
       animatedFlex: new Animated.Value(.5),
       animatedHeight: new Animated.Value(30),
-      animatedLeaderboard: new Animated.Value(1000),
-      animatedLeaderboardButton: new Animated.Value(-3),
-      animatedTab:  new Animated.Value(500),
-      animatedTop: new Animated.Value(1000),
+      animatedLeaderboard: new Animated.Value(-100),
+      animatedLeaderboardButton: new Animated.Value(-.75),
+      animatedTab:  new Animated.Value(-50),
+      animatedTop: new Animated.Value(-100),
       clustering: true,
       currentGrid: [],
       data_: [],
@@ -118,7 +119,7 @@ export default class MasterView extends React.Component {
       if (!this.state.tabVal) {
         this.setState({tabVal:true})
         Animated.timing(this.state.animatedTab, {
-          toValue: Platform.OS === 'ios' ? 370 : 320,
+          toValue: 0,
           friction: 100,
           duration: 200
         }).start();
@@ -132,7 +133,7 @@ export default class MasterView extends React.Component {
     if (this.state.tabVal) {
       this.setState({tabVal:false});
       Animated.timing(this.state.animatedTab, {
-        toValue: 1000,
+        toValue: -50,
         friction: 200,
         duration: 200
       }).start();
@@ -146,6 +147,7 @@ export default class MasterView extends React.Component {
   }
   
   componentDidMount() {
+    console.log("Dimensions", Dimensions.get('window').height, Dimensions.get('window').width)
     console.log("componentDidMount")
     AppState.addEventListener('change', this._handleAppStateChange)
   }
@@ -380,7 +382,7 @@ export default class MasterView extends React.Component {
 
   tabValHandler() {
     Animated.timing(this.state.animatedTab, {
-      toValue: Platform.OS === 'ios' ? 370 : 320,
+      toValue: 0,
       friction: 100,
       duration: 200
       }).start();
@@ -425,49 +427,49 @@ export default class MasterView extends React.Component {
     // if infoPage is currently listed as false, open the page. Otherwise close it.
     if (!this.state.infoPage) {
       this.setState({infoPage: true});
-      Animated.timing(this.state.animatedTop, {
-        toValue: 50,
-        duration: 300,
-      }).start();
-
-      Animated.timing(this.state.animatedLeaderboardButton, {
-        toValue: -50,
-        duration: 300
-      }).start();
-
-      Animated.timing(this.state.animatedAddHubTab, {
-        toValue: -50,
-        duration: 300
-      }).start();
-
-      Animated.timing(this.state.animatedRefreshPositionTab, {
-        toValue: -50,
-        duration: 300
-      }).start();
-    
-    } else {
-      Animated.timing(this.state.animatedTop, {
-        toValue: 1000,
-        duration: 300
-      }).start(()=>this.setState({infoPage: false}));
-      
-      if (!this.state.leaderBoard) {
+      Animated.parallel(
+        Animated.timing(this.state.animatedTop, {
+          toValue: 5,
+          duration: 300,
+        }).start(),
+  
         Animated.timing(this.state.animatedLeaderboardButton, {
-          toValue: -3,
+          toValue: -50,
           duration: 300
-        }).start();
+        }).start(),
+  
+        Animated.timing(this.state.animatedAddHubTab, {
+          toValue: -50,
+          duration: 300
+        }).start(),
+  
+        Animated.timing(this.state.animatedRefreshPositionTab, {
+          toValue: -50,
+          duration: 300
+        }).start()
+      )
+    } else {
+      Animated.parallel(
+        Animated.timing(this.state.animatedTop, {
+          toValue: !this.state.leaderBoard? -100 : 5,
+          duration: 300
+        }).start(()=>this.setState({infoPage: false})),
+
+        Animated.timing(this.state.animatedLeaderboardButton, {
+          toValue: !this.state.leaderBoard? -.75 : -50,
+          duration: 300
+        }).start(),
 
         Animated.timing(this.state.animatedAddHubTab, {
-          toValue: -3,
+          toValue: !this.state.leaderBoard? -.75 : -50,
           duration: 300
-        }).start();
+        }).start(),
 
         Animated.timing(this.state.animatedRefreshPositionTab, {
-          toValue: -3,
+          toValue: !this.state.leaderBoard? -.75: -50,
           duration: 300
-        }).start();
-      }
-      
+        }).start()
+      )
     }
     // closes the vote tab when the info page is up so that its not distracting.
     if (this.state.infoPage && !this.state.leaderBoard) {
@@ -496,67 +498,66 @@ export default class MasterView extends React.Component {
   toggleLeaderBoard() {
     if (!this.state.leaderBoard) {
       this.setState({leaderBoard: true});
-          
-      Animated.timing(this.state.animatedLeaderboard, {
-        toValue: 50,
-        friction: 100,
-        duration: 300
-      }).start();
-
-      Animated.timing(this.state.animatedLeaderboardButton, {
-        toValue: -50,
-        friction: 100,
-        duration: 300
-      }).start();
-      
-      Animated.timing(this.state.animatedAddHubTab, {
-        toValue: -50,
-        duration: 300
-      }).start();
-
-      Animated.timing(this.state.animatedRefreshPositionTab, {
-        toValue: -50,
-        duration: 300
-      }).start();
-
-      if (this.state.tabVal) {
+      Animated.parallel(
+        Animated.timing(this.state.animatedLeaderboard, {
+          toValue: 5,
+          friction: 100,
+          duration: 300
+        }).start(),
+  
+        Animated.timing(this.state.animatedLeaderboardButton, {
+          toValue: -50,
+          friction: 100,
+          duration: 300
+        }).start(),
+        
+        Animated.timing(this.state.animatedAddHubTab, {
+          toValue: -50,
+          duration: 300
+        }).start(),
+  
+        Animated.timing(this.state.animatedRefreshPositionTab, {
+          toValue: -50,
+          duration: 300
+        }).start(),
+  
         Animated.timing(this.state.animatedTab, {
-          toValue: 1000,
+          toValue: -50,
           friction: 100,
           duration: 200
-        }).start();
-      }
-
+        }).start(),
+      ) 
 
     } else {
-      Animated.timing(this.state.animatedLeaderboard, {
-        toValue: 1000,
-        friction: 100,
-        duration: 200
-      }).start(()=> this.setState({leaderBoard: false}));
-
-      Animated.timing(this.state.animatedLeaderboardButton, {
-        toValue: -3,
-        friction: 100,
-        duration: 200
-      }).start();
-      Animated.timing(this.state.animatedAddHubTab, {
-        toValue: -3,
-        duration: 300
-      }).start();
-
-      Animated.timing(this.state.animatedRefreshPositionTab, {
-        toValue: -3,
-        duration: 300
-      }).start();
-
-      if (this.state.tabVal) {
-        Animated.timing(this.state.animatedTab, {
-          toValue: Platform.OS === 'ios' ? 370 : 320,
+      Animated.parallel(
+        Animated.timing(this.state.animatedLeaderboard, {
+          toValue: -100,
           friction: 100,
-          duration: 200
-        }).start();
-      }
+          duration: 300
+        }).start(()=> this.setState({leaderBoard: false})),
+  
+        Animated.timing(this.state.animatedLeaderboardButton, {
+          toValue: -.75,
+          friction: 100,
+          duration: 300
+        }).start(),
+
+        Animated.timing(this.state.animatedAddHubTab, {
+          toValue: -.75,
+          duration: 300
+        }).start(),
+  
+        Animated.timing(this.state.animatedRefreshPositionTab, {
+          toValue: -.75,
+          duration: 300
+        }).start(),
+  
+        Animated.timing(this.state.animatedTab, {
+          toValue: this.state.tabVal? 0 : -50,
+          friction: 100,
+          duration: 300
+        }).start()
+      )
     }
   }
     // Initializes the ghost marker to closest location in possible current locations
@@ -771,7 +772,7 @@ export default class MasterView extends React.Component {
                 clustering={this.state.clustering}
           />
 
-          {this.state.infoPage && <AnimatedInfoPage style = {{top:this.state.animatedTop}}
+          {this.state.infoPage && <AnimatedInfoPage style = {{top:this.state.animatedTop.interpolate({inputRange: [-100,5], outputRange: ["-100%","5%"]})}}
                             toggleInfoPage={this.toggleInfoPage}
                             infoPageMarker={this.state.infoPageMarker}
                             data_={this.state.data_}
@@ -779,7 +780,7 @@ export default class MasterView extends React.Component {
                             goToMarker = {() => this.goToMarker(this.state.infoPageMarker)}
           />}
 
-          <AnimatedSideTab style = {{left:this.state.animatedTab}} 
+          <AnimatedSideTab style = {{right:this.state.animatedTab.interpolate({inputRange: [-50,0], outputRange: ["-50%","0%"]})}} 
                             clickInfo = {()=>this.toggleInfoPage(this.state.selectedMarker)} 
                             clickFire={()=>this.changeLit(this.state.selectedMarker,1)}
                             clickShit={()=>this.changeLit(this.state.selectedMarker,-1)}
@@ -787,7 +788,7 @@ export default class MasterView extends React.Component {
                             showVotingButtons={this.state.showVotingButtons}
           />
 
-          {this.state.leaderBoard && <AnimatedLeaderboard style = {{top:this.state.animatedLeaderboard}} 
+          {this.state.leaderBoard && <AnimatedLeaderboard style = {{top: this.state.animatedLeaderboard.interpolate({inputRange: [-100,5], outputRange: ["-100%","5%"]})}} 
                                 toggleLeaderBoard= {this.toggleLeaderBoard}
                                 leaderBoard_={this.state.leaderBoard_}
                                 toggleInfoPage={this.toggleInfoPage}
@@ -795,14 +796,14 @@ export default class MasterView extends React.Component {
                                 userLocation = {this.state.userLocation}
           />}
 
-          <AnimatedLeaderboardTab style = {{right:this.state.animatedLeaderboardButton}} 
+          <AnimatedLeaderboardTab style = {{right:this.state.animatedLeaderboardButton.interpolate({inputRange: [-50,-.75], outputRange: ["-50%","-.75%"]})}} 
                                   toggleLeaderBoard={this.toggleLeaderBoard}
           />
 
-          <AnimatedAddHubTab style ={{right:this.state.animatedAddHubTab}}
+          <AnimatedAddHubTab style ={{right:this.state.animatedAddHubTab.interpolate({inputRange: [-50,-.75], outputRange: ["-50%","-.75%"]})}}
                       setGhost={() => this.setGhost(this.state.userLocation.latitude, this.state.userLocation.longitude)}
           />     
-          <AnimatedRefresPositionTab style ={{right:this.state.animatedRefreshPositionTab}}
+          <AnimatedRefresPositionTab style ={{right:this.state.animatedRefreshPositionTab.interpolate({inputRange: [-50,-.75], outputRange: ["-50%","-.75%"]})}}
                       refreshWatchPosition={() => this.refreshWatchPosition()}
                       refreshingPosition = {this.state.refreshingPosition}
           />  
