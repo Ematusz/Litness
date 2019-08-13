@@ -53,11 +53,6 @@ exports.DBupdate = functions.https.onRequest((req, res) => {
     }).catch( reason => {
         res.send(reason);
     })
-<<<<<<< HEAD
-});
-
-=======
-
     // for geofirestore
     hubs.get().then(snapshot => {
         let twoHoursAgo = Date.now() - (5 * 60 * 60 * 1000);
@@ -188,7 +183,6 @@ exports.updatedVoteHubs = functions.firestore.document('hubs/{address}/votes/{vo
         });
     });
 
->>>>>>> GeoFire_Implementation
 exports.updatedVote = functions.firestore.document('locations/{address}/votes/{voterID}')
     .onWrite((change,context) => {
         console.log('updateVote')

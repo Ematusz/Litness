@@ -22,6 +22,7 @@ export default class InfoPage extends React.Component {
             timeToShit:{},
             maxValue: 0,
             minValue: 0,
+            disabledButtons: [],
         }
 
         this.updateIndex = this.updateIndex.bind(this)
@@ -93,7 +94,26 @@ export default class InfoPage extends React.Component {
     }
 
     getData() {
-        console.log("leaderboardStatus", this.props.leaderboardStatus)
+        let disabledButtons = [];
+        let oneHourAgo = Date.now() - (3 * 60 * 60 * 1000);
+        oneHourAgo = new Date(oneHourAgo);
+        let threeHoursAgo = Date.now() - (12 * 60 * 60 * 1000);
+        threeHoursAgo = new Date(threeHoursAgo);
+        let twelveHoursAgo = Date.now() - (24 * 60 * 60 * 1000);
+        twelveHoursAgo = new Date(twelveHoursAgo);
+        hubs.doc(this.props.infoPageMarker.location.address).get()
+            .then( doc => {
+                if (doc.data().timeCreated.toDate() > oneHourAgo) {
+                    disabledButtons.push(1);
+                }
+                if (doc.data().timeCreated.toDate() > threeHoursAgo) {
+                    disabledButtons.push(2);
+                }
+                if (doc.data().timeCreated.toDate() > twelveHoursAgo) {
+                    disabledButtons.push(3);
+                }
+                this.setState({disabledButtons});
+            })
         this.setState({ showLine: false })
         let data = [];
         let lastCount = 0;
@@ -289,6 +309,8 @@ export default class InfoPage extends React.Component {
                         onPress={this.updateIndex}
                         selectedIndex={selectedIndex}
                         buttons={buttons}
+                        disabled={this.state.disabledButtons}
+                        disabledTextStyle={{color:"red",fontSize:12,fontWeight:"bold"}}
                         containerStyle={{height: "3%",backgroundColor:"transparent",borderColor:"transparent",width:'100%',alignSelf:'center'}}
                         selectedButtonStyle={{backgroundColor:"transparent"}}
                         selectedTextStyle = {{color: "black"}}
