@@ -95,11 +95,11 @@ export default class InfoPage extends React.Component {
 
     getData() {
         let disabledButtons = [];
-        let oneHourAgo = Date.now() - (3 * 60 * 60 * 1000);
+        let oneHourAgo = Date.now() - (1 * 60 * 60 * 1000);
         oneHourAgo = new Date(oneHourAgo);
-        let threeHoursAgo = Date.now() - (12 * 60 * 60 * 1000);
+        let threeHoursAgo = Date.now() - (3 * 60 * 60 * 1000);
         threeHoursAgo = new Date(threeHoursAgo);
-        let twelveHoursAgo = Date.now() - (24 * 60 * 60 * 1000);
+        let twelveHoursAgo = Date.now() - (12 * 60 * 60 * 1000);
         twelveHoursAgo = new Date(twelveHoursAgo);
         hubs.doc(this.props.infoPageMarker.location.address).get()
             .then( doc => {
