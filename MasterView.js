@@ -17,10 +17,12 @@ import * as firebase from 'firebase';
 import 'firebase/firestore';
 import ClusteringMap from './ClusteringMap.js';
 import styles from './styles.js';
-import AppLink from 'react-native-app-link';
 import * as Location from 'expo-location';
 import Dimensions from 'Dimensions';
 import { SplashScreen } from 'expo';
+import uberLink from './uberLink';
+import googleMapsLink from './googleMapsLink.js';
+import AppLink from 'react-native-app-link';
 
 function getRandomInt(min,max) {
   min = Math.ceil(min);
@@ -515,16 +517,6 @@ export default class MasterView extends React.Component {
       this.closeTab(false)
     }
   }
-
-  openMaps(marker) {
-    let appName = Platform.OS === 'ios' ? 'Google Maps - Transit & Food' : 'Maps'
-    let appStoreId = '585027354'
-    let appStoreLocale = 'us'
-    let playStoreId = 'com.google.android.apps.maps'
-    AppLink.maybeOpenURL("https://www.google.com/maps/dir/?api=1&destination="+marker.location.address+"&travelmode=driving" , { appName, appStoreId, appStoreLocale, playStoreId }).then(() => {
-      console.log("redirected");
-    })
-  }
   
   toggleLeaderBoard() {
     if (!this.state.leaderBoard) {
@@ -816,7 +808,14 @@ export default class MasterView extends React.Component {
                             infoPageMarker={this.state.infoPageMarker}
                             data_={this.state.data_}
                             leaderboardStatus = {this.state.leaderBoard}
-                            clickNavigate={()=>this.openMaps(this.state.selectedMarker)}
+                            clickNavigate={()=>{
+                              let mapsLink = new googleMapsLink(this.state.selectedMarker);
+                              mapsLink.openMaps();
+                            }}
+                            clickUber={()=>{
+                              let uberLink_ = new uberLink(this.state.selectedMarker);
+                              uberLink_.openUber();
+                            }}
                             goToMarker = {() => this.goToMarker(this.state.infoPageMarker)}
           />}
 
@@ -824,7 +823,10 @@ export default class MasterView extends React.Component {
                             clickInfo = {()=>this.toggleInfoPage(this.state.selectedMarker)} 
                             clickFire={()=>this.changeLit(this.state.selectedMarker,1)}
                             clickShit={()=>this.changeLit(this.state.selectedMarker,-1)}
-                            clickNavigate={()=>this.openMaps(this.state.selectedMarker)}
+                            clickNavigate={()=>{
+                              let mapsLink = new googleMapsLink(this.state.selectedMarker);
+                              mapsLink.openMaps();
+                            }}
                             showVotingButtons={this.state.showVotingButtons}
           />}
 
