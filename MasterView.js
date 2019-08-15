@@ -95,6 +95,7 @@ export default class MasterView extends React.Component {
     this.geoHashGridHandler = this.geoHashGridHandler.bind(this);
     this.pageErrorHandler = this.pageErrorHandler.bind(this);
     this.bannerErrorHandler = this.bannerErrorHandler.bind(this);
+    this.connectionTypeHandler = this.connectionTypeHandler.bind(this);
 
     this._addListener = this._addListener.bind(this);
     this.addListenerHandler = this.addListenerHandler.bind(this);
@@ -189,15 +190,13 @@ export default class MasterView extends React.Component {
 
   success = position => {
     console.log("success");
-    console.log(position.coords.accuracy)
     let timeout = setTimeout(()=>{
       if (this.state.bannerErrorState != "locked") {
-        this.success(position);
         this.setState({bannerErrorState: true});
         this.setState({bannerErrorMessage: "We are having trouble reaching our servers. Please check your connection and try again."})
       }
 
-    },7000)
+    },10000)
     if (position.coords.accuracy <= 10) {
       let { latitude, longitude } = position.coords;
       let ghostGeohash = g.encode_int(latitude,longitude,26)
@@ -214,7 +213,6 @@ export default class MasterView extends React.Component {
             this.setState({bannerErrorState: true});
             this.setState({bannerErrorMessage: "There do not appear to be any possible hub locations nearby. Please move closer to a building or check your conenction."})
           } else if (status == "OK") {
-            console.log("OK")
             this.setState({bannerErrorState: false});
             this.setState({bannerErrorMessage: null})
           }
@@ -274,7 +272,7 @@ export default class MasterView extends React.Component {
 
   refreshWatchPosition = async() => {
     this.setState({refreshingPosition: true});
-    console.log("refresh watch position")
+    console.log("watchPositionRefreshed")
     this.state.watchID;
     this._addWatchPosition()
 
@@ -413,6 +411,12 @@ export default class MasterView extends React.Component {
     }
     this.setState({
       ghostMarker: someValue
+    })
+  }
+
+  connectionTypeHandler(someValue) {
+    this.setState({
+      connectionType: someValue
     })
   }
 
@@ -823,10 +827,13 @@ export default class MasterView extends React.Component {
                 bannerErrorHandler={this.bannerErrorHandler}
                 addWatchPosition={this._addWatchPosition}
                 removeWatchPosition={this.state.watchPosition}
+                connectionTypeHandler={this.connectionTypeHandler}
           />}
 
           {!this.state.pageErrorState && this.state.bannerErrorState && <AnimatedErrorBanner style = {styles.errorBanner}
                 error={this.state.bannerErrorMessage}
+                refreshWatchPosition={this.refreshWatchPosition}
+                connectionType={this.state.connectionType}
           />}
 
           {!this.state.pageErrorState && this.state.infoPage && <AnimatedInfoPage style = {{top:this.state.animatedTop.interpolate({inputRange: [-100,5], outputRange: ["-100%","5%"]})}}
