@@ -7,7 +7,7 @@ export default StyleSheet.create({
     borderWidth: Dimensions.get('window').height*.0027,
     position: 'absolute',
     right: "-.75%",
-    top: '16%',
+    top: '18%',
   }, 
   bigContainer: {
     flex:1,
@@ -43,6 +43,28 @@ export default StyleSheet.create({
     borderWidth: Dimensions.get('window').height*.00272,
     borderColor: 'black',
     backgroundColor:'black'
+  },
+  errorBanner: {
+    height: '10%',
+    width: '90%',
+    top:"2.5%",
+    alignSelf:'center',
+    position: 'absolute',
+    borderColor:'black',
+    borderWidth: Dimensions.get('window').height*.00272,
+    borderRadius: Dimensions.get('window').height*.0204,
+    backgroundColor: 'white',
+    flex:1,
+    flexDirection:'column',
+    justifyContent:'center',
+    alignItems:'center',
+  },
+  errorPage: {
+    flex:1,
+    alignContent: 'center',
+    backgroundColor: 'white',
+    justifyContent:'center',
+    alignItems:'center',
   },
   flatListContainer: {
     flex: 1,
@@ -110,7 +132,7 @@ export default StyleSheet.create({
     position: 'absolute',
     flex:1,
     right: "-.75%",
-    top: '12%',
+    top: '14%',
   },
   leaderBoardCell: {
     marginTop: "1.5%",
@@ -169,7 +191,7 @@ export default StyleSheet.create({
     position: 'absolute',
     flex:1,
     right: "-.75%",
-    top: '20%',
+    top: '22%',
   },
   tab: {
     backgroundColor:"white",

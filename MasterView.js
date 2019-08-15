@@ -1,5 +1,7 @@
 import React from 'react';
-import {Animated, View ,AppState, Platform} from 'react-native';
+import {Animated, View ,AppState, Platform, Text} from 'react-native';
+import ErrorBanner from './ErrorBanner.js';
+import ErrorPage from './ErrorPage'
 import SideTab from './SideTab.js';
 import InfoPage from './InfoPage.js';
 import Leaderboard from './Leaderboard.js';
@@ -18,6 +20,7 @@ import styles from './styles.js';
 import AppLink from 'react-native-app-link';
 import * as Location from 'expo-location';
 import Dimensions from 'Dimensions';
+import { SplashScreen } from 'expo';
 
 function getRandomInt(min,max) {
   min = Math.ceil(min);
@@ -25,6 +28,7 @@ function getRandomInt(min,max) {
   return Math.floor(Math.random() * (max-min))+min;
 }
 
+const AnimatedErrorBanner = Animated.createAnimatedComponent(ErrorBanner);
 const AnimatedSideTab = Animated.createAnimatedComponent(SideTab);
 const AnimatedInfoPage = Animated.createAnimatedComponent(InfoPage);
 const AnimatedLeaderboard = Animated.createAnimatedComponent(Leaderboard);
@@ -36,6 +40,7 @@ export default class MasterView extends React.Component {
   constructor(props) {
     super(props);
     this.state = { 
+      animatedErrorBanner: new Animated.Value(-100),
       animatedRefreshPositionTab: new Animated.Value(-.75),
       animatedAddHubTab: new Animated.Value(-.75),
       animatedFlex: new Animated.Value(.5),
@@ -45,9 +50,11 @@ export default class MasterView extends React.Component {
       animatedTab:  new Animated.Value(-50),
       animatedTop: new Animated.Value(-100),
       clustering: true,
+      connectionType: null,
       currentGrid: [],
       data_: [],
-      error: null,
+      bannerErrorMessage: null,
+      bannerErrorState: false,
       geoHashGrid: {},
       ghostMarker: [],
       possibleLocationMarker: [],
@@ -63,6 +70,8 @@ export default class MasterView extends React.Component {
         longitude: null,
         longitudeDelta: null
       },
+      pageErrorMessage: "test",
+      pageErrorState: false,
       refreshingPosition: true,
       selectedMarker: null,
       showVotingButtons: true,
@@ -82,6 +91,7 @@ export default class MasterView extends React.Component {
     this.currentGridHandler = this.currentGridHandler.bind(this);
     this.ghostMarkerHandler = this.ghostMarkerHandler.bind(this);
     this.geoHashGridHandler = this.geoHashGridHandler.bind(this);
+    this.connectionErrorHandler = this.connectionErrorHandler.bind(this);
 
     this._addListener = this._addListener.bind(this);
     this.addListenerHandler = this.addListenerHandler.bind(this);
@@ -150,6 +160,7 @@ export default class MasterView extends React.Component {
     console.log("Dimensions", Dimensions.get('window').height, Dimensions.get('window').width)
     console.log("componentDidMount")
     AppState.addEventListener('change', this._handleAppStateChange)
+    SplashScreen.preventAutoHide();
   }
 
   componentWillUnmount() {
@@ -183,6 +194,15 @@ export default class MasterView extends React.Component {
       fetch('https://maps.googleapis.com/maps/api/geocode/json?latlng=' + latitude + ',' + longitude + '&location_type=ROOFTOP&result_type=street_address|premise&key=' + myApiKey)
       .then((response) => response.json())
       .then((responseJson) => {
+        let status = JSON.parse(JSON.stringify(responseJson)).status;
+        console.log(status);
+        if (status == "ZERO_RESULTS") {
+          this.setState({bannerErrorState: true});
+          this.setState({bannerErrorMessage: "There do not appear to be any possible hub locations nearby. Please move closer to a building or check your conenction."})
+        } else if (status == "OK") {
+          this.setState({bannerErrorState: false});
+          this.setState({bannerErrorMessage: null})
+        }
         let results = JSON.parse(JSON.stringify(responseJson)).results
         let userAddressDictionary = {}
         // creates a dictionary of all possible locations returned by the fetch
@@ -380,6 +400,15 @@ export default class MasterView extends React.Component {
     })
   }
 
+  connectionErrorHandler(someValue) {
+    this.setState({
+      pageErrorState: someValue.state
+    });
+    this.setState({
+      pageErrorMessage: someValue.message
+    });
+  }
+
   tabValHandler() {
     Animated.timing(this.state.animatedTab, {
       toValue: 0,
@@ -410,6 +439,8 @@ export default class MasterView extends React.Component {
       geoHashGrid: someValue
     })
   }
+
+
 
   addListenerHandler(latitude,longitude) {
     this._addListener(latitude,longitude);
@@ -750,8 +781,11 @@ export default class MasterView extends React.Component {
     // renders the onscreen info
   render() {
     return (
-      <View style = {styles.bigContainer}>        
-          <ClusteringMap onRef={ref => (this.clusterMap = ref)}
+      <View style = {styles.bigContainer}>  
+          {this.state.pageErrorState && <ErrorPage
+                error={this.state.pageErrorMessage}
+          />}
+          {!this.state.pageErrorState && <ClusteringMap onRef={ref => (this.clusterMap = ref)}
                 geoHashGrid={this.state.geoHashGrid}
                 hubs = {this.state.hubs}
                 closeTab={this.closeTab}
@@ -770,9 +804,14 @@ export default class MasterView extends React.Component {
                 openTab={this.openTab} 
                 setGhost={this.setGhost}
                 clustering={this.state.clustering}
-          />
+                connectionErrorHandler={this.connectionErrorHandler}
+          />}
 
-          {this.state.infoPage && <AnimatedInfoPage style = {{top:this.state.animatedTop.interpolate({inputRange: [-100,5], outputRange: ["-100%","5%"]})}}
+          {!this.state.pageErrorState && this.state.bannerErrorState && <AnimatedErrorBanner style = {styles.errorBanner}
+                error={this.state.bannerErrorMessage}
+          />}
+
+          {!this.state.pageErrorState && this.state.infoPage && <AnimatedInfoPage style = {{top:this.state.animatedTop.interpolate({inputRange: [-100,5], outputRange: ["-100%","5%"]})}}
                             toggleInfoPage={this.toggleInfoPage}
                             infoPageMarker={this.state.infoPageMarker}
                             data_={this.state.data_}
@@ -781,15 +820,15 @@ export default class MasterView extends React.Component {
                             goToMarker = {() => this.goToMarker(this.state.infoPageMarker)}
           />}
 
-          <AnimatedSideTab style = {{right:this.state.animatedTab.interpolate({inputRange: [-50,0], outputRange: ["-50%","0%"]})}} 
+          {!this.state.pageErrorState && <AnimatedSideTab style = {{right:this.state.animatedTab.interpolate({inputRange: [-50,0], outputRange: ["-50%","0%"]})}} 
                             clickInfo = {()=>this.toggleInfoPage(this.state.selectedMarker)} 
                             clickFire={()=>this.changeLit(this.state.selectedMarker,1)}
                             clickShit={()=>this.changeLit(this.state.selectedMarker,-1)}
                             clickNavigate={()=>this.openMaps(this.state.selectedMarker)}
                             showVotingButtons={this.state.showVotingButtons}
-          />
+          />}
 
-          {this.state.leaderBoard && <AnimatedLeaderboard style = {{top: this.state.animatedLeaderboard.interpolate({inputRange: [-100,5], outputRange: ["-100%","5%"]})}} 
+          {!this.state.pageErrorState && this.state.leaderBoard && <AnimatedLeaderboard style = {{top: this.state.animatedLeaderboard.interpolate({inputRange: [-100,5], outputRange: ["-100%","5%"]})}} 
                                 toggleLeaderBoard= {this.toggleLeaderBoard}
                                 leaderBoard_={this.state.leaderBoard_}
                                 toggleInfoPage={this.toggleInfoPage}
@@ -797,17 +836,17 @@ export default class MasterView extends React.Component {
                                 userLocation = {this.state.userLocation}
           />}
 
-          <AnimatedLeaderboardTab style = {{right:this.state.animatedLeaderboardButton.interpolate({inputRange: [-50,-.75], outputRange: ["-50%","-.75%"]})}} 
+          {!this.state.pageErrorState && <AnimatedLeaderboardTab style = {{right:this.state.animatedLeaderboardButton.interpolate({inputRange: [-50,-.75], outputRange: ["-50%","-.75%"]})}} 
                                   toggleLeaderBoard={this.toggleLeaderBoard}
-          />
+          />}
 
-          <AnimatedAddHubTab style ={{right:this.state.animatedAddHubTab.interpolate({inputRange: [-50,-.75], outputRange: ["-50%","-.75%"]})}}
+          {!this.state.pageErrorState && <AnimatedAddHubTab style ={{right:this.state.animatedAddHubTab.interpolate({inputRange: [-50,-.75], outputRange: ["-50%","-.75%"]})}}
                       setGhost={() => this.setGhost(this.state.userLocation.latitude, this.state.userLocation.longitude)}
-          />     
-          <AnimatedRefresPositionTab style ={{right:this.state.animatedRefreshPositionTab.interpolate({inputRange: [-50,-.75], outputRange: ["-50%","-.75%"]})}}
+          />}    
+          {!this.state.pageErrorState && <AnimatedRefresPositionTab style ={{right:this.state.animatedRefreshPositionTab.interpolate({inputRange: [-50,-.75], outputRange: ["-50%","-.75%"]})}}
                       refreshWatchPosition={() => this.refreshWatchPosition()}
                       refreshingPosition = {this.state.refreshingPosition}
-          />  
+          /> } 
         </View>
     );
   }
