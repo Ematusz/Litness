@@ -59,6 +59,7 @@ export default class ClusteringMap extends React.Component {
     }
 
     handleConnectionChange(connectionInfo) {
+      this.props.connectionTypeHandler(connectionInfo);
       if (connectionInfo.type == "none") {
         this.props.removeWatchPosition
         this.props.bannerErrorHandler({state:"locked", message: "Oops! It seems like you've gone offline. Check your connection so we can get you updated information about the area around you!"})
@@ -175,7 +176,6 @@ export default class ClusteringMap extends React.Component {
       }
   
       this.props.mapRegionHandler(initialRegion);
-      console.log("initial region", initialRegion)
       this.map.getMapRef().animateToRegion(initialRegion,1);
       SplashScreen.hide();
     };
