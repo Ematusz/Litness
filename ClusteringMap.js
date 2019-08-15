@@ -28,11 +28,16 @@ export default class ClusteringMap extends React.Component {
         this.renderCluster = this.renderCluster.bind(this)
         this.pressMarker = this.pressMarker.bind(this);
         this.animateToSpecificMarker = this.animateToSpecificMarker.bind(this);
+        this.handleConnectionChange = this.handleConnectionChange.bind(this);
     }
 
     pressMarker(marker) {
-      this.state.markerToRef[marker.location.address].showCallout();
-      this.props.openTab(marker);
+      if (this.props.userLocation.userAddressDictionary != undefined) {
+        this.state.markerToRef[marker.location.address].showCallout();
+        this.props.openTab(marker);
+      } else {
+        this.props.bannerErrorHandler({state: true, message: "Give us a second while we finish loading your location..."});
+      }
     }
 
     componentDidMount() {
@@ -42,16 +47,25 @@ export default class ClusteringMap extends React.Component {
       NetInfo.getConnectionInfo().then( connectionInfo => {
         console.log(connectionInfo)
         if (connectionInfo.type != "none") {
-          console.log("yes")
-          this._getLocationAsync();
-          
+          NetInfo.addEventListener('connectionChange', this.handleConnectionChange)
+          this._getLocationAsync();          
         } else {
-          this.props.connectionErrorHandler({state: true, message: "Oops! We can't seem to reach our servers. Please check your connection and try again."});
+          this.props.pageErrorHandler({state: true, message: "Oops! We can't seem to reach our servers. Please check your connection and try again."});
         }
       })
     };
     componentWillUnmount() {
       this.props.onRef(undefined)
+    }
+
+    handleConnectionChange(connectionInfo) {
+      if (connectionInfo.type == "none") {
+        this.props.removeWatchPosition
+        this.props.bannerErrorHandler({state:"locked", message: "Oops! It seems like you've gone offline. Check your connection so we can get you updated information about the area around you!"})
+      } else {
+        this.props.bannerErrorHandler({state: false, message: null})
+        this.props.addWatchPosition();
+      }
     }
 
     animateToSpecificMarker(locationObj) {
@@ -161,6 +175,7 @@ export default class ClusteringMap extends React.Component {
       }
   
       this.props.mapRegionHandler(initialRegion);
+      console.log("initial region", initialRegion)
       this.map.getMapRef().animateToRegion(initialRegion,1);
       SplashScreen.hide();
     };
