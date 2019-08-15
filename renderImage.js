@@ -132,3 +132,39 @@ export function renderLandmark() {
             source={require('./assets/landmark.png')}
             />
 }
+
+export function renderGoogleMaps() {
+        return <Image
+        style = {{
+                margin:2,
+                height: Dimensions.get('window').height*.0679,
+                resizeMode: 'contain',
+                width: Dimensions.get('window').width*.1208,                                    
+                }}
+        source={require('./assets/google_maps.png')}
+        />
+}
+
+export function renderUber() {
+        return <Image
+        style = {{
+                margin:2,
+                height: Dimensions.get('window').height*.0679,
+                resizeMode: 'contain',
+                width: Dimensions.get('window').width*.1208,                                    
+                }}
+        source={require('./assets/uber.png')}
+        />
+}
+
+export function renderLyft() {
+        return <Image
+        style = {{
+                margin:2,
+                height: Dimensions.get('window').height*.0679,
+                resizeMode: 'contain',
+                width: Dimensions.get('window').width*.1208,                                    
+                }}
+        source={require('./assets/lyft.png')}
+        />
+}
