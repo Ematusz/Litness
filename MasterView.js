@@ -72,7 +72,7 @@ export default class MasterView extends React.Component {
         longitude: null,
         longitudeDelta: null
       },
-      pageErrorMessage: "test",
+      pageErrorMessage: null,
       pageErrorState: false,
       refreshingPosition: true,
       selectedMarker: null,
@@ -93,7 +93,8 @@ export default class MasterView extends React.Component {
     this.currentGridHandler = this.currentGridHandler.bind(this);
     this.ghostMarkerHandler = this.ghostMarkerHandler.bind(this);
     this.geoHashGridHandler = this.geoHashGridHandler.bind(this);
-    this.connectionErrorHandler = this.connectionErrorHandler.bind(this);
+    this.pageErrorHandler = this.pageErrorHandler.bind(this);
+    this.bannerErrorHandler = this.bannerErrorHandler.bind(this);
 
     this._addListener = this._addListener.bind(this);
     this.addListenerHandler = this.addListenerHandler.bind(this);
@@ -172,6 +173,7 @@ export default class MasterView extends React.Component {
   }
 
   componentWillMount() {
+    console.log("dictionary", this.state.userLocation.userAddressDictionary)
     this._addWatchPosition()
     this._getDeviceInfoAsync();
   }
@@ -188,6 +190,14 @@ export default class MasterView extends React.Component {
   success = position => {
     console.log("success");
     console.log(position.coords.accuracy)
+    let timeout = setTimeout(()=>{
+      if (this.state.bannerErrorState != "locked") {
+        this.success(position);
+        this.setState({bannerErrorState: true});
+        this.setState({bannerErrorMessage: "We are having trouble reaching our servers. Please check your connection and try again."})
+      }
+
+    },7000)
     if (position.coords.accuracy <= 10) {
       let { latitude, longitude } = position.coords;
       let ghostGeohash = g.encode_int(latitude,longitude,26)
@@ -196,14 +206,18 @@ export default class MasterView extends React.Component {
       fetch('https://maps.googleapis.com/maps/api/geocode/json?latlng=' + latitude + ',' + longitude + '&location_type=ROOFTOP&result_type=street_address|premise&key=' + myApiKey)
       .then((response) => response.json())
       .then((responseJson) => {
+        clearTimeout(timeout)
         let status = JSON.parse(JSON.stringify(responseJson)).status;
         console.log(status);
-        if (status == "ZERO_RESULTS") {
-          this.setState({bannerErrorState: true});
-          this.setState({bannerErrorMessage: "There do not appear to be any possible hub locations nearby. Please move closer to a building or check your conenction."})
-        } else if (status == "OK") {
-          this.setState({bannerErrorState: false});
-          this.setState({bannerErrorMessage: null})
+        if (this.state.bannerErrorState != "locked") {
+          if (status == "ZERO_RESULTS") {
+            this.setState({bannerErrorState: true});
+            this.setState({bannerErrorMessage: "There do not appear to be any possible hub locations nearby. Please move closer to a building or check your conenction."})
+          } else if (status == "OK") {
+            console.log("OK")
+            this.setState({bannerErrorState: false});
+            this.setState({bannerErrorMessage: null})
+          }
         }
         let results = JSON.parse(JSON.stringify(responseJson)).results
         let userAddressDictionary = {}
@@ -402,7 +416,16 @@ export default class MasterView extends React.Component {
     })
   }
 
-  connectionErrorHandler(someValue) {
+  bannerErrorHandler(someValue) {
+    this.setState({
+      bannerErrorState: someValue.state
+    });
+    this.setState({
+      bannerErrorMessage: someValue.message
+    });
+  }
+
+  pageErrorHandler(someValue) {
     this.setState({
       pageErrorState: someValue.state
     });
@@ -796,7 +819,10 @@ export default class MasterView extends React.Component {
                 openTab={this.openTab} 
                 setGhost={this.setGhost}
                 clustering={this.state.clustering}
-                connectionErrorHandler={this.connectionErrorHandler}
+                pageErrorHandler={this.pageErrorHandler}
+                bannerErrorHandler={this.bannerErrorHandler}
+                addWatchPosition={this._addWatchPosition}
+                removeWatchPosition={this.state.watchPosition}
           />}
 
           {!this.state.pageErrorState && this.state.bannerErrorState && <AnimatedErrorBanner style = {styles.errorBanner}
