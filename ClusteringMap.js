@@ -48,7 +48,6 @@ export default class ClusteringMap extends React.Component {
         } else {
           this.props.connectionErrorHandler({state: true, message: "Oops! We can't seem to reach our servers. Please check your connection and try again."});
         }
-        // this.props.connectionTypeHandler({type: connectionInfo.type, strength: connectionInfo.effectiveType});
       })
     };
     componentWillUnmount() {

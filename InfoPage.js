@@ -343,7 +343,7 @@ export default class InfoPage extends React.Component {
                         <TouchableOpacity onPress={this.props.clickNavigate}>
                             {renderGoogleMaps()}
                         </TouchableOpacity>
-                        <TouchableOpacity>
+                        <TouchableOpacity onPress={this.props.clickUber}>
                             {renderUber()}
                         </TouchableOpacity>
                         <TouchableOpacity>
