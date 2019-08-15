@@ -304,14 +304,14 @@ export default class MasterView extends React.Component {
   }
 
   _addListener = async(latitude,longitude) => {
-    if (Object.keys(this.state.hubs).length > 10) {
+    if (Object.keys(this.state.hubs).length > 50) {
       console.log("wipe");
       let cleanHubs = {};
       this.setState({hubs: cleanHubs})
       hubListener();
     }
     hubListener = hubs
-    .near({center: new firebase.firestore.GeoPoint(latitude, longitude), radius: 1000})
+    .near({center: new firebase.firestore.GeoPoint(latitude, longitude), radius: 20})
     .onSnapshot(snapshot => {
       snapshot.docChanges().forEach(change => {
         let newHubsDictionary = {...this.state.hubs};
