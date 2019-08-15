@@ -6,13 +6,13 @@ import ClusteredMapView from 'react-native-maps-super-cluster';
 import {renderMarkerIcon, renderGhostIcon} from './renderImage.js'
 import * as Location from 'expo-location';
 import * as Permissions from 'expo-permissions';
-import g from 'ngeohash'
+import { SplashScreen } from 'expo';
+import { NetInfo } from 'react-native';
 
 export default class ClusteringMap extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-          flex: 0,
           error: null,
           dragging: false,
           interaction: true,
@@ -36,11 +36,20 @@ export default class ClusteringMap extends React.Component {
     }
 
     componentDidMount() {
-      setTimeout(()=>this.setState({flex: 1}),500);
       this.props.onRef(this);
     };
     componentWillMount() {
-      this._getLocationAsync();
+      NetInfo.getConnectionInfo().then( connectionInfo => {
+        console.log(connectionInfo)
+        if (connectionInfo.type != "none") {
+          console.log("yes")
+          this._getLocationAsync();
+          
+        } else {
+          this.props.connectionErrorHandler({state: true, message: "Oops! We can't seem to reach our servers. Please check your connection and try again."});
+        }
+        // this.props.connectionTypeHandler({type: connectionInfo.type, strength: connectionInfo.effectiveType});
+      })
     };
     componentWillUnmount() {
       this.props.onRef(undefined)
@@ -154,6 +163,7 @@ export default class ClusteringMap extends React.Component {
   
       this.props.mapRegionHandler(initialRegion);
       this.map.getMapRef().animateToRegion(initialRegion,1);
+      SplashScreen.hide();
     };
 
     toggleTabMapPress = pressinfo => {
@@ -171,7 +181,7 @@ export default class ClusteringMap extends React.Component {
     render() {
         return (
           <ClusteredMapView
-          style={{flex: this.state.flex}}
+          style={{flex: 1}}
           ref={ref => {this.map = ref;}} 
             clusteringEnabled={this.props.clustering} 
             minZoomLevel = {12}
