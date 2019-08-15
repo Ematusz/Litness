@@ -6,7 +6,7 @@ import * as d3 from 'd3-time';
 import dateFns from 'date-fns';
 import {ButtonGroup} from 'react-native-elements';
 import CustomFlyout from './CustomFlyout.js';
-import {renderLoadingFire, renderRefresh, renderLandmark} from './renderImage'
+import {renderLoadingFire, renderRefresh, renderLandmark, renderGoogleMaps, renderUber, renderLyft} from './renderImage'
 import Dimensions from 'Dimensions';
 
 export default class InfoPage extends React.Component {
@@ -310,11 +310,11 @@ export default class InfoPage extends React.Component {
                         selectedIndex={selectedIndex}
                         buttons={buttons}
                         disabled={this.state.disabledButtons}
-                        disabledTextStyle={{color:"red",fontSize:12,fontWeight:"bold"}}
+                        disabledTextStyle={{color:"lightgrey",fontSize:12,fontWeight:"bold"}}
                         containerStyle={{height: "3%",backgroundColor:"transparent",borderColor:"transparent",width:'100%',alignSelf:'center'}}
-                        selectedButtonStyle={{backgroundColor:"transparent"}}
-                        selectedTextStyle = {{color: "black"}}
-                        textStyle={{color:"lightgrey",fontSize:12,fontWeight:"bold"}}
+                        selectedButtonStyle={{backgroundColor:"#007AFF", borderRadius:30}}
+                        selectedTextStyle = {{color: "white"}}
+                        textStyle={{color:"black",fontSize:12,fontWeight:"bold"}}
                         underlayColor={'black'}
                         innerBorderStyle = {{width:0,color:'transparent'}}
                         containerBorderRadius={10}
@@ -336,9 +336,18 @@ export default class InfoPage extends React.Component {
                 </TouchableOpacity>}
                 
                 {this.state.showChart&& <View>
-                    <View style ={{display:"flex", flexDirection:"row", justifyContent: "center"}}>
+                    <View style ={{display:"flex", flexDirection:"row", justifyContent: "space-evenly"}}>
                         <TouchableOpacity onPress={this.goToMarker}>
                             {renderLandmark()}
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={this.props.clickNavigate}>
+                            {renderGoogleMaps()}
+                        </TouchableOpacity>
+                        <TouchableOpacity>
+                            {renderUber()}
+                        </TouchableOpacity>
+                        <TouchableOpacity>
+                            {renderLyft()}
                         </TouchableOpacity>
                     </View>
                     

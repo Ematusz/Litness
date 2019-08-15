@@ -777,6 +777,7 @@ export default class MasterView extends React.Component {
                             infoPageMarker={this.state.infoPageMarker}
                             data_={this.state.data_}
                             leaderboardStatus = {this.state.leaderBoard}
+                            clickNavigate={()=>this.openMaps(this.state.selectedMarker)}
                             goToMarker = {() => this.goToMarker(this.state.infoPageMarker)}
           />}
 
