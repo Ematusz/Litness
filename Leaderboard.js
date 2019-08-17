@@ -77,7 +77,11 @@ export default class Leaderboard extends React.Component {
         let data = [];
        db.collection('leaderboard').where("city", "==", city).where("state", "==", state).orderBy('count', 'desc').limit(25).get()
           .then( leaderBoardSnapshot => {
+            console.log("length",leaderBoardSnapshot.empty)
             let counter = 1;
+            if (leaderBoardSnapshot.empty) {
+              this._isMounted && this.setState({ processedData: data },()=>this.setState({ showLeaderboard: true,refreshing:false }));
+            }
             leaderBoardSnapshot.forEach( leaderBoardHub => {
               hubs.doc(leaderBoardHub.id).get().then( doc => {
                 let hub = new Hub(
