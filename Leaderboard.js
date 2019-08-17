@@ -5,6 +5,7 @@ import styles from './styles.js'
 import {renderMarkerIcon, renderLoadingFire, renderRefresh} from './renderImage.js'
 import { getDistance } from 'geolib';
 import * as math from 'mathjs';
+import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 
 export default class Leaderboard extends React.Component {
     constructor(props) {
@@ -17,6 +18,7 @@ export default class Leaderboard extends React.Component {
           selectedIndex: 0,
           state: null,
           city: null,
+          searching: false,
         }
 
         this.renderLeaderboardCell = this.renderLeaderboardCell.bind(this);
@@ -25,6 +27,9 @@ export default class Leaderboard extends React.Component {
         this.updateIndex = this.updateIndex.bind(this);
         this.distanceFromUser = this.distanceFromUser.bind(this);
         this.componentWillUnmount = this.componentWillUnmount.bind(this);
+        this.initiateSearch = this.initiateSearch.bind(this);
+        this.handleSearch = this.handleSearch.bind(this);
+        this.queryDB = this.queryDB.bind(this);
         this._isMounted = false;
 
     }
@@ -32,6 +37,62 @@ export default class Leaderboard extends React.Component {
     updateIndex (selectedIndex) {
       this.setState({selectedIndex})
   }
+
+    initiateSearch() {
+      if(!this.state.searching) {
+        this.setState({searching: true});
+      }
+    }
+
+    handleSearch(data) {
+      this.setState({city: data.terms[0].value})
+      this.setState({state: data.terms[1].value});
+      this.setState({searching: false});
+      this.queryDB(data.terms[0].value,data.terms[1].value)
+
+    }
+
+    queryDB(city, state) {
+      let data = [];
+      db.collection('leaderboard').where("city", "==", city).where("state", "==", state).orderBy('count', 'desc').limit(25).get()
+         .then( leaderBoardSnapshot => {
+           let counter = 1;
+           if (leaderBoardSnapshot.empty) {
+             this._isMounted && this.setState({ processedData: data },()=>this.setState({ showLeaderboard: true,refreshing:false }));
+           }
+           leaderBoardSnapshot.forEach( leaderBoardHub => {
+             hubs.doc(leaderBoardHub.id).get().then( doc => {
+               let hub = new Hub(
+                 {
+                   latitude: doc.data().latitude,
+                   longitude: doc.data().longitude
+                 },
+                 {
+                   latitude: doc.data().latitude,
+                   longitude: doc.data().longitude,
+                   address: doc.id,
+                   city: doc.data().city,
+                   street: doc.data().street,
+                   number: doc.data().number,
+                 },
+                 false,
+                 doc.data().geohash[0],
+                 {
+                   cost: doc.data().count,
+                   upVotes: doc.data().upVotes,
+                   downVotes: doc.data().downVotes,
+                 },
+                 doc.id,
+               )
+               data.push({hub:hub,key:counter.toString()});
+               counter = counter + 1;
+               this._isMounted && this.setState({ processedData: data },()=>this.setState({ showLeaderboard: true,refreshing:false }));
+             }).catch( error => {console.log(error)});
+           })
+         }).catch( error =>{
+           console.log(error)
+         })
+    }
 
     componentWillMount() {
       this._isMounted = true;
@@ -47,7 +108,7 @@ export default class Leaderboard extends React.Component {
 
     refresh() {
       this.setState({refreshing:true});
-      this.getData()
+      this.queryDB(this.state.city,this.state.state)
     }
 
     getData() {
@@ -74,47 +135,8 @@ export default class Leaderboard extends React.Component {
             }
           })
         })
-        let data = [];
-       db.collection('leaderboard').where("city", "==", city).where("state", "==", state).orderBy('count', 'desc').limit(25).get()
-          .then( leaderBoardSnapshot => {
-            console.log("length",leaderBoardSnapshot.empty)
-            let counter = 1;
-            if (leaderBoardSnapshot.empty) {
-              this._isMounted && this.setState({ processedData: data },()=>this.setState({ showLeaderboard: true,refreshing:false }));
-            }
-            leaderBoardSnapshot.forEach( leaderBoardHub => {
-              hubs.doc(leaderBoardHub.id).get().then( doc => {
-                let hub = new Hub(
-                  {
-                    latitude: doc.data().latitude,
-                    longitude: doc.data().longitude
-                  },
-                  {
-                    latitude: doc.data().latitude,
-                    longitude: doc.data().longitude,
-                    address: doc.id,
-                    city: doc.data().city,
-                    street: doc.data().street,
-                    number: doc.data().number,
-                  },
-                  false,
-                  doc.data().geohash[0],
-                  {
-                    cost: doc.data().count,
-                    upVotes: doc.data().upVotes,
-                    downVotes: doc.data().downVotes,
-                  },
-                  doc.id,
-                )
-                data.push({hub:hub,key:counter.toString()});
-                counter = counter + 1;
-                this._isMounted && this.setState({ processedData: data },()=>this.setState({ showLeaderboard: true,refreshing:false }));
-              }).catch( error => {console.log(error)});
-            })
-          }).catch( error =>{
-            console.log(error)
-          })
-        })
+        this.queryDB(city,state);
+      })
     }
 
     distanceFromUser(hub) {
@@ -129,7 +151,6 @@ export default class Leaderboard extends React.Component {
     }
 
     renderLeaderboardCell =  ({item}) => {
-      console.log("hub", item.hub)
       return (
         <TouchableOpacity style = {styles.leaderBoardCell} onPress={()=>this.props.toggleInfoPage(item.hub)}>
           <Text style = {{...styles.leaderboardText,fontWeight:'bold',color:"black"}}> {item.key} </Text>
@@ -174,22 +195,61 @@ export default class Leaderboard extends React.Component {
               Leaderboard
             </Text>
 
-            {this.state.showLeaderboard && <Text style={{...styles.locationText, fontSize: 20}}>
-                {this.state.city + ", " + this.state.state}
-            </Text>}
+            {this.state.showLeaderboard /*&& !this.state.searching*/ && <TouchableOpacity 
+              style={{...styles.locationText}}
+              onPress={this.initiateSearch}
+              >
+                <Text style={{fontSize: 20}}>{this.state.city + ", " + this.state.state}</Text>
+            </TouchableOpacity>}
+
+            {this.state.searching && <View style={{marginTop: '2%', width:'90%',flex:1,backgroundColor:'transparent'}}>
+              <GooglePlacesAutocomplete
+                placeholder="Search City"
+                minLength={3}
+                autoFocus={false}
+                returnKeyType={'search'}
+                listViewDisplayed="auto"
+                fetchDetails={false}
+                onPress={(data) => {
+                  this.handleSearch(data);
+                  // console.log(details);
+                }}
+                getDefaultValue={() => {
+                  return '';
+                }}
+                query={{
+                  key: 'AIzaSyBkwazID1O1ryFhdC6mgSR4hJY2-GdVPmE',
+                  language: 'en',
+                  types: '(cities)'
+                }}
+                styles={{
+                  description: {
+                    fontWeight: 'bold',
+                  },
+                  predefinedPlacesDescription: {
+                    color: '#1faadb',
+                  },
+                }}
+                currentLocation={true}
+                currentLocationLabel="Current location"
+              />
+            </View>}
+              
+            
+            
   
-            {!this.state.showLeaderboard && <View style={{position:'absolute',top:'50%', display: "flex", flexDirection:"column", justifyContent:"flex-start",alignItems:"center"}}>
+            {!this.state.showLeaderboard && !this.state.searching && <View style={{position:'absolute',top:'50%', display: "flex", flexDirection:"column", justifyContent:"flex-start",alignItems:"center"}}>
                 {renderLoadingFire()}
                 <Text style ={{color:"black", fontSize: 17}}> Loading... </Text>
             </View>}
   
-            {this.state.showLeaderboard && <FlatList
-            ItemSeparatorComponent={this.renderSeparator}
-            data = {this.state.processedData}
-            renderItem = {this.renderLeaderboardCell}
-            style={styles.flatListContainer}
-            onRefresh={this.refresh}
-            refreshing={this.state.refreshing}
+            {this.state.showLeaderboard && !this.state.searching && <FlatList
+              ItemSeparatorComponent={this.renderSeparator}
+              data = {this.state.processedData}
+              renderItem = {this.renderLeaderboardCell}
+              style={styles.flatListContainer}
+              onRefresh={this.refresh}
+              refreshing={this.state.refreshing}
             />}
             
             {this.state.refreshing && <View style ={styles.loading}>
