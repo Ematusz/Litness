@@ -842,11 +842,11 @@ export default class MasterView extends React.Component {
                             data_={this.state.data_}
                             leaderboardStatus = {this.state.leaderBoard}
                             clickNavigate={()=>{
-                              let mapsLink = new googleMapsLink(this.state.selectedMarker);
+                              let mapsLink = new googleMapsLink(this.state.infoPageMarker);
                               mapsLink.openMaps();
                             }}
                             clickUber={()=>{
-                              let uberLink_ = new uberLink(this.state.selectedMarker);
+                              let uberLink_ = new uberLink(this.state.infoPageMarker);
                               uberLink_.openUber();
                             }}
                             goToMarker = {() => this.goToMarker(this.state.infoPageMarker)}
