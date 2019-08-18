@@ -22,7 +22,6 @@ import Dimensions from 'Dimensions';
 import { SplashScreen } from 'expo';
 import uberLink from './uberLink';
 import googleMapsLink from './googleMapsLink.js';
-import AppLink from 'react-native-app-link';
 
 function getRandomInt(min,max) {
   min = Math.ceil(min);

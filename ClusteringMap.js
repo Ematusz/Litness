@@ -13,8 +13,8 @@ export default class ClusteringMap extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-          error: null,
           dragging: false,
+          error: null,
           interaction: true,
           locationResult:null,
           markerToRef: {},
@@ -44,6 +44,7 @@ export default class ClusteringMap extends React.Component {
       this.props.onRef(this);
     };
     componentWillMount() {
+      setTimeout(()=>this.setState({flex: 1}, console.log("flex1",this.state.flex)), 500);
       NetInfo.getConnectionInfo().then( connectionInfo => {
         console.log(connectionInfo)
         if (connectionInfo.type != "none") {

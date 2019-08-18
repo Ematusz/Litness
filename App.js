@@ -4,7 +4,8 @@ import MasterView from './MasterView.js';
 import * as firebase from 'firebase';
 import 'firebase/firestore';
 import styles from './styles.js';
-import { GeoCollectionReference, GeoFirestore, GeoQuery, GeoQuerySnapshot } from 'geofirestore';
+import { GeoFirestore} from 'geofirestore';
+import * as Location from 'expo-location';
 
 // Initialize Firebase
 global.firebaseConfig = {
@@ -15,6 +16,9 @@ global.firebaseConfig = {
   storageBucket: "testing-617da.appspot.com",
     //messagingSenderId: "862420802331"
 };
+
+// set API key for location
+Location.setApiKey('AIzaSyBkwazID1O1ryFhdC6mgSR4hJY2-GdVPmE')
 
 firebase.initializeApp(firebaseConfig);
 global.db = firebase.firestore();
