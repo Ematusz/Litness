@@ -168,3 +168,27 @@ export function renderLyft() {
         source={require('./assets/lyft.png')}
         />
 }
+
+export function renderSearch() {
+        return <Image
+        style = {{
+                margin:2,
+                height: Dimensions.get('window').height*.0204,
+                resizeMode: 'contain',
+                width: Dimensions.get('window').height*.0204,                                    
+                }}
+        source={require('./assets/search.png')}
+        />
+}
+
+export function renderTarget() {
+        return <Image
+        style = {{
+                margin:2,
+                height: Dimensions.get('window').height*.0479,
+                resizeMode: 'contain',
+                width: Dimensions.get('window').height*.0479,                                    
+                }}
+        source={require('./assets/target.png')}
+        />
+}

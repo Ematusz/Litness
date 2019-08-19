@@ -2,7 +2,7 @@ import React from 'react';
 import Hub from './Hub.js'
 import {TouchableOpacity,View, ActivityIndicator,Text, FlatList} from 'react-native';
 import styles from './styles.js'
-import {renderMarkerIcon, renderLoadingFire, renderRefresh} from './renderImage.js'
+import {renderMarkerIcon, renderLoadingFire, renderRefresh, renderSearch} from './renderImage.js'
 import { getDistance } from 'geolib';
 import * as math from 'mathjs';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
@@ -195,12 +195,14 @@ export default class Leaderboard extends React.Component {
               Leaderboard
             </Text>
 
-            {this.state.showLeaderboard /*&& !this.state.searching*/ && <TouchableOpacity 
+            {this.state.showLeaderboard /*&& !this.state.searching*/ && <View 
               style={{...styles.locationText}}
-              onPress={this.initiateSearch}
               >
                 <Text style={{fontSize: 20}}>{this.state.city + ", " + this.state.state}</Text>
-            </TouchableOpacity>}
+                <TouchableOpacity onPress = {this.initiateSearch}>
+                  {renderSearch()}
+                </TouchableOpacity>
+            </View>}
 
             {this.state.searching && <View style={{marginTop: '2%', width:'90%',flex:1,backgroundColor:'transparent'}}>
               <GooglePlacesAutocomplete
@@ -223,11 +225,23 @@ export default class Leaderboard extends React.Component {
                   types: '(cities)'
                 }}
                 styles={{
+                  textInputContainer: {
+                    backgroundColor: 'white',
+                    borderColor:'white',
+                    borderWidth: 1,
+                    borderTopWidth: 0,
+                    borderBottomWidth:0
+                  },
+                  textInput: {
+                    backgroundColor: 'white',
+                    borderColor:'black',
+                    borderWidth: 1,
+                  },
                   description: {
                     fontWeight: 'bold',
                   },
                   predefinedPlacesDescription: {
-                    color: '#1faadb',
+                    color: '#007AFF',
                   },
                 }}
                 currentLocation={true}

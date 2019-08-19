@@ -201,7 +201,7 @@ export default class ClusteringMap extends React.Component {
             clusteringEnabled={this.props.clustering} 
             minZoomLevel = {14}
             maxZoomLevel = {19}
-            showsMyLocationButton = {true}          
+            showsMyLocationButton = {false}          
             zoomEnabled = {true}
             provider = {PROVIDER_GOOGLE}
             showsUserLocation = {true}
