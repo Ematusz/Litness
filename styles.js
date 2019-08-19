@@ -39,10 +39,10 @@ export default StyleSheet.create({
     height: Dimensions.get('window').height*.0543,
     resizeMode: 'contain',
     width: Dimensions.get('window').height*.0543,
-    borderRadius: Dimensions.get('window').height*.0272,
-    borderWidth: Dimensions.get('window').height*.00272,
-    borderColor: 'black',
-    backgroundColor:'black'
+    // borderRadius: Dimensions.get('window').height*.0272,
+    // borderWidth: Dimensions.get('window').height*.00272,
+    // borderColor: 'black',
+    // backgroundColor:'black'
   },
   errorBanner: {
     height: '10%',
@@ -159,11 +159,14 @@ export default StyleSheet.create({
   locationText: {
     marginTop:Dimensions.get('window').height*.0136,
     alignSelf: 'center',
+    display:'flex',
+    justifyContent:'space-evenly',
+    flexDirection:"row"
   },
   marker: {
-    borderRadius: Dimensions.get('window').height*.0408,
-    borderWidth: Dimensions.get('window').height*.00272,
-    borderColor: "transparent",
+    // borderRadius: Dimensions.get('window').height*.0408,
+    // borderWidth: Dimensions.get('window').height*.00272,
+    // borderColor: "transparent",
     position: 'absolute',
     alignItems:'center',
     justifyContent:'center',
@@ -213,5 +216,16 @@ export default StyleSheet.create({
     alignItems:'center',
     justifyContent:'center',
     fontSize: 50,
+  },
+
+  moveToLocationStyle: {
+    backgroundColor:"white",
+    borderColor:'black',
+    borderWidth: Dimensions.get('window').height*.0027,
+    borderRadius: Dimensions.get('window').height,
+    position: 'absolute',
+    flex:1,
+    right: "2%",
+    top: '85%',
   }
 });

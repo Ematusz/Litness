@@ -8,7 +8,6 @@ import Leaderboard from './Leaderboard.js';
 import LeaderboardTab from './LeaderboardTab.js';
 import AddHubTab from './AddHubTab.js'
 import Hub from './Hub.js'
-import RefreshPositionTab from './RefreshPositionTab.js'
 import './renderImage.js'
 import Constants from 'expo-constants';
 import g from 'ngeohash'
@@ -22,6 +21,7 @@ import Dimensions from 'Dimensions';
 import { SplashScreen } from 'expo';
 import uberLink from './uberLink';
 import googleMapsLink from './googleMapsLink.js';
+import MoveToLocationButton from './MoveToLocationButton.js'
 
 function getRandomInt(min,max) {
   min = Math.ceil(min);
@@ -35,14 +35,12 @@ const AnimatedInfoPage = Animated.createAnimatedComponent(InfoPage);
 const AnimatedLeaderboard = Animated.createAnimatedComponent(Leaderboard);
 const AnimatedLeaderboardTab = Animated.createAnimatedComponent(LeaderboardTab);
 const AnimatedAddHubTab = Animated.createAnimatedComponent(AddHubTab);
-const AnimatedRefresPositionTab = Animated.createAnimatedComponent(RefreshPositionTab)
 
 export default class MasterView extends React.Component {
   constructor(props) {
     super(props);
     this.state = { 
       animatedErrorBanner: new Animated.Value(-100),
-      animatedRefreshPositionTab: new Animated.Value(-.75),
       animatedAddHubTab: new Animated.Value(-.75),
       animatedFlex: new Animated.Value(.5),
       animatedHeight: new Animated.Value(30),
@@ -499,11 +497,6 @@ export default class MasterView extends React.Component {
           toValue: -50,
           duration: 300
         }).start(),
-  
-        Animated.timing(this.state.animatedRefreshPositionTab, {
-          toValue: -50,
-          duration: 300
-        }).start()
       )
     } else {
       Animated.parallel(
@@ -521,11 +514,6 @@ export default class MasterView extends React.Component {
           toValue: !this.state.leaderBoard? -.75 : -50,
           duration: 300
         }).start(),
-
-        Animated.timing(this.state.animatedRefreshPositionTab, {
-          toValue: !this.state.leaderBoard? -.75: -50,
-          duration: 300
-        }).start()
       )
     }
     // closes the vote tab when the info page is up so that its not distracting.
@@ -563,11 +551,6 @@ export default class MasterView extends React.Component {
           duration: 300
         }).start(),
   
-        Animated.timing(this.state.animatedRefreshPositionTab, {
-          toValue: -50,
-          duration: 300
-        }).start(),
-  
         Animated.timing(this.state.animatedTab, {
           toValue: -50,
           friction: 100,
@@ -593,12 +576,7 @@ export default class MasterView extends React.Component {
           toValue: -.75,
           duration: 300
         }).start(),
-  
-        Animated.timing(this.state.animatedRefreshPositionTab, {
-          toValue: -.75,
-          duration: 300
-        }).start(),
-  
+    
         Animated.timing(this.state.animatedTab, {
           toValue: this.state.tabVal? 0 : -50,
           friction: 100,
@@ -875,10 +853,10 @@ export default class MasterView extends React.Component {
           {!this.state.pageErrorState && <AnimatedAddHubTab style ={{right:this.state.animatedAddHubTab.interpolate({inputRange: [-50,-.75], outputRange: ["-50%","-.75%"]})}}
                       setGhost={() => this.setGhost(this.state.userLocation.latitude, this.state.userLocation.longitude)}
           />}    
-          {!this.state.pageErrorState && <AnimatedRefresPositionTab style ={{right:this.state.animatedRefreshPositionTab.interpolate({inputRange: [-50,-.75], outputRange: ["-50%","-.75%"]})}}
-                      refreshWatchPosition={() => this.refreshWatchPosition()}
-                      refreshingPosition = {this.state.refreshingPosition}
-          /> } 
+
+          {!this.state.pageErrorState && <MoveToLocationButton
+            refreshWatchPosition={() => this.refreshWatchPosition()}
+          />}
         </View>
     );
   }
