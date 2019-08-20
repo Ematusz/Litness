@@ -32,9 +32,9 @@ export default class ClusteringMap extends React.Component {
     }
 
     pressMarker(marker) {
-      if (this.props.userLocation.userAddressDictionary != undefined) {
+      if (this.props.userLocation.longitude != undefined) {
         this.state.markerToRef[marker.location.address].showCallout();
-        this.props.openTab(marker);
+        this.props.getAddress(this.props.userLocation.latitude,this.props.userLocation.longitude,marker);
       } else {
         this.props.bannerErrorHandler({state: true, message: "Give us a second while we finish loading your location..."});
       }
@@ -111,7 +111,7 @@ export default class ClusteringMap extends React.Component {
             zIndex={10}
             showCallout
             cluster = {false}
-            onPress =  {() => this.props.openTab(marker)}
+            onPress =  {() => this.pressMarker(marker)}
             onDragStart = { () => {
               this.setState({dragging: true})
               this.markerRef.hideCallout()
@@ -119,7 +119,7 @@ export default class ClusteringMap extends React.Component {
             }}
             onDragEnd = { (e) => {
               this.setState({dragging: false})
-              this.props.setGhost(e.nativeEvent.coordinate.latitude,e.nativeEvent.coordinate.longitude)
+              this.props.getAddress(e.nativeEvent.coordinate.latitude,e.nativeEvent.coordinate.longitude,null)
             }}
             title = {marker.location.number + " " + marker.location.street + "\nDrag me!"} 
             >
