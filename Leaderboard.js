@@ -195,7 +195,7 @@ export default class Leaderboard extends React.Component {
               Leaderboard
             </Text>
 
-            {this.state.showLeaderboard /*&& !this.state.searching*/ && <View 
+            {this.state.showLeaderboard  && <View 
               style={{...styles.locationText}}
               >
                 <Text style={{fontSize: 20}}>{this.state.city + ", " + this.state.state}</Text>

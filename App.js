@@ -6,6 +6,7 @@ import 'firebase/firestore';
 import styles from './styles.js';
 import { GeoFirestore} from 'geofirestore';
 import * as Location from 'expo-location';
+import ErrorPage from './ErrorPage'
 
 // Initialize Firebase
 global.firebaseConfig = {
@@ -38,13 +39,31 @@ export default class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = { 
+      pageErrorState: false,
+      pageErrorMessage: "Oops! We can't seem to reach our servers. Please check your connection and try again.",
     };
+    this.pageErrorHandler = this.pageErrorHandler.bind(this);
   }
+
+  pageErrorHandler(someValue) {
+    this.setState({
+      pageErrorState: someValue.state
+    });
+    this.setState({
+      pageErrorMessage: someValue.message
+    });
+  }
+
   // renders the onscreen info
   render() {
     return (
-      <View style = {styles.bigContainer}>    
-        <MasterView/>    
+      <View style = {styles.bigContainer}>   
+        {this.state.pageErrorState && <ErrorPage
+          error={this.state.pageErrorMessage}
+        />} 
+        {!this.state.pageErrorState && <MasterView
+          pageErrorHandler={this.pageErrorHandler}
+        />}    
       </View>
     );
   }
