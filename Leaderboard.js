@@ -244,7 +244,6 @@ export default class Leaderboard extends React.Component {
                     color: '#007AFF',
                   },
                 }}
-                currentLocation={true}
                 currentLocationLabel="Current location"
               />
             </View>}
