@@ -3,7 +3,7 @@ import {Text, View} from 'react-native';
 import styles from './styles.js'
 import MapView,{ Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import ClusteredMapView from 'react-native-maps-super-cluster';
-import {renderMarkerIcon, renderGhostIcon} from './renderImage.js'
+import {renderMarkerIcon, renderGhostIcon, renderClusterMarker} from './renderImage.js'
 import * as Location from 'expo-location';
 import * as Permissions from 'expo-permissions';
 import { SplashScreen } from 'expo';
@@ -86,10 +86,9 @@ export default class ClusteringMap extends React.Component {
   
       return (
         <Marker identifier={`cluster-${clusterId}`} coordinate={coordinate} onPress={onPress}>
-          <View style={{...styles.marker,width:40,height:40, backgroundColor:"black",borderWidth:2, borderColor:"white"}}>
-            <Text style={{...styles.markerCost,color:"white"}}>
-              {pointCount}
-            </Text>
+          <View style={{...styles.marker}}>
+            {renderClusterMarker()}
+            <Text style={styles.markerCost}>{pointCount}</Text>
           </View>
         </Marker>
       )
