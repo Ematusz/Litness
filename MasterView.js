@@ -331,7 +331,10 @@ export default class MasterView extends React.Component {
     this.getAddress(this.state.userLocation.latitude,this.state.userLocation.longitude,marker)
   }
 
-  _addListener = async(latitude,longitude) => {
+  _addListener = async(mapRegion) => {
+    let latitude = mapRegion.latitude;
+    let longitude = mapRegion.longitude;
+    let radius = mapRegion.latitudeDelta*120/2;
     if (Object.keys(this.state.hubs).length > 50) {
       console.log("wipe");
       let cleanHubs = {};
@@ -339,7 +342,7 @@ export default class MasterView extends React.Component {
       hubListener();
     }
     hubListener = hubs
-    .near({center: new firebase.firestore.GeoPoint(latitude, longitude), radius: 20})
+    .near({center: new firebase.firestore.GeoPoint(latitude, longitude), radius: radius})
     .onSnapshot(snapshot => {
       snapshot.docChanges().forEach(change => {
         let newHubsDictionary = {...this.state.hubs};
@@ -477,8 +480,8 @@ export default class MasterView extends React.Component {
 
 
 
-  addListenerHandler(latitude,longitude) {
-    this._addListener(latitude,longitude);
+  addListenerHandler(mapRegion) {
+    this._addListener(mapRegion);
   }
 
   // Toggles the info page on a hub
