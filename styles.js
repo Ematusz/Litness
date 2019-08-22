@@ -14,6 +14,14 @@ export default StyleSheet.create({
     flexDirection: 'column',
     justifyContent:'flex-start',
   },
+  clearSearh: {
+    margin:2,
+    height: Dimensions.get('window').height*.0204,
+    resizeMode: 'contain',
+    width: Dimensions.get('window').height*.0204, 
+    color: 'white',
+    fontWeight: 'bold'  
+  },
   closeBar: {
     backgroundColor: 'red',
     justifyContent:'center',
