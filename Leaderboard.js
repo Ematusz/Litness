@@ -22,6 +22,7 @@ export default class Leaderboard extends React.Component {
         }
 
         this.renderLeaderboardCell = this.renderLeaderboardCell.bind(this);
+        this.clearSearch = this.clearSearch.bind(this);
         this.getData = this.getData.bind(this);
         this.refresh = this.refresh.bind(this);
         this.updateIndex = this.updateIndex.bind(this);
@@ -50,6 +51,11 @@ export default class Leaderboard extends React.Component {
       this.setState({searching: false});
       this.queryDB(data.terms[0].value,data.terms[1].value)
 
+    }
+
+    clearSearch() {
+      console.log("clear search")
+      this.setState({searching: false});
     }
 
     queryDB(city, state) {
@@ -199,9 +205,12 @@ export default class Leaderboard extends React.Component {
               style={{...styles.locationText}}
               >
                 <Text style={{fontSize: 20}}>{this.state.city + ", " + this.state.state}</Text>
-                <TouchableOpacity onPress = {this.initiateSearch}>
+                {!this.state.searching && <TouchableOpacity onPress = {this.initiateSearch}>
                   {renderSearch()}
-                </TouchableOpacity>
+                </TouchableOpacity>}
+                {this.state.searching && <TouchableOpacity onPress = {this.clearSearch}>
+                  <Text style = {styles.clearSearch}>X</Text>
+                </TouchableOpacity>}
             </View>}
 
             {this.state.searching && <View style={{marginTop: '2%', width:'90%',flex:1,backgroundColor:'transparent'}}>
