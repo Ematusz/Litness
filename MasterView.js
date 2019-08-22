@@ -335,7 +335,6 @@ export default class MasterView extends React.Component {
     let latitude = mapRegion.latitude;
     let longitude = mapRegion.longitude;
     let radius = mapRegion.latitudeDelta*120/2;
-    console.log("listener radius",radius);
     if (Object.keys(this.state.hubs).length > 50) {
       console.log("wipe");
       let cleanHubs = {};
