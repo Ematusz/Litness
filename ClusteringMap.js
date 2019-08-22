@@ -44,7 +44,6 @@ export default class ClusteringMap extends React.Component {
       this.props.onRef(this);
     };
     componentWillMount() {
-      setTimeout(()=>this.setState({flex: 1}, console.log("flex1",this.state.flex)), 500);
       NetInfo.getConnectionInfo().then( connectionInfo => {
         console.log(connectionInfo)
         if (connectionInfo.type != "none") {
@@ -190,7 +189,7 @@ export default class ClusteringMap extends React.Component {
     onRegionChangeComplete = mapRegion => {
       this.props.mapRegionHandler(mapRegion);
       // console.log("longitude", mapRegion.longitude)
-      this.props.addListenerHandler(mapRegion.latitude,mapRegion.longitude);
+      this.props.addListenerHandler(mapRegion);
     }
 
     render() {
@@ -199,7 +198,7 @@ export default class ClusteringMap extends React.Component {
           style={{flex: 1}}
           ref={ref => {this.map = ref;}} 
             clusteringEnabled={this.props.clustering} 
-            minZoomLevel = {10}
+            minZoomLevel = {7}
             maxZoomLevel = {19}
             showsMyLocationButton = {false}          
             zoomEnabled = {true}
