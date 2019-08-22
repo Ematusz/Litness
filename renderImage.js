@@ -41,6 +41,15 @@ export function renderGhostIcon() {
             />
 }
 
+export function renderClusterMarker() { 
+        return  <Image
+                style = {styles.emojiIcon}
+            //     resizeMode = "cover"
+                borderRadius = {Dimensions.get('window').height*.0272}
+                source={require('./assets/town_on_fire.png')}
+                />
+    }
+
 export function renderLoadingFire() {
     return <Image
             style = {{...styles.emojiIcon,backgroundColor:"white",borderWidth:0, alignSelf:'center'}}
