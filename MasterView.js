@@ -603,21 +603,19 @@ export default class MasterView extends React.Component {
     if(!this.state.tabVal) {
       let ghostAddress = null;
       let currentDistance = null;
+      let hubLocationsAvailable = false;
       
       let availableLocations = Object.keys(userCoordinates.userAddressDictionary).map( address => {
-        if (this.state.ghostMarker.length == 0) {
-          return address;
-        }
-
-        else if (!(address in this.state.hubs)||
-                  address == this.state.ghostMarker[0].location.address) {
+        if(!Object.keys(this.state.hubs).includes(address)) {
+          hubLocationsAvailable = true;
           return address;
         } else {
           return null;
         }
       })
-      console.log(availableLocations);
-      if (availableLocations != undefined) {
+      console.log("availableLocations", availableLocations);
+      console.log(hubLocationsAvailable)
+      if (hubLocationsAvailable != false) {
         let possibleMarkers = []
         availableLocations.forEach(address => {
           if (address != null) {
@@ -700,6 +698,8 @@ export default class MasterView extends React.Component {
           // show popup "move closer to location"
         }
       } else {
+        console.log("here")
+        this.bannerErrorHandler({state: true, message: "There appear to be no available locations nearby to place a hub. Please move closer to your desired location or vote on a current hub!"})
         // show popup "move closer to location"
       }
     }
@@ -812,6 +812,7 @@ export default class MasterView extends React.Component {
                 error={this.state.bannerErrorMessage}
                 refreshWatchPosition={this.refreshWatchPosition}
                 connectionType={this.state.connectionType}
+                bannerErrorHandler={this.bannerErrorHandler}
           />}
 
           {this.state.infoPage && <AnimatedInfoPage style = {{top:this.state.animatedTop.interpolate({inputRange: [-100,5], outputRange: ["-100%","5%"]})}}
