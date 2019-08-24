@@ -1,5 +1,5 @@
 import React from 'react';
-import {View} from 'react-native';
+import {View, SafeAreaView} from 'react-native';
 import MasterView from './MasterView.js';
 import * as firebase from 'firebase';
 import 'firebase/firestore';
@@ -57,14 +57,17 @@ export default class App extends React.Component {
   // renders the onscreen info
   render() {
     return (
-      <View style = {styles.bigContainer}>   
-        {this.state.pageErrorState && <ErrorPage
-          error={this.state.pageErrorMessage}
-        />} 
-        {!this.state.pageErrorState && <MasterView
-          pageErrorHandler={this.pageErrorHandler}
-        />}    
-      </View>
+      <SafeAreaView style = {{flex: 1, backgroundColor: 'white'}}>
+        <View style = {styles.bigContainer}>   
+          {this.state.pageErrorState && <ErrorPage
+            error={this.state.pageErrorMessage}
+          />} 
+          {!this.state.pageErrorState && <MasterView
+            pageErrorHandler={this.pageErrorHandler}
+          />}    
+        </View>
+      </SafeAreaView>
+      
     );
   }
 }
