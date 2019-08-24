@@ -1,0 +1,112 @@
+[debug] [2019-08-24T22:11:43.288Z] ----------------------------------------------------------------------
+[debug] [2019-08-24T22:11:43.292Z] Command:       /Users/Evan/.nvm/versions/node/v10.16.0/bin/node /Users/Evan/.nvm/versions/node/v10.16.0/bin/firebase deploy --only functions
+[debug] [2019-08-24T22:11:43.292Z] CLI Version:   7.2.4
+[debug] [2019-08-24T22:11:43.292Z] Platform:      darwin
+[debug] [2019-08-24T22:11:43.292Z] Node Version:  v10.16.0
+[debug] [2019-08-24T22:11:43.293Z] Time:          Sat Aug 24 2019 18:11:43 GMT-0400 (Eastern Daylight Time)
+[debug] [2019-08-24T22:11:43.293Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2019-08-24T22:11:43.304Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2019-08-24T22:11:43.304Z] > authorizing via signed-in user
+[debug] [2019-08-24T22:11:43.304Z] [iam] checking project testing-617da for permissions ["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]
+[debug] [2019-08-24T22:11:43.307Z] >>> HTTP REQUEST POST https://cloudresourcemanager.googleapis.com/v1/projects/testing-617da:testIamPermissions  
+
+[debug] [2019-08-24T22:11:43.621Z] <<< HTTP RESPONSE 200
+[info] 
+[info] === Deploying to 'testing-617da'...
+[info] 
+[info] i  deploying functions
+[info] Running command: npm --prefix "$RESOURCE_DIR" run lint
+[info] ✔  functions: Finished running predeploy script.
+[debug] [2019-08-24T22:11:47.345Z] > [functions] package.json contents: {
+  "name": "functions",
+  "description": "Cloud Functions for Firebase",
+  "scripts": {
+    "lint": "eslint .",
+    "serve": "firebase serve --only functions",
+    "shell": "firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "dependencies": {
+    "@types/date-fns": "^2.6.0",
+    "d3": "^5.9.2",
+    "date-fns": "^1.30.1",
+    "firebase-admin": "~7.0.0",
+    "firebase-functions": "^3.0.1",
+    "mathjs": "^5.4.2"
+  },
+  "devDependencies": {
+    "@types/d3": "^5.7.2",
+    "eslint": "^5.12.0",
+    "eslint-plugin-promise": "^4.1.1",
+    "firebase-functions-test": "^0.1.6"
+  },
+  "private": true,
+  "engines": {
+    "node": "8"
+  }
+}
+[info] i  functions: ensuring necessary APIs are enabled...
+[debug] [2019-08-24T22:11:47.347Z] >>> HTTP REQUEST GET https://serviceusage.googleapis.com/v1/projects/testing-617da/services/cloudfunctions.googleapis.com  
+ 
+[debug] [2019-08-24T22:11:47.348Z] >>> HTTP REQUEST GET https://serviceusage.googleapis.com/v1/projects/testing-617da/services/runtimeconfig.googleapis.com  
+ 
+[debug] [2019-08-24T22:11:47.706Z] <<< HTTP RESPONSE 200
+[info] ✔  functions: all necessary APIs are enabled
+[debug] [2019-08-24T22:11:47.709Z] <<< HTTP RESPONSE 200
+[debug] [2019-08-24T22:11:47.710Z] >>> HTTP REQUEST GET https://firebase.googleapis.com/v1beta1/projects/testing-617da/adminSdkConfig  
+ 
+[debug] [2019-08-24T22:11:47.920Z] <<< HTTP RESPONSE 200
+[info] i  functions: preparing functions directory for uploading...
+[debug] [2019-08-24T22:11:47.924Z] >>> HTTP REQUEST GET https://runtimeconfig.googleapis.com/v1beta1/projects/testing-617da/configs  
+ 
+[debug] [2019-08-24T22:11:48.103Z] <<< HTTP RESPONSE 200
+[info] i  functions: packaged functions (53.55 KB) for uploading
+[debug] [2019-08-24T22:11:48.896Z] >>> HTTP REQUEST POST https://cloudfunctions.googleapis.com/v1/projects/testing-617da/locations/us-central1/functions:generateUploadUrl  
+ 
+[debug] [2019-08-24T22:11:49.779Z] <<< HTTP RESPONSE 200
+[debug] [2019-08-24T22:11:49.780Z] >>> HTTP REQUEST PUT https://storage.googleapis.com/gcf-upload-us-central1-0394207e-4d97-4680-bf8a-541ed6081211/f0ec8f84-84e8-4607-aae1-8e8f1d039a7a.zip?GoogleAccessId=service-862420802331@gcf-admin-robot.iam.gserviceaccount.com&Expires=1566686509&Signature=PVzXLubbZARBwKCd06hhBRWhEsvP5Bsat%2Fk%2BHLsxD9T%2F9ovptS3kwa7UZ5jHTRmKzBMZbXlqiIiZc6OKoKhcu27D5p790gEC0sryr4473aFUMxYi0S%2B8REixQfXFcMRrVilgUbMoFAMf6ED7E%2FYMYYjzJpb%2Ff4Dhv3WM0XO8o1VyvVDmSlb0uLY%2BiUiN3b5eK4KQ0xj3MbN4fYskb1zt85ufWRQUHkfrtsZOIxpVeM7XiM%2FdTSRfb4nJs7TDgbyOR7G1JGOasEXtUVDMJjsxNddpOixVp%2BjNlUVXVHgGacp5jW9fxnDptG2dHWKG8qvnIkPT4fLbY9M%2FP%2BGm2ahoCA%3D%3D  
+ <request body omitted>
+[debug] [2019-08-24T22:11:50.403Z] <<< HTTP RESPONSE 200
+[info] ✔  functions: functions folder uploaded successfully
+[debug] [2019-08-24T22:11:50.409Z] >>> HTTP REQUEST GET https://cloudfunctions.googleapis.com/v1/projects/testing-617da/locations/-/functions  
+ 
+[debug] [2019-08-24T22:11:51.007Z] <<< HTTP RESPONSE 200
+[info] i  functions: updating Node.js 8 function DBupdate(us-central1)...
+[debug] [2019-08-24T22:11:51.011Z] Trigger is:  {"httpsTrigger":{}}
+[info] i  functions: updating Node.js 8 function updatedVoteHubs(us-central1)...
+[debug] [2019-08-24T22:11:51.011Z] Trigger is:  {"eventTrigger":{"resource":"projects/testing-617da/databases/(default)/documents/hubs/{address}/votes/{voterID}","eventType":"providers/cloud.firestore/eventTypes/document.write","service":"firestore.googleapis.com"}}
+[info] i  functions: updating Node.js 8 function updatedVote(us-central1)...
+[debug] [2019-08-24T22:11:51.011Z] Trigger is:  {"eventTrigger":{"resource":"projects/testing-617da/databases/(default)/documents/locations/{address}/votes/{voterID}","eventType":"providers/cloud.firestore/eventTypes/document.write","service":"firestore.googleapis.com"}}
+[debug] [2019-08-24T22:11:51.012Z] >>> HTTP REQUEST GET https://serviceusage.googleapis.com/v1/projects/testing-617da/services/cloudscheduler.googleapis.com  
+ 
+[debug] [2019-08-24T22:11:51.288Z] <<< HTTP RESPONSE 200
+[debug] [2019-08-24T22:11:51.291Z] >>> HTTP REQUEST PATCH https://cloudfunctions.googleapis.com/v1/projects/testing-617da/locations/us-central1/functions/DBupdate {"updateMask":"sourceUploadUrl,name,labels,runtime,httpsTrigger"} 
+
+[debug] [2019-08-24T22:11:51.292Z] >>> HTTP REQUEST PATCH https://cloudfunctions.googleapis.com/v1/projects/testing-617da/locations/us-central1/functions/updatedVoteHubs {"updateMask":"sourceUploadUrl,name,labels,runtime,eventTrigger.resource,eventTrigger.eventType,eventTrigger.service"} 
+
+[debug] [2019-08-24T22:11:51.293Z] >>> HTTP REQUEST PATCH https://cloudfunctions.googleapis.com/v1/projects/testing-617da/locations/us-central1/functions/updatedVote {"updateMask":"sourceUploadUrl,name,labels,runtime,eventTrigger.resource,eventTrigger.eventType,eventTrigger.service"} 
+
+[debug] [2019-08-24T22:11:51.568Z] <<< HTTP RESPONSE 200
+[debug] [2019-08-24T22:11:51.583Z] <<< HTTP RESPONSE 200
+[debug] [2019-08-24T22:11:51.616Z] <<< HTTP RESPONSE 200
+[debug] [2019-08-24T22:11:51.617Z] >>> HTTP REQUEST GET https://cloudfunctions.googleapis.com/v1/projects/testing-617da/locations/-/functions  
+ 
+[debug] [2019-08-24T22:11:52.289Z] <<< HTTP RESPONSE 200
+[debug] [2019-08-24T22:11:52.291Z] >>> HTTP REQUEST GET https://cloudfunctions.googleapis.com/v1/operations/dGVzdGluZy02MTdkYS91cy1jZW50cmFsMS9EQnVwZGF0ZS9jUG5mTTR3Wjkwbw  
+ 
+[debug] [2019-08-24T22:11:52.292Z] >>> HTTP REQUEST GET https://cloudfunctions.googleapis.com/v1/operations/dGVzdGluZy02MTdkYS91cy1jZW50cmFsMS91cGRhdGVkVm90ZUh1YnMvLWdGRTJvZW1DLXM  
+ 
+[debug] [2019-08-24T22:11:52.292Z] >>> HTTP REQUEST GET https://cloudfunctions.googleapis.com/v1/operations/dGVzdGluZy02MTdkYS91cy1jZW50cmFsMS91cGRhdGVkVm90ZS9jV3ZBZjhCaDl4Yw  
+ 
+[debug] [2019-08-24T22:11:52.830Z] <<< HTTP RESPONSE 200
+[debug] [2019-08-24T22:11:52.832Z] <<< HTTP RESPONSE 200
+[debug] [2019-08-24T22:11:52.833Z] <<< HTTP RESPONSE 200
+[debug] [2019-08-24T22:11:54.837Z] >>> HTTP REQUEST GET https://cloudfunctions.googleapis.com/v1/operations/dGVzdGluZy02MTdkYS91cy1jZW50cmFsMS9EQnVwZGF0ZS9jUG5mTTR3Wjkwbw  
+ 
+[debug] [2019-08-24T22:11:54.838Z] >>> HTTP REQUEST GET https://cloudfunctions.googleapis.com/v1/operations/dGVzdGluZy02MTdkYS91cy1jZW50cmFsMS91cGRhdGVkVm90ZUh1YnMvLWdGRTJvZW1DLXM  
+ 
+[debug] [2019-08-24T22:11:54.838Z] >>> HTTP REQUEST GET https://cloudfunctions.googleapis.com/v1/operations/dGVzdGluZy02MTdkYS91cy1jZW50cmFsMS91cGRhdGVkVm90ZS9jV3ZBZjhCaDl4Yw  
+ 

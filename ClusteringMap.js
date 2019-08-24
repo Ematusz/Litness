@@ -174,7 +174,26 @@ export default class ClusteringMap extends React.Component {
         longitudeDelta: 0.0005,
       }
   
+      
+
+      // this is a test region
+      // let testRegion = {
+      //   latitude: 41.059648,
+      //   longitude: -75.321810,
+      //   latitudeDelta: 0.0005,
+      //   longitudeDelta: 0.0005,
+      // }
+
       this.props.mapRegionHandler(initialRegion);
+
+      // myApiKey = 'AIzaSyBkwazID1O1ryFhdC6mgSR4hJY2-GdVPmE';
+      // fetch('https://maps.googleapis.com/maps/api/geocode/json?latlng=' + 41.059648 + ',' + -75.321810 + '&location_type=ROOFTOP&result_type=street_address|premise&key=' + myApiKey)
+      // .then((response) => response.json())
+      // .then((responseJson) => {
+      //   console.log(responseJson)
+      // })
+
+
       this.map.getMapRef().animateToRegion(initialRegion,1);
       SplashScreen.hide();
     };

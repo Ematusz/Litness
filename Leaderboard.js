@@ -18,6 +18,7 @@ export default class Leaderboard extends React.Component {
           selectedIndex: 0,
           state: null,
           city: null,
+          cityType: null,
           searching: false,
         }
 
@@ -49,7 +50,9 @@ export default class Leaderboard extends React.Component {
       this.setState({city: data.terms[0].value})
       this.setState({state: data.terms[1].value});
       this.setState({searching: false});
-      this.queryDB(data.terms[0].value,data.terms[1].value)
+      this.setState({cityType: data.types[0]})
+
+      this.queryDB(data.terms[0].value,data.types[0],data.terms[1].value)
 
     }
 
@@ -58,10 +61,15 @@ export default class Leaderboard extends React.Component {
       this.setState({searching: false});
     }
 
-    queryDB(city, state) {
+    queryDB(city,cityType, state) {
       let data = [];
-      db.collection('leaderboard').where("city", "==", city).where("state", "==", state).orderBy('count', 'desc').limit(25).get()
+      // remove this when you push to testflight
+      if (cityType == "locality") {
+        cityType = "city";
+      }
+      db.collection('leaderboard').where(cityType, "==", city).where("state", "==", state).orderBy('count', 'desc').limit(25).get()
          .then( leaderBoardSnapshot => {
+           
            let counter = 1;
            if (leaderBoardSnapshot.empty) {
              this._isMounted && this.setState({ processedData: data },()=>this.setState({ showLeaderboard: true,refreshing:false }));
@@ -77,6 +85,9 @@ export default class Leaderboard extends React.Component {
                    latitude: doc.data().latitude,
                    longitude: doc.data().longitude,
                    address: doc.id,
+                   loclaity: doc.data().locality,
+                   administrative_area_level_3: doc.administrative_area_level_3,
+                   neighborhood: doc.data().neighborhood,
                    city: doc.data().city,
                    street: doc.data().street,
                    number: doc.data().number,
@@ -106,7 +117,6 @@ export default class Leaderboard extends React.Component {
         this._isMounted && this.getData();            
           }, 1000);
     };
-    // componentWillMount() {};
 
     componentWillUnmount() {
       this._isMounted = false;
@@ -114,7 +124,7 @@ export default class Leaderboard extends React.Component {
 
     refresh() {
       this.setState({refreshing:true});
-      this.queryDB(this.state.city,this.state.state)
+      this.queryDB(this.state.city,this.state.cityType,this.state.state)
     }
 
     getData() {
@@ -126,8 +136,7 @@ export default class Leaderboard extends React.Component {
       .then((response) => response.json())
       .then((responseJson) => { 
         let results = JSON.parse(JSON.stringify(responseJson)).results
-        let state = null;
-        let city = null;
+        let state, city, cityType, locality, administrative_area_level_3, neighborhood = null;
         results[0].address_components.forEach( component => {
           component.types.forEach( type => {
             if (type == "administrative_area_level_1") {
@@ -136,12 +145,30 @@ export default class Leaderboard extends React.Component {
             }
             if (type == "locality") {
               // might need to change this to neighborhood work on tuning
-              city = component.long_name;
-              this._isMounted && this.setState({city});
+              locality = component.long_name;
+            }
+            if (type == "administrative_area_level_3") {
+              administrative_area_level_3 = component.long_name;
+            }
+            if (type == "neighborhood") {
+              neighborhood = component.long_name;
             }
           })
         })
-        this.queryDB(city,state);
+        if (neighborhood != null) {
+          city = neighborhood;
+          cityType = "neighborhood";
+          this._isMounted && this.setState({city:city, cityType:cityType});
+        } else if (locality != null) {
+          city = locality;
+          cityType = "locality";
+          this._isMounted && this.setState({city:city, cityType:cityType});
+        } else if (administrative_area_level_3 != null) {
+          cityType = "administrative_area_level_3";
+          city = administrative_area_level_3;
+          this._isMounted && this.setState({city:city, cityType:cityType});
+        }
+        this.queryDB(city,cityType,state);
       })
     }
 
@@ -216,14 +243,13 @@ export default class Leaderboard extends React.Component {
             {this.state.searching && <View style={{marginTop: '2%', width:'90%',flex:1,backgroundColor:'transparent'}}>
               <GooglePlacesAutocomplete
                 placeholder="Search City"
-                minLength={3}
+                minLength={1}
                 autoFocus={false}
                 returnKeyType={'search'}
                 listViewDisplayed="auto"
                 fetchDetails={false}
                 onPress={(data) => {
                   this.handleSearch(data);
-                  // console.log(details);
                 }}
                 getDefaultValue={() => {
                   return '';
@@ -232,6 +258,7 @@ export default class Leaderboard extends React.Component {
                   key: 'AIzaSyBkwazID1O1ryFhdC6mgSR4hJY2-GdVPmE',
                   language: 'en',
                   types: '(cities)'
+                  // types: 'geocode'
                 }}
                 styles={{
                   textInputContainer: {
