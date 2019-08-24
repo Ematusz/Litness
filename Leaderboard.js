@@ -209,7 +209,7 @@ export default class Leaderboard extends React.Component {
                   {renderSearch()}
                 </TouchableOpacity>}
                 {this.state.searching && <TouchableOpacity onPress = {this.clearSearch}>
-                  <Text style = {styles.clearSearch}>X</Text>
+                  <Text style = {{color: 'red', fontSize: 16}}>x</Text>
                 </TouchableOpacity>}
             </View>}
 

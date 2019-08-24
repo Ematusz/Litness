@@ -21,16 +21,23 @@ export default class Leaderboard extends React.Component {
     render() {
         return (
             <View style = {styles.errorBanner}>
-                <TouchableOpacity 
-                    style={{
+                <View style={{
                         flex:1, 
                         alignContent:"center",
                         justifyContent:"center",
                         paddingRight:10,
                         paddingLeft:10
+                    }} >
+                    <Text>{this.props.error}</Text>
+                </View>
+                <TouchableOpacity 
+                    style={{
+                        position:"absolute",
+                        right: 5,
+                        top:5
                     }} 
                     onPress={()=>this.refreshPositionToggle(this.props.connectionType.type)}>
-                    <Text>{this.props.error}</Text>
+                    <Text style = {{color: "red", fontSize: 20}}>x</Text>
                 </TouchableOpacity>
             </View>  
         );

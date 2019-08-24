@@ -20,9 +20,6 @@ export default class sideTab extends React.Component {
 
                 <Button style={styles.tabStyle} title = 'ⓘ' onPress= {this.props.clickInfo} />
                 
-                {<TouchableOpacity onPress= {this.props.clickNavigate}>
-                    {renderNavigationIcon()}
-                </TouchableOpacity>}
             </View>
         );
     }

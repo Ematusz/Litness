@@ -19,7 +19,7 @@ export default StyleSheet.create({
     height: Dimensions.get('window').height*.0204,
     resizeMode: 'contain',
     width: Dimensions.get('window').height*.0204, 
-    color: 'white',
+    color: 'red',
     fontWeight: 'bold'  
   },
   closeBar: {

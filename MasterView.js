@@ -835,10 +835,6 @@ export default class MasterView extends React.Component {
                             clickInfo = {()=>this.toggleInfoPage(this.state.selectedMarker)} 
                             clickFire={()=>this.changeLit(this.state.selectedMarker,1)}
                             clickShit={()=>this.changeLit(this.state.selectedMarker,-1)}
-                            clickNavigate={()=>{
-                              let mapsLink = new googleMapsLink(this.state.selectedMarker);
-                              mapsLink.openMaps();
-                            }}
                             showVotingButtons={this.state.showVotingButtons}
           />}
 
