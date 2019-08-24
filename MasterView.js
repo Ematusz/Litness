@@ -9,7 +9,7 @@ import AddHubTab from './AddHubTab.js'
 import Hub from './Hub.js'
 import './renderImage.js'
 import Constants from 'expo-constants';
-import g from 'ngeohash'
+import g, { neighbor } from 'ngeohash'
 import * as math from 'mathjs';
 import * as firebase from 'firebase';
 import 'firebase/firestore';
@@ -112,7 +112,6 @@ export default class MasterView extends React.Component {
     // await this.getAddress(this.state.userLocation.latitude,this.state.userLocation.longitude)
     if(!Object.keys(this.state.hubs).includes(marker.location.address)) {
       this.closeTab(true);
-      // console.log("I am in here 1")
     }
     // change selectedAddress to the new address if the selected marker is not at selectedAddress
     else {
@@ -214,18 +213,23 @@ export default class MasterView extends React.Component {
         // creates a dictionary of all possible locations returned by the fetch
         // TODO: trim down results to only important ones. Remove results that are renages of numbers and limit returns
         // getting warning about unhandled promise. result.addres_components[counter].types "undefined is not an object" some results may not have components?
-  
         results.forEach( result => {
-            let state, city, street, number = null;
+            let state, street, administrative_area_level_3, locality, neighborhood, number = null;
             counter = 0
-            while (!state || !city || !street || !number) {
+            while ((!state || !locality || !administrative_area_level_3 || !street || !number || !neighborhood) && counter < result.address_components.length) {
               result.address_components[counter].types.forEach(type => {
                 if (type == "administrative_area_level_1") {
                   state = result.address_components[counter].short_name;
                 }
                 if (type == "locality") {
                   // might need to change this to neighborhood work on tuning
-                  city = result.address_components[counter].long_name;
+                  locality = result.address_components[counter].long_name;
+                }
+                if (type == "administrative_area_level_3") {
+                  administrative_area_level_3 = result.address_components[counter].long_name;
+                }
+                if (type == "neighborhood") {
+                  neighborhood = result.address_components[counter].long_name
                 }
                 if (type == "route") {
                   street = result.address_components[counter].short_name;
@@ -236,12 +240,14 @@ export default class MasterView extends React.Component {
               })
               counter+=1;
             }
-            
           userAddressDictionary[result.formatted_address] = {
             coord: result.geometry.location,
             geohash: ghostGeohash,
             state: state,
-            city: city,
+            locality: locality,
+            administrative_area_level_3: administrative_area_level_3,
+            neighborhood: neighborhood,
+            city: locality != null ? locality:administrative_area_level_3,
             street: street,
             number: number,
           };
@@ -658,6 +664,9 @@ export default class MasterView extends React.Component {
               longitude: userCoordinates.userAddressDictionary[ghostAddress].coord.lng,
               address: ghostAddress,
               state: userCoordinates.userAddressDictionary[ghostAddress].state,
+              locality: userCoordinates.userAddressDictionary[ghostAddress].locality,
+              administrative_area_level_3: userCoordinates.userAddressDictionary[ghostAddress].administrative_area_level_3,
+              neighborhood: userCoordinates.userAddressDictionary[ghostAddress].neighborhood,
               city: userCoordinates.userAddressDictionary[ghostAddress].city,
               street: userCoordinates.userAddressDictionary[ghostAddress].street,
               number: userCoordinates.userAddressDictionary[ghostAddress].number,
@@ -717,11 +726,14 @@ export default class MasterView extends React.Component {
       let latitude = this.state.ghostMarker[0].coordinate.latitude;
       let longitude = this.state.ghostMarker[0].coordinate.longitude;
       let state = this.state.ghostMarker[0].location.state;
+      let locality = this.state.ghostMarker[0].location.locality;
+      let administrative_area_level_3 = this.state.ghostMarker[0].location.administrative_area_level_3;
+      let neighborhood = this.state.ghostMarker[0].location.neighborhood;
       let city = this.state.ghostMarker[0].location.city;
       let street = this.state.ghostMarker[0].location.street;
       let number = this.state.ghostMarker[0].location.number;
       geohash = [g.encode_int(latitude,longitude,26)];
-
+      console.log(locality,administrative_area_level_3,city, neighborhood)
       // get a reference to the document at this address in the database.
 
       hubs.doc(marker.location.address).get()
@@ -737,6 +749,9 @@ export default class MasterView extends React.Component {
               geohash: geohash,
               imagePath: './assets/logs.png',
               state: state,
+              locality: locality == undefined ? null : locality,
+              administrative_area_level_3: administrative_area_level_3 == undefined ? null : administrative_area_level_3,
+              neighborhood: neighborhood == undefined ? null : neighborhood,
               city: city,
               street: street,
               number: number
