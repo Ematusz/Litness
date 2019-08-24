@@ -859,6 +859,8 @@ export default class MasterView extends React.Component {
                                 toggleInfoPage={this.toggleInfoPage}
                                 mapRegion = {this.state.mapRegion}
                                 userLocation = {this.state.userLocation}
+                                bannerErrorHandler = {this.bannerErrorHandler}
+                                bannerErrorState = {this.bannerErrorState}
           />}
 
           {<AnimatedLeaderboardTab style = {{right:this.state.animatedLeaderboardButton.interpolate({inputRange: [-50,-.75], outputRange: ["-50%","-.75%"]})}} 

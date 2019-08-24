@@ -66,6 +66,7 @@ export default StyleSheet.create({
     flexDirection:'column',
     justifyContent:'center',
     alignItems:'center',
+    zIndex: 20
   },
   errorPage: {
     marginLeft:'10%',
