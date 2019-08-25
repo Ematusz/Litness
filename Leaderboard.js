@@ -135,7 +135,7 @@ export default class Leaderboard extends React.Component {
           this.props.bannerErrorHandler({state: true, message: "We are having trouble reaching our servers. Please check your connection and try again."})
         }
   
-      },0)
+      },10000)
       myApiKey = 'AIzaSyBkwazID1O1ryFhdC6mgSR4hJY2-GdVPmE';
       fetch('https://maps.googleapis.com/maps/api/geocode/json?latlng=' + this.props.mapRegion.latitude + ',' + this.props.mapRegion.longitude + '&key=' + myApiKey)
       .then((response) => response.json())
@@ -143,13 +143,13 @@ export default class Leaderboard extends React.Component {
         clearTimeout(timeout)
         let status = JSON.parse(JSON.stringify(responseJson)).status;
         console.log(status);
-        // if (this.state.bannerErrorState != "locked") {
-        //   if (status == "ZERO_RESULTS") {
-        //     this.props.bannerErrorHandler({state: true, message: "We're having trouble figuring out which city youre in. Check your connection and try again or search a different city."})
-        //   } else if (status == "OK") {
-        //     this.props.bannerErrorHandler({state: false, message: null});
-        //   }
-        // } 
+        if (this.state.bannerErrorState != "locked") {
+          if (status == "ZERO_RESULTS") {
+            this.props.bannerErrorHandler({state: true, message: "We're having trouble figuring out which city youre in. Check your connection and try again or search a different city."})
+          } else if (status == "OK") {
+            this.props.bannerErrorHandler({state: false, message: null});
+          }
+        } 
         let results = JSON.parse(JSON.stringify(responseJson)).results
         let state, city, cityType, locality, administrative_area_level_3, neighborhood = null;
         results[0].address_components.forEach( component => {
