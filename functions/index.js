@@ -22,50 +22,12 @@ const geofirestore = new GeoFirestore(ref);
 hubs = geofirestore.collection('hubs')
 
 exports.DBupdate = functions.https.onRequest((req, res) => {
-    // ref.collection('locations').get().then(snapshot => {
-    //     let twoHoursAgo = Date.now() - (5 * 60 * 60 * 1000);
-    //     let twoHoursAgo_ = new Date(twoHoursAgo);
-    //     snapshot.forEach( address => {
-    //         ref.collection('locations').doc(address.id).collection('votes').get().then(query => {
-    //             if (query.size <=0) {
-    //                 ref.collection('locations').doc(address.id).collection('upvotes_downvotes').get()
-    //                 .then( snapshot__ => {
-    //                     snapshot__.forEach( count => {
-    //                         ref.collection('locations').doc(address.id).collection('upvotes_downvotes').doc(count.id).delete();
-    //                     })
-    //                     ref.collection('locations').doc(address.id).delete();
-    //                     return "";
-    //                 }).catch( reason => {
-    //                     res.send(reason);
-    //                 })
-    //             }
-    //             return "";
-    //         }).catch( reason => {
-    //             res.send(reason);
-    //         });
-    //         ref.collection('locations').doc(address.id).collection('votes').where('voteTime', '<', twoHoursAgo_).get()
-    //             .then( snapshot_ => {
-    //                 snapshot_.forEach( vote => {
-    //                     ref.collection('locations').doc(address.id).collection('votes').doc(vote.id).delete();
-    //                 })
-    //                 return "";
-    //             }).catch( reason => {
-    //                 res.send(reason);
-    //             })
-    //     })
-    //     res.send("success!");
-    //     return "";
-    // }).catch( reason => {
-    //     res.send(reason);
-    // })
-    // for geofirestore
     hubs.get().then(snapshot => {
         let twoHoursAgo = Date.now() - (2 * 60 * 60 * 1000);
         let twoHoursAgo_ = new Date(twoHoursAgo);
         snapshot.forEach( address => {
             hubs.doc(address.id).collection('votes').get().then(query => {
                 if (query.size <=0) {
-                    console.log("here");
                     hubs.doc(address.id).collection('upvotes_downvotes').get()
                     .then( snapshot__ => {
                         snapshot__.forEach( count => {
@@ -171,9 +133,9 @@ exports.updatedVoteHubs = functions.firestore.document('hubs/{address}/votes/{vo
                 leaderBoardRef.set( {
                     count: currentCount,
                     state: locationDoc.data().state,
-                    locality: locationDoc.data().locality,
-                    administrative_area_level_3: locationDoc.data().administrative_area_level_3,
-                    neighborhood: locationDoc.data().neighborhood,
+                    locality: locationDoc.data().locality !== undefined ? locationDoc.data().locality: null,
+                    administrative_area_level_3: locationDoc.data().administrative_area_level_3 !== undefined ? locationDoc.data().administrative_area_level_3 : null,
+                    neighborhood: locationDoc.data().neighborhood !== undefined ? locationDoc.data().neighborhood: null,
                     city: locationDoc.data().city
                 });
                  //update location info
