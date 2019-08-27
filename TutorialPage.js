@@ -4,6 +4,7 @@ import styles from './styles.js'
 import { FlatList } from 'react-native-gesture-handler';
 import { AddHubInstructions } from './Text.json';
 import { VoteOnCurrentHub } from './Text.json';
+import Dimensions from 'Dimensions';
 
 
 export default class TutorialPage extends React.Component {
@@ -32,7 +33,7 @@ export default class TutorialPage extends React.Component {
 
     renderTutorialPageCell = ({item}) => {
         return (
-            <Text>{item.text}</Text>
+            <Text style={{fontSize:Dimensions.get('window').width*0.0411}}>{item.text}</Text>
         )
     }
 
@@ -53,7 +54,7 @@ export default class TutorialPage extends React.Component {
         return (
             <View style = {styles.tutorialPage}>
 
-                <Text style = {{...styles.locationText, fontSize: 30, fontWeight:'bold'}}>
+                <Text style = {{...styles.locationText, fontSize: Dimensions.get('window').width*0.0725, fontWeight:'bold'}}>
                 Help
                 </Text>
                 <TouchableOpacity onPress={this.props.toggleTutorialPage} style = {styles.closeBar}>

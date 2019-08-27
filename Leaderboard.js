@@ -6,6 +6,7 @@ import {renderMarkerIcon, renderLoadingFire, renderRefresh, renderSearch} from '
 import { getDistance } from 'geolib';
 import * as math from 'mathjs';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
+import Dimensions from 'Dimensions';
 
 export default class Leaderboard extends React.Component {
     constructor(props) {
@@ -204,11 +205,11 @@ export default class Leaderboard extends React.Component {
               {renderMarkerIcon(item.hub.stats.cost)}
           <View style = {{display:'flex', flexDirection:'column'}}>
             <Text style = {styles.leaderboardText}> {item.hub.location.number} {item.hub.location.street} </Text>
-            <Text style = {{...styles.leaderboardText, fontSize: 12, color:'grey'}}> {this.distanceFromUser(item.hub)} </Text>
+            <Text style = {{...styles.leaderboardText, fontSize: Dimensions.get('window').width*0.0290, color:'grey'}}> {this.distanceFromUser(item.hub)} </Text>
           </View>
   
           <View style = {styles.LBinnerBox}>
-            <Text style = {{color:'black',fontSize:20, fontWeight:'bold'}}>{item.hub.stats.cost}</Text>
+            <Text style = {{color:'black',fontSize:Dimensions.get('window').width*0.0483, fontWeight:'bold'}}>{item.hub.stats.cost}</Text>
           </View>
         </TouchableOpacity>
       )
@@ -238,19 +239,19 @@ export default class Leaderboard extends React.Component {
                 {renderRefresh()}
             </TouchableOpacity>
   
-            <Text style = {{...styles.locationText, fontSize: 30, fontWeight:'bold'}}>
+            <Text style = {{...styles.locationText, fontSize:Dimensions.get('window').width*0.0725, fontWeight:'bold'}}>
               Leaderboard
             </Text>
 
             {this.state.showLeaderboard  && <View 
               style={{...styles.locationText}}
               >
-                <Text style={{fontSize: 20}}>{this.state.city + ", " + this.state.state}</Text>
+                <Text style={{fontSize:Dimensions.get('window').width*0.0483}}>{this.state.city + ", " + this.state.state}</Text>
                 {!this.state.searching && <TouchableOpacity onPress = {this.initiateSearch}>
                   {renderSearch()}
                 </TouchableOpacity>}
                 {this.state.searching && <TouchableOpacity onPress = {this.clearSearch}>
-                  <Text style = {{color: 'red', fontSize: 16}}>x</Text>
+                  <Text style = {{color: 'red', fontSize:Dimensions.get('window').width*0.0386}}>x</Text>
                 </TouchableOpacity>}
             </View>}
 
@@ -278,7 +279,7 @@ export default class Leaderboard extends React.Component {
                   textInputContainer: {
                     backgroundColor: 'white',
                     borderColor:'white',
-                    borderWidth: 1,
+                    borderWidth: Dimensions.get('window').width*0.00242,
                     borderTopWidth: 0,
                     borderBottomWidth:0
                   },
@@ -303,7 +304,7 @@ export default class Leaderboard extends React.Component {
   
             {!this.state.showLeaderboard && !this.state.searching && <View style={{position:'absolute',top:'50%', display: "flex", flexDirection:"column", justifyContent:"flex-start",alignItems:"center"}}>
                 {renderLoadingFire()}
-                <Text style ={{color:"black", fontSize: 17}}> Loading... </Text>
+                <Text style ={{color:"black", fontSize:Dimensions.get('window').width*0.0411}}> Loading... </Text>
             </View>}
   
             {this.state.showLeaderboard && !this.state.searching && <FlatList
