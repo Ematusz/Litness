@@ -155,7 +155,7 @@ export default StyleSheet.create({
     backgroundColor:'white'
   },
   leaderboardText: {
-    fontSize: 20,
+    fontSize: Dimensions.get('window').width*0.0483,
   },
   loading: {
     position: 'absolute',
@@ -185,7 +185,7 @@ export default StyleSheet.create({
   markerCost: {
       color: "white",
       fontWeight: "bold",
-      fontSize: 16,
+      fontSize: Dimensions.get('window').width*0.0386,
       position: 'absolute',
   },
   refresh: {
@@ -226,7 +226,7 @@ export default StyleSheet.create({
     position: 'absolute',
     alignItems:'center',
     justifyContent:'center',
-    fontSize: 50,
+    fontSize: Dimensions.get('window').width*0.121,
   },
   tutorialPage: {
     height: '90%',

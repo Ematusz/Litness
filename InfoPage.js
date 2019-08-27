@@ -215,13 +215,13 @@ export default class InfoPage extends React.Component {
             <View style={[styles.infoPage,this.props.style]}>
                 {!this.state.showChart && <View style={{position:'absolute',top:'50%', display: "flex", flexDirection:"column", justifyContent:"flex-start",alignItems:"center"}}>
                     {renderLoadingFire()}
-                    <Text style ={{color:"black", fontSize: 17}}> Loading... </Text>
+                    <Text style ={{color:"black", fontSize: Dimensions.get('window').width*0.0411}}> Loading... </Text>
                 </View>}
 
                 <View style = {{marginTop:"3%"}} >
-                    {(this.state.selectedValue!==null && this.state.showChart) && <Text style = {{fontSize: 30, alignSelf:"center", color:"black"}}>{this.state.selectedValue.toString() + " LF"}</Text>}
-                    {(this.state.selectedValue!==null && this.state.showChart) && <Text style = {{fontSize: 15, alignSelf:"center", color:deltaColor}}>{delta}</Text>}
-                    {(this.state.selectedTime && this.state.showChart) && <Text style = {{fontSize: 15, alignSelf:"center", color:"grey"}}>{dateFns.format(d3.timeSecond(this.state.selectedTime),"hh:mm:ss A")}</Text>}
+                    {(this.state.selectedValue!==null && this.state.showChart) && <Text style = {{fontSize: Dimensions.get('window').width*0.0725, alignSelf:"center", color:"black"}}>{this.state.selectedValue.toString() + " LF"}</Text>}
+                    {(this.state.selectedValue!==null && this.state.showChart) && <Text style = {{fontSize: Dimensions.get('window').width*0.0362, alignSelf:"center", color:deltaColor}}>{delta}</Text>}
+                    {(this.state.selectedTime && this.state.showChart) && <Text style = {{fontSize: Dimensions.get('window').width*0.0362, alignSelf:"center", color:"grey"}}>{dateFns.format(d3.timeSecond(this.state.selectedTime),"hh:mm:ss A")}</Text>}
 
                     {(this.state.selectedTime && this.state.showChart) && <View style = {{display:"flex", 
                                     flexDirection:"row", 
@@ -231,7 +231,7 @@ export default class InfoPage extends React.Component {
 
                         <View style = {{
                                     alignItems:'center',
-                                    padding: 5}}>
+                                    padding: Dimensions.get('window').width*0.0121}}>
                             <Image
                                 style = {{...styles.infoPageIcons}}
                                 source={require('./assets/fire.png')}
@@ -244,7 +244,7 @@ export default class InfoPage extends React.Component {
 
                         <View style = {{
                                     alignItems:'center',
-                                    padding: 5}}>
+                                    padding: Dimensions.get('window').width*0.0121}}>
                             <Image
                                 style = {{...styles.infoPageIcons}}
                                 source={require('./assets/poop.png')}
@@ -310,14 +310,14 @@ export default class InfoPage extends React.Component {
                         selectedIndex={selectedIndex}
                         buttons={buttons}
                         disabled={this.state.disabledButtons}
-                        disabledTextStyle={{color:"lightgrey",fontSize:12,fontWeight:"bold"}}
+                        disabledTextStyle={{color:"lightgrey",fontSize:Dimensions.get('window').width*0.0290,fontWeight:"bold"}}
                         containerStyle={{height: "3%",backgroundColor:"transparent",borderColor:"transparent",width:'100%',alignSelf:'center'}}
-                        selectedButtonStyle={{backgroundColor:"#007AFF", borderRadius:30}}
+                        selectedButtonStyle={{backgroundColor:"#007AFF", borderRadius:Dimensions.get('window').width*0.0725}}
                         selectedTextStyle = {{color: "white"}}
-                        textStyle={{color:"black",fontSize:12,fontWeight:"bold"}}
+                        textStyle={{color:"black",fontSize:Dimensions.get('window').width*0.0290,fontWeight:"bold"}}
                         underlayColor={'black'}
                         innerBorderStyle = {{width:0,color:'transparent'}}
-                        containerBorderRadius={10}
+                        containerBorderRadius={Dimensions.get('window').width*0.0242}
                     />}
                                         
 
@@ -352,7 +352,7 @@ export default class InfoPage extends React.Component {
                     </View>
                     
                     <TouchableOpacity onPress={this.goToMarker}>
-                        <Text style = {{...styles.locationText, fontSize: 15}}>
+                        <Text style = {{...styles.locationText, fontSize: Dimensions.get('window').width*0.0362}}>
                             {this.props.infoPageMarker.location.address}
                         </Text>
                     </TouchableOpacity>

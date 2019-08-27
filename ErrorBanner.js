@@ -1,6 +1,7 @@
 import React from 'react';
 import {View,Text,TouchableOpacity} from 'react-native';
-import styles from './styles.js'
+import styles from './styles.js';
+import Dimensions from 'Dimensions';
 
 
 export default class Leaderboard extends React.Component {
@@ -37,7 +38,7 @@ export default class Leaderboard extends React.Component {
                         top:5
                     }} 
                     onPress={()=>this.refreshPositionToggle(this.props.connectionType.type)}>
-                    <Text style = {{color: "red", fontSize: 20}}>x</Text>
+                    <Text style = {{color: "red", fontSize:Dimensions.get('window').width*.0483}}>x</Text>
                 </TouchableOpacity>
             </View>  
         );
