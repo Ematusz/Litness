@@ -246,16 +246,12 @@ export default StyleSheet.create({
   },
   tutorialPageButton: {
     backgroundColor:"white",
-    height: Dimensions.get('window').height*.038,
-    width: Dimensions.get('window').width*.068,
     borderColor:'black',
     borderWidth: Dimensions.get('window').height*.0027,
     position: 'absolute',
     flex:1,
     right: "-.75%",
     top: '22%',
-    justifyContent: 'center',
-    alignItems: 'center'
   },
   moveToLocationStyle: {
     backgroundColor:"white",

@@ -1,5 +1,5 @@
 import React from 'react';
-import {Image} from 'react-native';
+import {Image,Text} from 'react-native';
 import styles from './styles.js';
 import Dimensions from 'Dimensions';
 
@@ -119,15 +119,13 @@ export function renderLeaderboardTabIcon() {
             />
 }
 
-export function renderRefreshPositionTabIcon() {
-        return <Image
+export function renderTutorialPageIcon() {
+        return <Text
                 style = {{flex:1,
                         height: (Dimensions.get('window').height*.038),
                         resizeMode: 'contain',
                         width: (Dimensions.get('window').width*.068)}}
-                        // this is a place holder. Make sure to find something open source or make our own
-                source={require('./assets/refreshButton.png')}
-                />
+                >?</Text>
 }
 
 export function renderLandmark() {
