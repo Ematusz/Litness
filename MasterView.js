@@ -3,6 +3,8 @@ import {Animated, View ,AppState, Platform, Text} from 'react-native';
 import ErrorBanner from './ErrorBanner.js';
 import SideTab from './SideTab.js';
 import InfoPage from './InfoPage.js';
+import TutorialPage from './TutorialPage.js';
+import TutorialPageTab from './TutorialPageTab.js';
 import Leaderboard from './Leaderboard.js';
 import LeaderboardTab from './LeaderboardTab.js';
 import AddHubTab from './AddHubTab.js'
@@ -29,6 +31,8 @@ function getRandomInt(min,max) {
 }
 
 const AnimatedErrorBanner = Animated.createAnimatedComponent(ErrorBanner);
+const AnimatedTutorialPage = Animated.createAnimatedComponent(TutorialPage);
+const AnimatedTutorialPageTab = Animated.createAnimatedComponent(TutorialPageTab);
 const AnimatedSideTab = Animated.createAnimatedComponent(SideTab);
 const AnimatedInfoPage = Animated.createAnimatedComponent(InfoPage);
 const AnimatedLeaderboard = Animated.createAnimatedComponent(Leaderboard);
@@ -40,6 +44,8 @@ export default class MasterView extends React.Component {
     super(props);
     this.state = { 
       animatedErrorBanner: new Animated.Value(-100),
+      animatedTutorialPage: new Animated.Value(-100),
+      animatedTutorialPageTab: new Animated.Value(-.75),
       animatedAddHubTab: new Animated.Value(-.75),
       animatedFlex: new Animated.Value(.5),
       animatedHeight: new Animated.Value(30),
@@ -72,6 +78,7 @@ export default class MasterView extends React.Component {
       selectedMarker: null,
       showVotingButtons: true,
       tabVal: false,
+      tutorialPage: false,
       userLocation: {
         formattedAddress: null,
         latitude: null,
@@ -94,6 +101,7 @@ export default class MasterView extends React.Component {
     this.addListenerHandler = this.addListenerHandler.bind(this);
     this.componentDidMount = this.componentDidMount.bind(this);
     this.changeLit = this.changeLit.bind(this);
+    this.toggleTutorialPage = this.toggleTutorialPage.bind(this);
     this.toggleInfoPage = this.toggleInfoPage.bind(this);
     this.toggleLeaderBoard = this.toggleLeaderBoard.bind(this);
     this.goToMarker = this.goToMarker.bind(this);
@@ -490,6 +498,69 @@ export default class MasterView extends React.Component {
     this._addListener(mapRegion);
   }
 
+  toggleTutorialPage () {
+    console.log("tutorial page toggled")
+    if (!this.state.tutorialPage) {
+      this.setState({tutorialPage: true});
+      Animated.parallel(
+        Animated.timing(this.state.animatedTutorialPage, {
+          toValue: 5,
+          duration: 300,
+        }).start(),
+
+        Animated.timing(this.state.animatedTutorialPageTab, {
+          toValue: -50,
+          duration: 300
+        }).start(),
+  
+        Animated.timing(this.state.animatedLeaderboardButton, {
+          toValue: -50,
+          duration: 300
+        }).start(),
+  
+        Animated.timing(this.state.animatedAddHubTab, {
+          toValue: -50,
+          duration: 300
+        }).start(),
+
+        Animated.timing(this.state.animatedTab, {
+          toValue: -50,
+          friction: 100,
+          duration: 200
+        }).start(),
+      )
+    } else {
+      this.setState({tutorialPage: false});
+      Animated.parallel(
+        Animated.timing(this.state.animatedTutorialPage, {
+          toValue: !this.state.leaderBoard? -100 : 5,
+          duration: 300
+        }).start(()=>this.setState({infoPage: false})),
+
+        Animated.timing(this.state.animatedTutorialPageTab, {
+          toValue: !this.state.leaderBoard? -.75 : -50,
+          duration: 300
+        }).start(),
+
+        Animated.timing(this.state.animatedLeaderboardButton, {
+          toValue: !this.state.leaderBoard? -.75 : -50,
+          duration: 300
+        }).start(),
+
+        Animated.timing(this.state.animatedAddHubTab, {
+          toValue: !this.state.leaderBoard? -.75 : -50,
+          duration: 300
+        }).start(),
+        
+        Animated.timing(this.state.animatedTab, {
+          toValue: this.state.tabVal? 0 : -50,
+          friction: 100,
+          duration: 300
+        }).start()
+      )
+    }
+  }
+
   // Toggles the info page on a hub
   toggleInfoPage (marker) {
     // temporary measure until we can get the z stacking to work
@@ -505,6 +576,11 @@ export default class MasterView extends React.Component {
         Animated.timing(this.state.animatedTop, {
           toValue: 5,
           duration: 300,
+        }).start(),
+
+        Animated.timing(this.state.animatedTutorialPageTab, {
+          toValue: -50,
+          duration: 300
         }).start(),
   
         Animated.timing(this.state.animatedLeaderboardButton, {
@@ -523,6 +599,11 @@ export default class MasterView extends React.Component {
           toValue: !this.state.leaderBoard? -100 : 5,
           duration: 300
         }).start(()=>this.setState({infoPage: false})),
+
+        Animated.timing(this.state.animatedTutorialPageTab, {
+          toValue: !this.state.leaderBoard? -.75 : -50,
+          duration: 300
+        }).start(),
 
         Animated.timing(this.state.animatedLeaderboardButton, {
           toValue: !this.state.leaderBoard? -.75 : -50,
@@ -558,6 +639,12 @@ export default class MasterView extends React.Component {
           friction: 100,
           duration: 300
         }).start(),
+
+        Animated.timing(this.state.animatedTutorialPageTab, {
+          toValue: -50,
+          friction: 100,
+          duration: 300
+        }).start(),
   
         Animated.timing(this.state.animatedLeaderboardButton, {
           toValue: -50,
@@ -584,6 +671,12 @@ export default class MasterView extends React.Component {
           friction: 100,
           duration: 300
         }).start(()=> this.setState({leaderBoard: false})),
+
+        Animated.timing(this.state.animatedTutorialPageTab, {
+          toValue: -.75,
+          friction: 100,
+          duration: 300
+        }).start(),
   
         Animated.timing(this.state.animatedLeaderboardButton, {
           toValue: -.75,
@@ -831,45 +924,52 @@ export default class MasterView extends React.Component {
           />}
 
           {this.state.infoPage && <AnimatedInfoPage style = {{top:this.state.animatedTop.interpolate({inputRange: [-100,5], outputRange: ["-100%","5%"]})}}
-                            toggleInfoPage={this.toggleInfoPage}
-                            infoPageMarker={this.state.infoPageMarker}
-                            data_={this.state.data_}
-                            leaderboardStatus = {this.state.leaderBoard}
-                            clickNavigate={()=>{
-                              let mapsLink = new googleMapsLink(this.state.infoPageMarker);
-                              mapsLink.openMaps();
-                            }}
-                            clickUber={()=>{
-                              let uberLink_ = new uberLink(this.state.infoPageMarker);
-                              uberLink_.openUber();
-                            }}
-                            goToMarker = {() => this.goToMarker(this.state.infoPageMarker)}
+                toggleInfoPage={this.toggleInfoPage}
+                infoPageMarker={this.state.infoPageMarker}
+                data_={this.state.data_}
+                leaderboardStatus = {this.state.leaderBoard}
+                clickNavigate={()=>{
+                  let mapsLink = new googleMapsLink(this.state.infoPageMarker);
+                  mapsLink.openMaps();
+                }}
+                clickUber={()=>{
+                  let uberLink_ = new uberLink(this.state.infoPageMarker);
+                  uberLink_.openUber();
+                }}
+                goToMarker = {() => this.goToMarker(this.state.infoPageMarker)}
           />}
 
           {<AnimatedSideTab style = {{right:this.state.animatedTab.interpolate({inputRange: [-50,0], outputRange: ["-50%","0%"]})}} 
-                            clickInfo = {()=>this.toggleInfoPage(this.state.selectedMarker)} 
-                            clickFire={()=>this.changeLit(this.state.selectedMarker,1)}
-                            clickShit={()=>this.changeLit(this.state.selectedMarker,-1)}
-                            showVotingButtons={this.state.showVotingButtons}
+                clickInfo = {()=>this.toggleInfoPage(this.state.selectedMarker)} 
+                clickFire={()=>this.changeLit(this.state.selectedMarker,1)}
+                clickShit={()=>this.changeLit(this.state.selectedMarker,-1)}
+                showVotingButtons={this.state.showVotingButtons}
           />}
 
           {this.state.leaderBoard && <AnimatedLeaderboard style = {{top: this.state.animatedLeaderboard.interpolate({inputRange: [-100,5], outputRange: ["-100%","5%"]})}} 
-                                toggleLeaderBoard= {this.toggleLeaderBoard}
-                                leaderBoard_={this.state.leaderBoard_}
-                                toggleInfoPage={this.toggleInfoPage}
-                                mapRegion = {this.state.mapRegion}
-                                userLocation = {this.state.userLocation}
-                                bannerErrorHandler = {this.bannerErrorHandler}
-                                bannerErrorState = {this.bannerErrorState}
+                toggleLeaderBoard= {this.toggleLeaderBoard}
+                leaderBoard_={this.state.leaderBoard_}
+                toggleInfoPage={this.toggleInfoPage}
+                mapRegion = {this.state.mapRegion}
+                userLocation = {this.state.userLocation}
+                bannerErrorHandler = {this.bannerErrorHandler}
+                bannerErrorState = {this.bannerErrorState}
+          />}
+          {this.state.tutorialPage && <AnimatedTutorialPage style = {{top: this.state.animatedTutorialPage.interpolate({inputRange: [-100,5], outputRange: ["-100%","5%"]})}} 
+                toggleTutorialPage={this.toggleTutorialPage}
           />}
 
           {<AnimatedLeaderboardTab style = {{right:this.state.animatedLeaderboardButton.interpolate({inputRange: [-50,-.75], outputRange: ["-50%","-.75%"]})}} 
-                                  toggleLeaderBoard={this.toggleLeaderBoard}
+                toggleLeaderBoard={this.toggleLeaderBoard}
           />}
 
           {<AnimatedAddHubTab style ={{right:this.state.animatedAddHubTab.interpolate({inputRange: [-50,-.75], outputRange: ["-50%","-.75%"]})}}
-                      setGhost={() => this.getAddress(this.state.userLocation.latitude,this.state.userLocation.longitude,null)}
-          />}    
+                setGhost={() => this.getAddress(this.state.userLocation.latitude,this.state.userLocation.longitude,null)}
+          />}
+
+          {<AnimatedTutorialPageTab style ={{right:this.state.animatedTutorialPageTab.interpolate({inputRange: [-50,-.75], outputRange: ["-50%","-.75%"]})}}
+                toggleTutorialPage={this.toggleTutorialPage}
+          />}   
 
           {<MoveToLocationButton
             refreshWatchPosition={() => this.refreshWatchPosition()}
