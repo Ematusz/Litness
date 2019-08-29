@@ -122,6 +122,9 @@ export function renderLeaderboardTabIcon() {
 export function renderTutorialPageIcon() {
         return <Text
                 style = {{flex:1,
+                        textAlign: 'center',
+                        textAlignVertical: 'center',
+                        fontSize: Dimensions.get('window').width*0.0483,
                         height: (Dimensions.get('window').height*.038),
                         resizeMode: 'contain',
                         width: (Dimensions.get('window').width*.068)}}
