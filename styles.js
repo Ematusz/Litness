@@ -4,10 +4,8 @@ export default StyleSheet.create({
   addHubButton: {
     backgroundColor:"white",
     borderColor:'black',
-    borderWidth: Dimensions.get('window').height*.0027,
-    position: 'absolute',
+    borderBottomWidth: Dimensions.get('window').height*.0027,
     right: "-.75%",
-    top: '18%',
   }, 
   bigContainer: {
     flex:1,
@@ -47,10 +45,6 @@ export default StyleSheet.create({
     height: Dimensions.get('window').height*.0543,
     resizeMode: 'contain',
     width: Dimensions.get('window').height*.0543,
-    // borderRadius: Dimensions.get('window').height*.0272,
-    // borderWidth: Dimensions.get('window').height*.00272,
-    // borderColor: 'black',
-    // backgroundColor:'black'
   },
   errorBanner: {
     height: '10%',
@@ -136,14 +130,12 @@ export default StyleSheet.create({
     alignItems:'center',
     zIndex:1,
   },
-  leaderBoardButton: {
+  leaderboardButton: {
     backgroundColor:"white",
     borderColor:'black',
-    borderWidth: Dimensions.get('window').height*.0027,
-    position: 'absolute',
+    borderBottomWidth: Dimensions.get('window').height*.0027,
     flex:1,
     right: "-.75%",
-    top: '14%',
   },
   leaderBoardCell: {
     marginTop: "1.5%",
@@ -175,9 +167,6 @@ export default StyleSheet.create({
     flexDirection:"row"
   },
   marker: {
-    // borderRadius: Dimensions.get('window').height*.0408,
-    // borderWidth: Dimensions.get('window').height*.00272,
-    // borderColor: "transparent",
     position: 'absolute',
     alignItems:'center',
     justifyContent:'center',
@@ -187,6 +176,14 @@ export default StyleSheet.create({
       fontWeight: "bold",
       fontSize: Dimensions.get('window').width*0.0386,
       position: 'absolute',
+  },
+  parentButtonTab: {
+    position: 'absolute',
+    top: '14%',
+    display:'flex',
+    borderWidth: Dimensions.get('window').height*.0027,
+    flexDirection:'column',
+    justifyContent:'start'
   },
   refresh: {
     position: 'absolute',
@@ -198,15 +195,6 @@ export default StyleSheet.create({
     height: Dimensions.get('window').height*.0408,
     justifyContent:'center'
   }, 
-  // refreshPositionButton: {
-  //   backgroundColor:"white",
-  //   borderColor:'black',
-  //   borderWidth: Dimensions.get('window').height*.0027,
-  //   position: 'absolute',
-  //   flex:1,
-  //   right: "-.75%",
-  //   top: '22%',
-  // },
   tab: {
     backgroundColor:"white",
     borderColor:'black',
@@ -247,11 +235,8 @@ export default StyleSheet.create({
   tutorialPageButton: {
     backgroundColor:"white",
     borderColor:'black',
-    borderWidth: Dimensions.get('window').height*.0027,
-    position: 'absolute',
     flex:1,
     right: "-.75%",
-    top: '22%',
   },
   moveToLocationStyle: {
     backgroundColor:"white",
