@@ -289,7 +289,8 @@ export default class MasterView extends React.Component {
 
   success = async(position) => {
     console.log("success");
-    let { latitude, longitude } = position.coords;
+    let latitude = 37.7884459;
+    let longitude = -122.4066252;
     const userCoordinates = {
         userAddressDictionary: null,
         longitude,
@@ -563,12 +564,6 @@ export default class MasterView extends React.Component {
 
   // Toggles the info page on a hub
   toggleInfoPage (marker) {
-    // temporary measure until we can get the z stacking to work
-    // if(Platform.OS !== 'ios') {
-    //   if (this.state.leaderBoard) {
-    //     this.toggleLeaderBoard()
-    //   }
-    // }
     // if infoPage is currently listed as false, open the page. Otherwise close it.
     if (!this.state.infoPage) {
       this.setState({infoPage: true});
