@@ -4,11 +4,9 @@ import ErrorBanner from './ErrorBanner.js';
 import SideTab from './SideTab.js';
 import InfoPage from './InfoPage.js';
 import TutorialPage from './TutorialPage.js';
-import TutorialPageTab from './TutorialPageTab.js';
 import Leaderboard from './Leaderboard.js';
-import LeaderboardTab from './LeaderboardTab.js';
-import AddHubTab from './AddHubTab.js'
 import Hub from './Hub.js'
+import ParentButtonTab from './ParentButtonTab.js';
 import './renderImage.js'
 import Constants from 'expo-constants';
 import g, { neighbor } from 'ngeohash'
@@ -32,12 +30,10 @@ function getRandomInt(min,max) {
 
 const AnimatedErrorBanner = Animated.createAnimatedComponent(ErrorBanner);
 const AnimatedTutorialPage = Animated.createAnimatedComponent(TutorialPage);
-const AnimatedTutorialPageTab = Animated.createAnimatedComponent(TutorialPageTab);
 const AnimatedSideTab = Animated.createAnimatedComponent(SideTab);
 const AnimatedInfoPage = Animated.createAnimatedComponent(InfoPage);
 const AnimatedLeaderboard = Animated.createAnimatedComponent(Leaderboard);
-const AnimatedLeaderboardTab = Animated.createAnimatedComponent(LeaderboardTab);
-const AnimatedAddHubTab = Animated.createAnimatedComponent(AddHubTab);
+const AnimatedParentButtonTab = Animated.createAnimatedComponent(ParentButtonTab);
 
 export default class MasterView extends React.Component {
   constructor(props) {
@@ -45,12 +41,10 @@ export default class MasterView extends React.Component {
     this.state = { 
       animatedErrorBanner: new Animated.Value(-100),
       animatedTutorialPage: new Animated.Value(-100),
-      animatedTutorialPageTab: new Animated.Value(-.75),
-      animatedAddHubTab: new Animated.Value(-.75),
       animatedFlex: new Animated.Value(.5),
       animatedHeight: new Animated.Value(30),
       animatedLeaderboard: new Animated.Value(-100),
-      animatedLeaderboardButton: new Animated.Value(-.75),
+      animatedParentButtonTab: new Animated.Value(-.75),
       animatedTab:  new Animated.Value(-50),
       animatedTop: new Animated.Value(-100),
       clustering: true,
@@ -117,7 +111,6 @@ export default class MasterView extends React.Component {
 
   openTab(marker,userLocation) {
     // Checks if marker is a ghost. if a ghostMarker is clicked then call hideTab()
-    // await this.getAddress(this.state.userLocation.latitude,this.state.userLocation.longitude)
     if(!Object.keys(this.state.hubs).includes(marker.location.address)) {
       this.closeTab(true);
     }
@@ -219,8 +212,6 @@ export default class MasterView extends React.Component {
         let results = JSON.parse(JSON.stringify(responseJson)).results
         let userAddressDictionary = {}
         // creates a dictionary of all possible locations returned by the fetch
-        // TODO: trim down results to only important ones. Remove results that are renages of numbers and limit returns
-        // getting warning about unhandled promise. result.addres_components[counter].types "undefined is not an object" some results may not have components?
         results.forEach( result => {
             let state, street, administrative_area_level_3, locality, neighborhood, number = null;
             counter = 0
@@ -265,8 +256,8 @@ export default class MasterView extends React.Component {
         // saves address, latitude, and longitude in a coordinate object
         const userCoordinates = {
           userAddressDictionary,
-          latitude /*this.state.userLocation.latitude*/,
-          longitude /*this.state.userLocation.longitude*/
+          latitude,
+          longitude
         };
         // sets new userLocation based on previously created coordinate object
         if (marker == null) {
@@ -364,11 +355,6 @@ export default class MasterView extends React.Component {
 
         // Create a new location and add it to the markers dictionary when a new document is added to the listener.
         if (change.type === 'added'){
-          // // *untested* Should reset tab and remove ghost marker if youre about to vote on a location that was just voted on.
-          // if (this.state.ghostMarker.length > 0 && change.doc.id == this.state.ghostMarker[0].address) {
-          //   console.log("listener")
-          //   this.closeTab(true);
-          // }
           let count = change.doc.data().count ? change.doc.data().count : 0
           let hub = new Hub(
             {
@@ -509,17 +495,7 @@ export default class MasterView extends React.Component {
           duration: 300,
         }).start(),
 
-        Animated.timing(this.state.animatedTutorialPageTab, {
-          toValue: -50,
-          duration: 300
-        }).start(),
-  
-        Animated.timing(this.state.animatedLeaderboardButton, {
-          toValue: -50,
-          duration: 300
-        }).start(),
-  
-        Animated.timing(this.state.animatedAddHubTab, {
+        Animated.timing(this.state.animatedParentButtonTab, {
           toValue: -50,
           duration: 300
         }).start(),
@@ -538,17 +514,7 @@ export default class MasterView extends React.Component {
           duration: 300
         }).start(()=>this.setState({infoPage: false})),
 
-        Animated.timing(this.state.animatedTutorialPageTab, {
-          toValue: !this.state.leaderBoard? -.75 : -50,
-          duration: 300
-        }).start(),
-
-        Animated.timing(this.state.animatedLeaderboardButton, {
-          toValue: !this.state.leaderBoard? -.75 : -50,
-          duration: 300
-        }).start(),
-
-        Animated.timing(this.state.animatedAddHubTab, {
+        Animated.timing(this.state.animatedParentButtonTab, {
           toValue: !this.state.leaderBoard? -.75 : -50,
           duration: 300
         }).start(),
@@ -573,17 +539,7 @@ export default class MasterView extends React.Component {
           duration: 300,
         }).start(),
 
-        Animated.timing(this.state.animatedTutorialPageTab, {
-          toValue: -50,
-          duration: 300
-        }).start(),
-  
-        Animated.timing(this.state.animatedLeaderboardButton, {
-          toValue: -50,
-          duration: 300
-        }).start(),
-  
-        Animated.timing(this.state.animatedAddHubTab, {
+        Animated.timing(this.state.animatedParentButtonTab, {
           toValue: -50,
           duration: 300
         }).start(),
@@ -595,17 +551,7 @@ export default class MasterView extends React.Component {
           duration: 300
         }).start(()=>this.setState({infoPage: false})),
 
-        Animated.timing(this.state.animatedTutorialPageTab, {
-          toValue: !this.state.leaderBoard? -.75 : -50,
-          duration: 300
-        }).start(),
-
-        Animated.timing(this.state.animatedLeaderboardButton, {
-          toValue: !this.state.leaderBoard? -.75 : -50,
-          duration: 300
-        }).start(),
-
-        Animated.timing(this.state.animatedAddHubTab, {
+        Animated.timing(this.state.animatedParentButtonTab, {
           toValue: !this.state.leaderBoard? -.75 : -50,
           duration: 300
         }).start(),
@@ -634,28 +580,17 @@ export default class MasterView extends React.Component {
           friction: 100,
           duration: 300
         }).start(),
-
-        Animated.timing(this.state.animatedTutorialPageTab, {
+        console.log(1),
+        Animated.timing(this.state.animatedParentButtonTab, {
           toValue: -50,
           friction: 100,
           duration: 300
         }).start(),
-  
-        Animated.timing(this.state.animatedLeaderboardButton, {
-          toValue: -50,
-          friction: 100,
-          duration: 300
-        }).start(),
-        
-        Animated.timing(this.state.animatedAddHubTab, {
-          toValue: -50,
-          duration: 300
-        }).start(),
-  
+        console.log(2),
         Animated.timing(this.state.animatedTab, {
           toValue: -50,
           friction: 100,
-          duration: 200
+          duration: 300
         }).start(),
       ) 
 
@@ -667,20 +602,9 @@ export default class MasterView extends React.Component {
           duration: 300
         }).start(()=> this.setState({leaderBoard: false})),
 
-        Animated.timing(this.state.animatedTutorialPageTab, {
+        Animated.timing(this.state.animatedParentButtonTab, {
           toValue: -.75,
           friction: 100,
-          duration: 300
-        }).start(),
-  
-        Animated.timing(this.state.animatedLeaderboardButton, {
-          toValue: -.75,
-          friction: 100,
-          duration: 300
-        }).start(),
-
-        Animated.timing(this.state.animatedAddHubTab, {
-          toValue: -.75,
           duration: 300
         }).start(),
     
@@ -858,7 +782,6 @@ export default class MasterView extends React.Component {
     // update votes if user is already in the database
     } else {
       // gets a reference to the document at the address.
-      // let georef = GeoFirestoreDB.collection('locations').doc(marker.location.address).collection('votes').doc(uniqueId);
       hubs.doc(marker.location.address).collection('votes').doc(uniqueId).get()
       .then( voteDoc => {
         // Do not let user vote multiple times but allow them to update an old vote
@@ -955,17 +878,11 @@ export default class MasterView extends React.Component {
                 toggleTutorialPage={this.toggleTutorialPage}
           />}
 
-          {<AnimatedLeaderboardTab style = {{right:this.state.animatedLeaderboardButton.interpolate({inputRange: [-50,-.75], outputRange: ["-50%","-.75%"]})}} 
+          {<AnimatedParentButtonTab style = {{right: this.state.animatedParentButtonTab.interpolate({inputRange: [-50,-.75], outputRange: ["-50%","-.75%"]})}}
                 toggleLeaderBoard={this.toggleLeaderBoard}
-          />}
-
-          {<AnimatedAddHubTab style ={{right:this.state.animatedAddHubTab.interpolate({inputRange: [-50,-.75], outputRange: ["-50%","-.75%"]})}}
                 setGhost={() => this.getAddress(this.state.userLocation.latitude,this.state.userLocation.longitude,null)}
-          />}
-
-          {<AnimatedTutorialPageTab style ={{right:this.state.animatedTutorialPageTab.interpolate({inputRange: [-50,-.75], outputRange: ["-50%","-.75%"]})}}
                 toggleTutorialPage={this.toggleTutorialPage}
-          />}   
+          />}
 
           {<MoveToLocationButton
             refreshWatchPosition={() => this.refreshWatchPosition()}
