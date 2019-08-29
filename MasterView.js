@@ -564,11 +564,11 @@ export default class MasterView extends React.Component {
   // Toggles the info page on a hub
   toggleInfoPage (marker) {
     // temporary measure until we can get the z stacking to work
-    if(Platform.OS !== 'ios') {
-      if (this.state.leaderBoard) {
-        this.toggleLeaderBoard()
-      }
-    }
+    // if(Platform.OS !== 'ios') {
+    //   if (this.state.leaderBoard) {
+    //     this.toggleLeaderBoard()
+    //   }
+    // }
     // if infoPage is currently listed as false, open the page. Otherwise close it.
     if (!this.state.infoPage) {
       this.setState({infoPage: true});
@@ -903,6 +903,7 @@ export default class MasterView extends React.Component {
                 ghostMarker={this.state.ghostMarker}
                 possibleLocationMarker = {this.state.possibleLocationMarker}
                 mapRegionHandler={this.mapRegionHandler} 
+                mapRegion={this.state.mapRegion}
                 currentGridHandler={this.currentGridHandler}
                 userLocation={this.state.userLocation} 
                 ghostMarkerHandler={this.ghostMarkerHandler} 
