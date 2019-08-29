@@ -29,6 +29,7 @@ export default class ClusteringMap extends React.Component {
         this.pressMarker = this.pressMarker.bind(this);
         this.animateToSpecificMarker = this.animateToSpecificMarker.bind(this);
         this.handleConnectionChange = this.handleConnectionChange.bind(this);
+        this.initializeRegion = this.initializeRegion.bind(this);
     }
 
     pressMarker(marker) {
@@ -155,6 +156,29 @@ export default class ClusteringMap extends React.Component {
       }
     }
 
+    initializeRegion(region) {
+
+      let locationResult = JSON.stringify(region);
+      this.setState({locationResult});
+  
+      let initialRegion = {
+        latitude: JSON.parse(locationResult).coords.latitude,
+        longitude: JSON.parse(locationResult).coords.longitude,
+        latitudeDelta: 0.0005,
+        longitudeDelta: 0.0005,
+      }
+
+      this.props.mapRegionHandler(initialRegion);
+
+      // this.map.getMapRef().animateToRegion(initialRegion,1);
+      setTimeout(() => {
+        // console.log(this.map.getMapRef());
+        this.map.getMapRef().animateToRegion(initialRegion,1);
+        console.log(initialRegion);
+        SplashScreen.hide();
+      }, 500);
+    }
+
     // Initializes the ghost marker to closest location in possible current locations
     _getLocationAsync = async() => {
       let{ status } = await Permissions.askAsync(Permissions.LOCATION);
@@ -164,38 +188,27 @@ export default class ClusteringMap extends React.Component {
         });
       }
   
-      let location = await Location.getCurrentPositionAsync({enableHighAccuracy: false});
-      this.setState({locationResult:JSON.stringify(location)});
-  
-      let initialRegion = {
-        latitude: JSON.parse(this.state.locationResult).coords.latitude,
-        longitude: JSON.parse(this.state.locationResult).coords.longitude,
-        latitudeDelta: 0.0005,
-        longitudeDelta: 0.0005,
-      }
-  
-      
+      /*let location = */this.initializeRegion(await Location.getCurrentPositionAsync({maximumAge: 0}));
 
-      // this is a test region
-      // let testRegion = {
-      //   latitude: 41.059648,
-      //   longitude: -75.321810,
+      // let locationResult = JSON.stringify(await location);
+      // this.setState({locationResult});
+  
+      // let initialRegion = {
+      //   latitude: JSON.parse(locationResult).coords.latitude,
+      //   longitude: JSON.parse(locationResult).coords.longitude,
       //   latitudeDelta: 0.0005,
       //   longitudeDelta: 0.0005,
       // }
 
-      this.props.mapRegionHandler(initialRegion);
+      // this.props.mapRegionHandler(await initialRegion);
 
-      // myApiKey = 'AIzaSyBkwazID1O1ryFhdC6mgSR4hJY2-GdVPmE';
-      // fetch('https://maps.googleapis.com/maps/api/geocode/json?latlng=' + 41.059648 + ',' + -75.321810 + '&location_type=ROOFTOP&result_type=street_address|premise&key=' + myApiKey)
-      // .then((response) => response.json())
-      // .then((responseJson) => {
-      //   console.log(responseJson)
-      // })
-
-
-      this.map.getMapRef().animateToRegion(initialRegion,1);
-      SplashScreen.hide();
+      // this.map.getMapRef().animateToRegion(await initialRegion,1);
+      // setTimeout(() => {
+      //   console.log(initialRegion);
+      //   SplashScreen.hide();
+      // }, 500);
+      
+      
     };
 
     toggleTabMapPress = pressinfo => {
@@ -205,6 +218,7 @@ export default class ClusteringMap extends React.Component {
     }
 
     onRegionChangeComplete = mapRegion => {
+      console.log("here")
       this.props.mapRegionHandler(mapRegion);
       // console.log("longitude", mapRegion.longitude)
       this.props.addListenerHandler(mapRegion);
