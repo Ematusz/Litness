@@ -165,8 +165,8 @@ export default class ClusteringMap extends React.Component {
       this.setState({locationResult});
   
       let initialRegion = {
-        latitude: 37.7884459,
-        longitude: -122.4066252,
+        latitude: JSON.parse(locationResult).coords.latitude,
+        longitude: JSON.parse(locationResult).coords.longitude,
         latitudeDelta: 0.0005,
         longitudeDelta: 0.0005,
       }

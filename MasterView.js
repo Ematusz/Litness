@@ -280,8 +280,7 @@ export default class MasterView extends React.Component {
 
   success = async(position) => {
     console.log("success");
-    let latitude = 37.7884459;
-    let longitude = -122.4066252;
+    let { latitude, longitude } = position.coords;
     const userCoordinates = {
         userAddressDictionary: null,
         longitude,
