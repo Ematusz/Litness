@@ -33,9 +33,12 @@ export default class ClusteringMap extends React.Component {
     }
 
     pressMarker(marker) {
+      console.log(marker)
       if (this.props.userLocation.longitude != undefined) {
-        this.state.markerToRef[marker.location.address].showCallout();
-        this.props.getAddress(this.props.userLocation.latitude,this.props.userLocation.longitude,marker);
+        if (marker.location.address in this.state.markerToRef) {
+          this.state.markerToRef[marker.location.address].showCallout();
+          this.props.getAddress(this.props.userLocation.latitude,this.props.userLocation.longitude,marker);
+        }
       } else {
         this.props.bannerErrorHandler({state: true, message: "Give us a second while we finish loading your location..."});
       }

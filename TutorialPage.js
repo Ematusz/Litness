@@ -26,8 +26,8 @@ export default class TutorialPage extends React.Component {
     loadTutorialData() {
         console.log("loaded")
         let data_ = [];
-        data_.push({text: AddHubInstructions, key: 1})
-        data_.push({text: VoteOnCurrentHub, key: 2})
+        data_.push({text: AddHubInstructions, key: Math.random().toString()})
+        data_.push({text: VoteOnCurrentHub, key: Math.random().toString()})
         this.setState({data: data_});
     }
 

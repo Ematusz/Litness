@@ -57,7 +57,6 @@ export default class App extends React.Component {
   // renders the onscreen info
   render() {
     return (
-      <SafeAreaView style = {{flex: 1, backgroundColor: '#FF5236'}}>
         <View style = {styles.bigContainer}>   
           {this.state.pageErrorState && <ErrorPage
             error={this.state.pageErrorMessage}
@@ -65,9 +64,7 @@ export default class App extends React.Component {
           {!this.state.pageErrorState && <MasterView
             pageErrorHandler={this.pageErrorHandler}
           />}    
-        </View>
-      </SafeAreaView>
-      
+        </View>      
     );
   }
 }
