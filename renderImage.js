@@ -126,7 +126,6 @@ export function renderTutorialPageIcon() {
                         textAlignVertical: 'center',
                         fontSize: Dimensions.get('window').width*0.0483,
                         height: (Dimensions.get('window').height*.038),
-                        resizeMode: 'contain',
                         width: (Dimensions.get('window').width*.068)}}
                 >?</Text>
 }

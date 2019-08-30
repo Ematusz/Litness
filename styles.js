@@ -183,7 +183,7 @@ export default StyleSheet.create({
     display:'flex',
     borderWidth: Dimensions.get('window').height*.0027,
     flexDirection:'column',
-    justifyContent:'start'
+    justifyContent:'flex-start'
   },
   refresh: {
     position: 'absolute',
