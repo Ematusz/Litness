@@ -579,13 +579,11 @@ export default class MasterView extends React.Component {
           friction: 100,
           duration: 300
         }).start(),
-        console.log(1),
         Animated.timing(this.state.animatedParentButtonTab, {
           toValue: -50,
           friction: 100,
           duration: 300
         }).start(),
-        console.log(2),
         Animated.timing(this.state.animatedTab, {
           toValue: -50,
           friction: 100,

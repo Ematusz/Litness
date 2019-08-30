@@ -1,5 +1,5 @@
 import React from 'react';
-import {View,Text,TouchableOpacity} from 'react-native';
+import {View,Text,Image, TouchableOpacity} from 'react-native';
 import styles from './styles.js'
 import { FlatList } from 'react-native-gesture-handler';
 import { AddHubInstructions } from './Text.json';
@@ -27,14 +27,25 @@ export default class TutorialPage extends React.Component {
         console.log("loaded")
         let data_ = [];
         data_.push({text: AddHubInstructions, key: Math.random().toString()})
+        data_.push({renderGif: "https://media.giphy.com/media/QZDofWEpQmeCvy5sdU/giphy.gif", key: Math.random().toString()})
         data_.push({text: VoteOnCurrentHub, key: Math.random().toString()})
+        data_.push({renderGif: "https://media.giphy.com/media/LnQH7HJ4T4IboRHjNK/giphy.gif", key: Math.random().toString()})
         this.setState({data: data_});
     }
 
     renderTutorialPageCell = ({item}) => {
-        return (
-            <Text style={{fontSize:Dimensions.get('window').width*0.0411}}>{item.text}</Text>
-        )
+        if (item.renderGif !== undefined) {
+            return(
+                <Image style = {{height: Dimensions.get('window').height * .679, resizeMode: 'contain', resizeMethod: 'auto'}}
+                     source={{uri:item.renderGif}}
+                />
+            )
+        }
+        else {
+            return (
+                <Text style={{fontSize:Dimensions.get('window').width*0.0411}}>{item.text}</Text>
+            )
+        }
     }
 
     renderSeparator = () => {
