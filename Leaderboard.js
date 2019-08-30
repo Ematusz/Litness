@@ -64,10 +64,6 @@ export default class Leaderboard extends React.Component {
 
     queryDB(city,cityType, state) {
       let data = [];
-      // remove this when you push to testflight
-      if (cityType == "locality") {
-        cityType = "city";
-      }
       db.collection('leaderboard').where(cityType, "==", city).where("state", "==", state).orderBy('count', 'desc').limit(25).get()
          .then( leaderBoardSnapshot => {
            
@@ -130,7 +126,6 @@ export default class Leaderboard extends React.Component {
 
     getData() {
       
-      // console.ignoredYellowBox = ['Setting a timer'];
       let timeout = setTimeout(()=>{
         if (this.props.bannerErrorState != "locked") {
           this.props.bannerErrorHandler({state: true, message: "We are having trouble reaching our servers. Please check your connection and try again."})
