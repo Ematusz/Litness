@@ -2,8 +2,12 @@ import React from 'react';
 import {View,Text,Image, TouchableOpacity} from 'react-native';
 import styles from './styles.js'
 import { FlatList } from 'react-native-gesture-handler';
-import { AddHubInstructions } from './Text.json';
-import { VoteOnCurrentHub } from './Text.json';
+import { SettingANewHubTitle } from './Text.json';
+import { SettingANewHubInstructions } from './Text.json';
+import { VotingOnAnExistingHubTitle } from './Text.json';
+import { VotingOnExistingHubInstructions } from './Text.json';
+import { TipsGuidelinesTitle } from './Text.json';
+import { TipsGuidelinesList } from './Text.json';
 import Dimensions from 'Dimensions';
 
 
@@ -26,10 +30,11 @@ export default class TutorialPage extends React.Component {
     loadTutorialData() {
         console.log("loaded")
         let data_ = [];
-        data_.push({text: AddHubInstructions, key: Math.random().toString()})
-        data_.push({renderGif: "https://media.giphy.com/media/QZDofWEpQmeCvy5sdU/giphy.gif", key: Math.random().toString()})
-        data_.push({text: VoteOnCurrentHub, key: Math.random().toString()})
-        data_.push({renderGif: "https://media.giphy.com/media/LnQH7HJ4T4IboRHjNK/giphy.gif", key: Math.random().toString()})
+        data_.push({title: SettingANewHubTitle ,body: SettingANewHubInstructions, key: Math.random().toString()});
+        data_.push({renderGif: "https://media.giphy.com/media/QZDofWEpQmeCvy5sdU/giphy.gif", key: Math.random().toString()});
+        data_.push({title: VotingOnAnExistingHubTitle, body: VotingOnExistingHubInstructions, key: Math.random().toString()});
+        data_.push({renderGif: "https://media.giphy.com/media/LnQH7HJ4T4IboRHjNK/giphy.gif", key: Math.random().toString()});
+        data_.push({title: TipsGuidelinesTitle, body: TipsGuidelinesList, key: Math.random().toString()})
         this.setState({data: data_});
     }
 
@@ -43,7 +48,10 @@ export default class TutorialPage extends React.Component {
         }
         else {
             return (
-                <Text style={{fontSize:Dimensions.get('window').width*0.0411}}>{item.text}</Text>
+                <View>
+                    <Text style={{fontSize:Dimensions.get('window').width*0.0411, fontWeight:'bold'}}>{item.title}</Text>
+                    <Text style={{fontSize:Dimensions.get('window').width*0.0411}}>{item.body}</Text>
+                </View>
             )
         }
     }
