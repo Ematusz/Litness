@@ -73,7 +73,7 @@ export function renderVotingLit() {
             style = {{
                 height: Dimensions.get('window').height*.0543,
                 resizeMode: 'contain',
-                width: Dimensions.get('window').width*.0725,}}
+                width: (Dimensions.get('window').width*.0845)}}
             source={require('./assets/fire.png')}
             />
 }
@@ -83,28 +83,17 @@ export function renderVotingShit() {
             style = {{
                 height: Dimensions.get('window').height*.0543,
                 resizeMode: 'contain',
-                width: Dimensions.get('window').width*.0725,}}
+                width: (Dimensions.get('window').width*.0845)}}
             source={require('./assets/poop.png')}
             />
-}
-
-export function renderNavigationIcon() {
-        return <Image
-                style = {{
-                        height: Dimensions.get('window').height*.0543,
-                        resizeMode: 'contain',
-                        width: Dimensions.get('window').width*.0725}}
-                // this is a place holder. Make sure to find something open source or make our own
-                source={require('./assets/navigation.png')}
-                />
 }
 
 export function renderAddMarkerIcon() {
     return  <Image
             style = {{flex:1,
-                    height: (Dimensions.get('window').height*.038),
+                    height: (Dimensions.get('window').height*.0476),
                     resizeMode: 'contain',
-                    width: (Dimensions.get('window').width*.068)}}
+                    width: (Dimensions.get('window').width*.0845)}}
             source={require('./assets/insertMarker.png')}
             />
 }
@@ -112,9 +101,9 @@ export function renderAddMarkerIcon() {
 export function renderLeaderboardTabIcon() {
     return <Image
             style = {{flex:1,
-                    height: (Dimensions.get('window').height*.038),
+                    height: (Dimensions.get('window').height*.0476),
                     resizeMode: 'contain',
-                    width: (Dimensions.get('window').width*.068)}}
+                    width: (Dimensions.get('window').width*.0845)}}
             source={require('./assets/medal.png')}
             />
 }
@@ -124,9 +113,9 @@ export function renderTutorialPageIcon() {
                 style = {{flex:1,
                         textAlign: 'center',
                         textAlignVertical: 'center',
-                        fontSize: Dimensions.get('window').width*0.0483,
-                        height: (Dimensions.get('window').height*.038),
-                        width: (Dimensions.get('window').width*.068)}}
+                        fontSize: Dimensions.get('window').height*0.038,
+                        height: (Dimensions.get('window').height*.0476),
+                        width: (Dimensions.get('window').width*.0845)}}
                 >?</Text>
 }
 

@@ -214,7 +214,7 @@ export default StyleSheet.create({
     position: 'absolute',
     alignItems:'center',
     justifyContent:'center',
-    fontSize: Dimensions.get('window').width*0.121,
+    fontSize: Dimensions.get('window').width*0.133,
   },
   tutorialPage: {
     height: '90%',
