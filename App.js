@@ -7,6 +7,7 @@ import styles from './styles.js';
 import { GeoFirestore} from 'geofirestore';
 import * as Location from 'expo-location';
 import ErrorPage from './ErrorPage'
+import {AdMobInterstitial} from 'expo-ads-admob';
 
 // Initialize Firebase
 global.firebaseConfig = {
@@ -43,8 +44,30 @@ export default class App extends React.Component {
       pageErrorMessage: "Oops! We can't seem to reach our servers. Please check your connection and try again.",
     };
     this.pageErrorHandler = this.pageErrorHandler.bind(this);
+    this.componentDidMount = this.componentDidMount.bind(this);
+    this.componentWillUnmount = this.componentWillUnmount.bind(this);
+    this.showInterstitialAd = this.showInterstitialAd.bind(this);
   }
 
+  showInterstitialAd = async() => {
+    await AdMobInterstitial.requestAdAsync()
+    await AdMobInterstitial.showAdAsync()
+  }
+
+  componentDidMount() {
+    AdMobInterstitial.setAdUnitID('ca-app-pub-3940256099942544/1033173712');
+    AdMobInterstitial.setTestDeviceID('EMULATOR');
+    AdMobInterstitial.addEventListener("interstitialDidLoad", ()=> console.log("interstitialDidLoad"));
+    AdMobInterstitial.addEventListener("interstitialDidFailToLoad", ()=> console.log("interstitialDidFailToLoad"));
+    AdMobInterstitial.addEventListener("interstitialDidOpen", ()=> console.log("interstitialDidOpen"));
+    AdMobInterstitial.addEventListener("interstitialDidClose", ()=> console.log("interstitialDidClose"));
+    AdMobInterstitial.addEventListener("interstitialWillLeaveApplication", ()=> console.log("interstitialWillLeaveApplication"));
+    this.showInterstitialAd();
+  }
+
+  componentWillUnmount() {
+    AdMobInterstitial.removeAllListeners();
+  }
   pageErrorHandler(someValue) {
     this.setState({
       pageErrorState: someValue.state
@@ -64,7 +87,7 @@ export default class App extends React.Component {
           {!this.state.pageErrorState && <MasterView
             pageErrorHandler={this.pageErrorHandler}
           />}    
-        </View>      
+        </View>    
     );
   }
 }

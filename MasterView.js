@@ -20,7 +20,9 @@ import Dimensions from 'Dimensions';
 import { SplashScreen } from 'expo';
 import uberLink from './uberLink';
 import googleMapsLink from './googleMapsLink.js';
-import MoveToLocationButton from './MoveToLocationButton.js'
+import MoveToLocationButton from './MoveToLocationButton.js';
+import AdBanner from './AdBanner.js';
+import InterstitialAd from './InterstitialAd.js'
 
 function getRandomInt(min,max) {
   min = Math.ceil(min);
@@ -168,7 +170,6 @@ export default class MasterView extends React.Component {
   }
 
   componentWillMount() {
-    console.log("dictionary", this.state.userLocation.userAddressDictionary)
     this._addWatchPosition()
     this._getDeviceInfoAsync();
   }
@@ -831,6 +832,10 @@ export default class MasterView extends React.Component {
                 removeWatchPosition={this.state.watchPosition}
                 connectionTypeHandler={this.connectionTypeHandler}
           />}
+
+          <AdBanner 
+                style = {styles.adMobBanner}
+          />
 
           {this.state.bannerErrorState && <AnimatedErrorBanner style = {styles.errorBanner}
                 error={this.state.bannerErrorMessage}

@@ -7,6 +7,9 @@ export default StyleSheet.create({
     borderBottomWidth: Dimensions.get('window').height*.0027,
     right: "-.75%",
   }, 
+  adMobBanner: {
+    alignSelf: "center"
+  },
   bigContainer: {
     flex:1,
     flexDirection: 'column',
