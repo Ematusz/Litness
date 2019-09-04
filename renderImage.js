@@ -2,6 +2,7 @@ import React from 'react';
 import {Image,Text} from 'react-native';
 import styles from './styles.js';
 import Dimensions from 'Dimensions';
+import { requestReview } from 'expo/build/StoreReview/StoreReview';
 
 export function renderMarkerIcon(count) { 
     if (count < 0) {
@@ -188,5 +189,16 @@ export function renderTarget() {
                 width: Dimensions.get('window').height*.0479,                                    
                 }}
         source={require('./assets/target.png')}
+        />
+}
+
+export function renderPlusSign() {
+        return <Image
+        style = {{
+                ...styles.marker,
+                width: 20,
+                height: 20,
+        }}
+        source={require('./assets/plus_sign.png')}
         />
 }

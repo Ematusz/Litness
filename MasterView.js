@@ -194,7 +194,7 @@ export default class MasterView extends React.Component {
       },10000)
       let ghostGeohash = g.encode_int(this.state.userLocation.latitude,this.state.userLocation.longitude,26)
       // Fetch curent location
-      myApiKey = 'AIzaSyBkwazID1O1ryFhdC6mgSR4hJY2-GdVPmE';
+      myApiKey = apiKey;
       fetch('https://maps.googleapis.com/maps/api/geocode/json?latlng=' + this.state.userLocation.latitude + ',' + this.state.userLocation.longitude + '&location_type=ROOFTOP&result_type=street_address|premise&key=' + myApiKey)
       .then((response) => response.json())
       .then((responseJson) => {

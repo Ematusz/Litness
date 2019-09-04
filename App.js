@@ -19,8 +19,10 @@ global.firebaseConfig = {
     //messagingSenderId: "862420802331"
 };
 
+global.apiKey = 'AIzaSyD2YhfO1TBYNOAWSxGwXQocAikqLuCRl7Q';
+
 // set API key for location
-Location.setApiKey('AIzaSyBkwazID1O1ryFhdC6mgSR4hJY2-GdVPmE')
+Location.setApiKey(apiKey)
 
 firebase.initializeApp(firebaseConfig);
 global.db = firebase.firestore();
@@ -28,6 +30,8 @@ global.db = firebase.firestore();
 const geofirestore = new GeoFirestore(db);
 
 global.hubs = geofirestore.collection('hubs')
+
+
 
 
 // const uniqueId = DeviceInfo.getUniqueID();
