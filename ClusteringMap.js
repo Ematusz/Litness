@@ -3,7 +3,7 @@ import {Text, View} from 'react-native';
 import styles from './styles.js'
 import MapView,{ Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import ClusteredMapView from 'react-native-maps-super-cluster';
-import {renderMarkerIcon, renderGhostIcon, renderClusterMarker} from './renderImage.js'
+import {renderMarkerIcon, renderGhostIcon, renderClusterMarker, renderPlusSign} from './renderImage.js'
 import * as Location from 'expo-location';
 import * as Permissions from 'expo-permissions';
 import { SplashScreen } from 'expo';
@@ -153,7 +153,8 @@ export default class ClusteringMap extends React.Component {
             {...marker} 
             zIndex = {0}
           >
-            <View style={{...styles.marker, backgroundColor: "red", width: 20, height: 20}} />
+            {renderPlusSign()}
+            {/* <View style={{...styles.marker, backgroundColor: "red", width: 20, height: 20}} /> */}
           </MapView.Marker>
         )
       }
@@ -191,27 +192,7 @@ export default class ClusteringMap extends React.Component {
         });
       }
   
-      /*let location = */this.initializeRegion(await Location.getCurrentPositionAsync({maximumAge: 0}));
-
-      // let locationResult = JSON.stringify(await location);
-      // this.setState({locationResult});
-  
-      // let initialRegion = {
-      //   latitude: JSON.parse(locationResult).coords.latitude,
-      //   longitude: JSON.parse(locationResult).coords.longitude,
-      //   latitudeDelta: 0.0005,
-      //   longitudeDelta: 0.0005,
-      // }
-
-      // this.props.mapRegionHandler(await initialRegion);
-
-      // this.map.getMapRef().animateToRegion(await initialRegion,1);
-      // setTimeout(() => {
-      //   console.log(initialRegion);
-      //   SplashScreen.hide();
-      // }, 500);
-      
-      
+      this.initializeRegion(await Location.getCurrentPositionAsync({maximumAge: 0}));
     };
 
     toggleTabMapPress = pressinfo => {
@@ -223,7 +204,6 @@ export default class ClusteringMap extends React.Component {
     onRegionChangeComplete = mapRegion => {
       console.log("here")
       this.props.mapRegionHandler(mapRegion);
-      // console.log("longitude", mapRegion.longitude)
       this.props.addListenerHandler(mapRegion);
     }
 
@@ -250,7 +230,6 @@ export default class ClusteringMap extends React.Component {
                 latitudeDelta: 0.01,
                 longitudeDelta: 0.01,
             }}
-          // data={Object.values(this.props.geoHashGrid).map(x => Object.values(x)).map(x=>x).flat().concat(this.props.ghostMarker)}
           data = {Object.values(this.props.hubs).map(x => x).flat().concat(this.props.ghostMarker).concat(this.props.possibleLocationMarker)}
           renderMarker={this.renderMarker}
           renderCluster={this.renderCluster}
