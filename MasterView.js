@@ -833,9 +833,7 @@ export default class MasterView extends React.Component {
                 connectionTypeHandler={this.connectionTypeHandler}
           />}
 
-          <AdBanner 
-                style = {styles.adMobBanner}
-          />
+          <AdBanner/>
 
           {this.state.bannerErrorState && <AnimatedErrorBanner style = {styles.errorBanner}
                 error={this.state.bannerErrorMessage}
