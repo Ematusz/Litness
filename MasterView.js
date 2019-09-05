@@ -23,6 +23,7 @@ import googleMapsLink from './googleMapsLink.js';
 import MoveToLocationButton from './MoveToLocationButton.js';
 import AdBanner from './AdBanner.js';
 import InterstitialAd from './InterstitialAd.js'
+import lyftLink from './lyftLink.js';
 
 function getRandomInt(min,max) {
   min = Math.ceil(min);
@@ -854,6 +855,10 @@ export default class MasterView extends React.Component {
                 clickUber={()=>{
                   let uberLink_ = new uberLink(this.state.infoPageMarker);
                   uberLink_.openUber();
+                }}
+                clickLyft={()=>{
+                  let liftLynk_ = new lyftLink(this.state.infoPageMarker,this.state.userLocation);
+                  liftLynk_.openLyft();
                 }}
                 goToMarker = {() => this.goToMarker(this.state.infoPageMarker)}
           />}
