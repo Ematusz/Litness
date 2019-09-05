@@ -265,7 +265,7 @@ export default class Leaderboard extends React.Component {
                   return '';
                 }}
                 query={{
-                  key: 'AIzaSyBkwazID1O1ryFhdC6mgSR4hJY2-GdVPmE',
+                  key: apiKey,
                   language: 'en',
                   types: '(cities)'
                   // types: 'geocode'
