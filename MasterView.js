@@ -215,6 +215,7 @@ export default class MasterView extends React.Component {
         let userAddressDictionary = {}
         // creates a dictionary of all possible locations returned by the fetch
         results.forEach( result => {
+            console.log("formatted address",result.formatted_address)
             let state, street, administrative_area_level_3, locality, neighborhood, number = null;
             counter = 0
             while ((!state || !locality || !administrative_area_level_3 || !street || !number || !neighborhood) && counter < result.address_components.length) {
@@ -241,17 +242,19 @@ export default class MasterView extends React.Component {
               })
               counter+=1;
             }
-          userAddressDictionary[result.formatted_address] = {
-            coord: result.geometry.location,
-            geohash: ghostGeohash,
-            state: state,
-            locality: locality,
-            administrative_area_level_3: administrative_area_level_3,
-            neighborhood: neighborhood,
-            city: locality != null ? locality:administrative_area_level_3,
-            street: street,
-            number: number,
-          };
+          // if ((number != null) && (street != undefined)) {
+            userAddressDictionary[result.formatted_address] = {
+              coord: result.geometry.location,
+              geohash: ghostGeohash,
+              state: state,
+              locality: locality,
+              administrative_area_level_3: administrative_area_level_3,
+              neighborhood: neighborhood,
+              city: locality != null ? locality:administrative_area_level_3,
+              street: street,
+              number: number,
+            };
+          // } 
         })
         console.log(Object.keys(userAddressDictionary));
   
@@ -282,7 +285,9 @@ export default class MasterView extends React.Component {
 
   success = async(position) => {
     console.log("success");
-    let { latitude, longitude } = position.coords;
+    // let { latitude, longitude } = position.coords;
+    let latitude = 42.269863;
+    let longitude = -83.741601;
     const userCoordinates = {
         userAddressDictionary: null,
         longitude,
@@ -834,7 +839,7 @@ export default class MasterView extends React.Component {
                 connectionTypeHandler={this.connectionTypeHandler}
           />}
 
-          <AdBanner/>
+          {/* <AdBanner/> */}
 
           {this.state.bannerErrorState && <AnimatedErrorBanner style = {styles.errorBanner}
                 error={this.state.bannerErrorMessage}
