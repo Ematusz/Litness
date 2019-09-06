@@ -179,7 +179,6 @@ export default class ClusteringMap extends React.Component {
         // console.log(this.map.getMapRef());
         this.map.getMapRef().animateToRegion(initialRegion,1);
         console.log(initialRegion);
-        SplashScreen.hide();
       }, 500);
     }
 
