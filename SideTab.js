@@ -1,7 +1,7 @@
 import React from 'react';
 import {View, TouchableOpacity, Button} from 'react-native';
 import styles from './styles.js'
-import {renderVotingLit, renderVotingShit, renderNavigationIcon} from './renderImage.js'
+import {renderVotingLit, renderVotingShit} from './renderImage.js'
 
 export default class sideTab extends React.Component {
     constructor(props) {
