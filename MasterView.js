@@ -241,17 +241,19 @@ export default class MasterView extends React.Component {
               })
               counter+=1;
             }
-          userAddressDictionary[result.formatted_address] = {
-            coord: result.geometry.location,
-            geohash: ghostGeohash,
-            state: state,
-            locality: locality,
-            administrative_area_level_3: administrative_area_level_3,
-            neighborhood: neighborhood,
-            city: locality != null ? locality:administrative_area_level_3,
-            street: street,
-            number: number,
-          };
+          if ((street!=undefined) && (number != null)) {
+            userAddressDictionary[result.formatted_address] = {
+              coord: result.geometry.location,
+              geohash: ghostGeohash,
+              state: state,
+              locality: locality,
+              administrative_area_level_3: administrative_area_level_3,
+              neighborhood: neighborhood,
+              city: locality != null ? locality:administrative_area_level_3,
+              street: street,
+              number: number,
+            };
+          }
         })
         console.log(Object.keys(userAddressDictionary));
   
@@ -281,7 +283,6 @@ export default class MasterView extends React.Component {
   }
 
   success = async(position) => {
-    console.log("success");
     let { latitude, longitude } = position.coords;
     const userCoordinates = {
         userAddressDictionary: null,
