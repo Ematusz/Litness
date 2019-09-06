@@ -111,13 +111,13 @@ export function renderLeaderboardTabIcon() {
 
 export function renderTutorialPageIcon() {
         return <Text
-                style = {{flex:1,
-                        textAlign: 'center',
-                        textAlignVertical: 'center',
-                        fontSize: Dimensions.get('window').height*0.038,
-                        height: (Dimensions.get('window').height*.0476),
-                        width: (Dimensions.get('window').width*.0845)}}
-                >?</Text>
+        style = {{flex:1,
+                textAlign: 'center',
+                textAlignVertical: 'center',
+                fontSize: Dimensions.get('window').height*0.038,
+                height: (Dimensions.get('window').height*.0476),
+                width: (Dimensions.get('window').width*.0845)}}
+        >?</Text>
 }
 
 export function renderLandmark() {

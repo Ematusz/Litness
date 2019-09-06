@@ -201,8 +201,7 @@ export default StyleSheet.create({
   tab: {
     backgroundColor:"white",
     borderColor:'black',
-    borderWidth: Dimensions.get('window').height*.00272,
-    borderRadius: Dimensions.get('window').height*.0136,
+    borderWidth: Dimensions.get('window').height*.0027,
     position: 'absolute',
     flex:1,
     top: '40%',
@@ -211,6 +210,7 @@ export default StyleSheet.create({
     alignItems:"center",
   },
   tabStyle: {
+    backgroundColor: 'white',
     borderRadius: Dimensions.get('window').height*.00679,
     borderWidth: Dimensions.get('window').height*.00272,
     borderColor: "transparent",
