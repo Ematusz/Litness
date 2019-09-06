@@ -161,7 +161,6 @@ export default class MasterView extends React.Component {
     console.log("Dimensions", Dimensions.get('window').height, Dimensions.get('window').width)
     console.log("componentDidMount")
     AppState.addEventListener('change', this._handleAppStateChange)
-    SplashScreen.preventAutoHide();
   }
 
   componentWillUnmount() {

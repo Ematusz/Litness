@@ -8,6 +8,7 @@ import { GeoFirestore} from 'geofirestore';
 import * as Location from 'expo-location';
 import ErrorPage from './ErrorPage'
 import {AdMobInterstitial} from 'expo-ads-admob';
+import { SplashScreen } from 'expo';
 
 // Initialize Firebase
 global.firebaseConfig = {
@@ -59,12 +60,16 @@ export default class App extends React.Component {
   }
 
   componentDidMount() {
+    SplashScreen.preventAutoHide();
     AdMobInterstitial.setAdUnitID('ca-app-pub-3940256099942544/1033173712');
     AdMobInterstitial.setTestDeviceID('EMULATOR');
     AdMobInterstitial.addEventListener("interstitialDidLoad", ()=> console.log("interstitialDidLoad"));
     AdMobInterstitial.addEventListener("interstitialDidFailToLoad", ()=> console.log("interstitialDidFailToLoad"));
     AdMobInterstitial.addEventListener("interstitialDidOpen", ()=> console.log("interstitialDidOpen"));
-    AdMobInterstitial.addEventListener("interstitialDidClose", ()=> console.log("interstitialDidClose"));
+    AdMobInterstitial.addEventListener("interstitialDidClose", ()=> {
+      console.log("interstitialDidClose");
+      SplashScreen.hide();
+    });
     AdMobInterstitial.addEventListener("interstitialWillLeaveApplication", ()=> console.log("interstitialWillLeaveApplication"));
     this.showInterstitialAd();
   }
