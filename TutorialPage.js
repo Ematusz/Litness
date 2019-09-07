@@ -31,9 +31,9 @@ export default class TutorialPage extends React.Component {
         console.log("loaded")
         let data_ = [];
         data_.push({title: SettingANewHubTitle ,body: SettingANewHubInstructions, key: Math.random().toString()});
-        data_.push({renderGif: "https://media.giphy.com/media/QZDofWEpQmeCvy5sdU/giphy.gif", key: Math.random().toString()});
+        data_.push({renderGif: "https://media.giphy.com/media/LOXJRpvR5bve7xMSgh/giphy.gif", key: Math.random().toString()});
         data_.push({title: VotingOnAnExistingHubTitle, body: VotingOnExistingHubInstructions, key: Math.random().toString()});
-        data_.push({renderGif: "https://media.giphy.com/media/LnQH7HJ4T4IboRHjNK/giphy.gif", key: Math.random().toString()});
+        data_.push({renderGif: "https://media.giphy.com/media/WQHYxOqn7j8QHRvjS1/giphy.gif", key: Math.random().toString()});
         data_.push({title: TipsGuidelinesTitle, body: TipsGuidelinesList, key: Math.random().toString()})
         this.setState({data: data_});
     }
@@ -42,7 +42,8 @@ export default class TutorialPage extends React.Component {
         if (item.renderGif !== undefined) {
             return(
                 <Image style = {{height: Dimensions.get('window').height * .679, resizeMode: 'contain', resizeMethod: 'auto'}}
-                     source={{uri:item.renderGif}}
+
+                    source={{uri: item.renderGif}}
                 />
             )
         }
