@@ -152,7 +152,7 @@ export default class Leaderboard extends React.Component {
           component.types.forEach( type => {
             if (type == "administrative_area_level_1") {
               state = component.short_name;
-              this._isMounted && this.setState({state});
+              this._isMounted && this.setState({state})
             }
             if (type == "locality") {
               locality = component.long_name;
@@ -165,19 +165,36 @@ export default class Leaderboard extends React.Component {
             }
           })
         })
-        if (neighborhood != null) {
+        if (results[0].formatted_address.includes(neighborhood)) {
           city = neighborhood;
           cityType = "neighborhood";
           this._isMounted && this.setState({city:city, cityType:cityType});
-        } else if (locality != null) {
+        } else if (results[0].formatted_address.includes(locality)) {
           city = locality;
           cityType = "locality";
           this._isMounted && this.setState({city:city, cityType:cityType});
-        } else if (administrative_area_level_3 != null) {
+        } else if (results[0].formatted_address.includes(administrative_area_level_3)) {
           cityType = "administrative_area_level_3";
           city = administrative_area_level_3;
           this._isMounted && this.setState({city:city, cityType:cityType});
+        } else if((neighborhood != null) ||(locality != null) || (administrative_area_level_3 != null)) {
+          if (neighborhood != null) {
+            city = neighborhood;
+            cityType = "neighborhood";
+            this._isMounted && this.setState({city:city, cityType:cityType});
+          } else if (locality != null) {
+            city = locality;
+            cityType = "locality";
+            this._isMounted && this.setState({city:city, cityType:cityType});
+          } else if (administrative_area_level_3 != null) {
+            cityType = "administrative_area_level_3";
+            city = administrative_area_level_3;
+            this._isMounted && this.setState({city:city, cityType:cityType});
+          }
+        } else {
+          // insert error message for when an address gets returned with no neighborhood, locality, or administrative_area_level_3 is returned and kill the search
         }
+        
         this.queryDB(city,cityType,state);
       })
     }
