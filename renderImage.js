@@ -15,12 +15,12 @@ export function renderMarkerIcon(count) {
                 style = {{...styles.emojiIcon}}
                 source={require('./assets/logs.png')}
                 />;
-    } else if (count < 5) {
+    } else if (count < 10) {
         return <Image
                 style = {styles.emojiIcon}
                 source={{uri:"https://media.giphy.com/media/MFyEVDtwt0gaQ0MGmm/giphy.gif"}}
                 />;
-    } else if (count < 10) {
+    } else if (count < 25) {
         return <Image
                 style = {{...styles.emojiIcon}}
                 source={{uri:"https://media.giphy.com/media/ZBQruf89fJy4hLvrsu/giphy.gif"}}
