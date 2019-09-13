@@ -10,7 +10,7 @@ export default class MoveToLocationButton extends React.Component {
     render() {
         return (
             <View style= {styles.moveToLocationStyle}>
-                 <TouchableOpacity onPress={this.props.refreshWatchPosition}>
+                 <TouchableOpacity onPress={this.props.animateToLocation}>
                     {renderTarget()}
                 </TouchableOpacity>
             </View>

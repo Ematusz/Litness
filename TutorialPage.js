@@ -39,7 +39,7 @@ export default class TutorialPage extends React.Component {
         counter += 1;
         data_.push({title: VotingOnAnExistingHubTitle, body: VotingOnExistingHubInstructions, key: counter});
         counter += 1;
-        data_.push({renderGif: "https://media.giphy.com/media/WQHYxOqn7j8QHRvjS1/giphy.gif", key: counter});
+        data_.push({renderGif: "https://media.giphy.com/media/Plfa4hA977Dvu41wrG/giphy.gif", key: counter});
         counter += 1;
         data_.push({title: TipsGuidelinesTitle, list: TipsGuidelinesList, key: counter});
         counter += 1;

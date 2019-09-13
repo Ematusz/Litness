@@ -109,7 +109,7 @@ export default class MasterView extends React.Component {
     this._addWatchPosition = this._addWatchPosition.bind(this);
 
     this.setGhost = this.setGhost.bind(this);
-    this.refreshWatchPosition = this.refreshWatchPosition.bind(this);
+    this.animateToLocation = this.animateToLocation.bind(this);
     this.success = this.success.bind(this);
     this.getAddress = this.getAddress.bind(this);
   }
@@ -277,7 +277,7 @@ export default class MasterView extends React.Component {
             this.openTab(marker,userCoordinates));
         }
       })
-    } else if (this.state.userLocation.speed < 5) {
+    } else if (this.state.userLocation.speed < 6) {
       if (marker == null) {
         this.setGhost(latitude, longitude, this.state.userLocation);
       } else {
@@ -285,7 +285,7 @@ export default class MasterView extends React.Component {
       }
     } else {
       if (marker == null) {
-        this.bannerErrorHandler({state: true, message: "Hey! Looks like you're driving. Slow down and check out a place before you judge it!"})
+        this.bannerErrorHandler({state: true, message: "Looks like you’re moving too fast! Slow down and check out a place before you vote"})
       } else {
         this.openTab(marker, this.state.userLocation);
       }
@@ -307,12 +307,7 @@ export default class MasterView extends React.Component {
     this.setState({refreshingPosition: false})
   }
 
-  refreshWatchPosition = async() => {
-    this.setState({refreshingPosition: true});
-    console.log("watchPositionRefreshed")
-    this.state.watchID;
-    this._addWatchPosition()
-
+  animateToLocation = async() => {
     let locationObj = {};
     locationObj.coordinates = {};
     locationObj.coordinates.latitude =  this.state.userLocation.latitude
@@ -734,7 +729,6 @@ export default class MasterView extends React.Component {
           // show popup "move closer to location"
         }
       } else {
-        console.log("here")
         this.bannerErrorHandler({state: true, message: "There appear to be no available locations nearby to place a hub. Please move closer to your desired location or vote on a current hub!"})
         // show popup "move closer to location"
       }
@@ -805,7 +799,6 @@ export default class MasterView extends React.Component {
           if (voteDoc.data().vote != vote) {
             hubs.doc(marker.location.address).collection('votes').doc(uniqueId).update({
               coordinates: new firebase.firestore.GeoPoint(10, 20),
-              voteTime: time,
               vote: vote,
             })
           }
@@ -854,7 +847,7 @@ export default class MasterView extends React.Component {
 
           {this.state.bannerErrorState && <AnimatedErrorBanner style = {styles.errorBanner}
                 error={this.state.bannerErrorMessage}
-                refreshWatchPosition={this.refreshWatchPosition}
+                animateToLocation={this.animateToLocation}
                 connectionType={this.state.connectionType}
                 bannerErrorHandler={this.bannerErrorHandler}
           />}
@@ -906,7 +899,7 @@ export default class MasterView extends React.Component {
           />}
 
           {<MoveToLocationButton
-            refreshWatchPosition={() => this.refreshWatchPosition()}
+            animateToLocation={() => this.animateToLocation()}
           />}
         </View>
     );

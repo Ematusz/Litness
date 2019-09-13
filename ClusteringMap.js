@@ -200,7 +200,6 @@ export default class ClusteringMap extends React.Component {
     }
 
     onRegionChangeComplete = mapRegion => {
-      console.log("here")
       this.props.mapRegionHandler(mapRegion);
       this.props.addListenerHandler(mapRegion);
     }
