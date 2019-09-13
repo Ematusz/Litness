@@ -22,7 +22,7 @@ import uberLink from './uberLink';
 import googleMapsLink from './googleMapsLink.js';
 import MoveToLocationButton from './MoveToLocationButton.js';
 import AdBanner from './AdBanner.js';
-import InterstitialAd from './InterstitialAd.js'
+import {AdMobInterstitial} from 'expo-ads-admob';
 import lyftLink from './lyftLink.js';
 
 function getRandomInt(min,max) {
@@ -50,12 +50,12 @@ export default class MasterView extends React.Component {
       animatedParentButtonTab: new Animated.Value(-.75),
       animatedTab:  new Animated.Value(-50),
       animatedTop: new Animated.Value(-100),
+      bannerErrorMessage: null,
+      bannerErrorState: false,
       clustering: true,
       connectionType: null,
       currentGrid: [],
       data_: [],
-      bannerErrorMessage: null,
-      bannerErrorState: false,
       geoHashGrid: {},
       ghostMarker: [],
       possibleLocationMarker: [],
@@ -75,6 +75,7 @@ export default class MasterView extends React.Component {
       selectedMarker: null,
       showVotingButtons: true,
       tabVal: false,
+      timesOpened: 1,
       tutorialPage: false,
       userLocation: {
         formattedAddress: null,
@@ -177,7 +178,11 @@ export default class MasterView extends React.Component {
   _handleAppStateChange = (nextAppState) => {
     console.log('AppState changed to', nextAppState)
     if (nextAppState == 'active') {
+      this.setState({timesOpened: this.state.timesOpened + 1});
       this._addWatchPosition()
+      if (this.state.timesOpened%5 == 0) {
+        this.props.showInterstitialAd();
+      }
     } else if(nextAppState == 'background') {
       this.state.watchID
     }
