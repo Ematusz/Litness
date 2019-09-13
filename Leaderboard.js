@@ -247,7 +247,6 @@ export default class Leaderboard extends React.Component {
     };
   
     render() {
-      console.log(adsManager)
       return (
         <View style={[styles.leaderboard,this.props.style]}>
             <TouchableOpacity onPress={this.props.toggleLeaderBoard} style = {styles.closeBar}>
