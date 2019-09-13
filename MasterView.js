@@ -77,6 +77,7 @@ export default class MasterView extends React.Component {
       tabVal: false,
       timesOpened: 1,
       tutorialPage: false,
+      uniqueID: null,
       userLocation: {
         formattedAddress: null,
         latitude: null,
@@ -260,9 +261,7 @@ export default class MasterView extends React.Component {
               number: number,
             };
           }
-        })
-        console.log(Object.keys(userAddressDictionary));
-  
+        })  
         // saves address, latitude, and longitude in a coordinate object
         const userCoordinates = {
           userAddressDictionary,
@@ -423,8 +422,9 @@ export default class MasterView extends React.Component {
       installationID will likely only work for expo*/
   _getDeviceInfoAsync = async() => {
     console.log('retrieving info')
-    var uniqueId = Constants.installationId;
-    console.log(uniqueId);
+    let uniqueId = Constants.installationId;
+    console.log("unique id",uniqueId);
+    this.setState({uniqueID: uniqueId});
   }
 
   showVotingButtonsHandler(someValue) {
@@ -744,8 +744,8 @@ export default class MasterView extends React.Component {
     // Adds one positive or negative vote whether lit or shit is voted
   changeLit(marker,vote) {
     // recieve the ID from the user
-    // var uniqueId = Constants.installationId;
-    let uniqueId = Math.random().toString();
+    let uniqueId = this.state.uniqueID
+    // let uniqueId = Math.random().toString();
     // collect timestamp.
     let time = new Date();
     
@@ -760,7 +760,6 @@ export default class MasterView extends React.Component {
       let street = this.state.ghostMarker[0].location.street;
       let number = this.state.ghostMarker[0].location.number;
       geohash = [g.encode_int(latitude,longitude,26)];
-      console.log(locality,administrative_area_level_3,city, neighborhood)
       // get a reference to the document at this address in the database.
 
       hubs.doc(marker.location.address).get()
@@ -802,8 +801,9 @@ export default class MasterView extends React.Component {
         // Do not let user vote multiple times but allow them to update an old vote
         if (voteDoc.exists) {
           // change vote to the opposite of the previous vote
-          if (voteDoc.data().d.vote != vote) {
-            hubs.doc(marker.location.address).set({
+          console.log(voteDoc.data())
+          if (voteDoc.data().vote != vote) {
+            hubs.doc(marker.location.address).collection('votes').doc(uniqueId).update({
               coordinates: new firebase.firestore.GeoPoint(10, 20),
               voteTime: time,
               vote: vote,
