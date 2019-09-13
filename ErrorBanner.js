@@ -15,7 +15,7 @@ export default class Leaderboard extends React.Component {
         if (connectionType == "wifi" || connectionType == "cellular") {
             console.log(connectionType);
             this.props.bannerErrorHandler({state: false, message: null})
-            this.props.refreshWatchPosition()
+            this.props.animateToLocation()
         }
     }
 

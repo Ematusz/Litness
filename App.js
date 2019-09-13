@@ -57,23 +57,23 @@ export default class App extends React.Component {
   }
 
   componentDidMount() {
-    // SplashScreen.preventAutoHide();
-    // AdMobInterstitial.setAdUnitID('ca-app-pub-9088719879244214/4527962867');
-    // AdMobInterstitial.setTestDeviceID('EMULATOR');
-    // AdMobInterstitial.addEventListener("interstitialDidLoad", ()=> console.log("interstitialDidLoad"));
-    // AdMobInterstitial.addEventListener("interstitialDidFailToLoad", (error)=> {
-    //   console.log(error)
-    //   setTimeout(() => {
-    //     SplashScreen.hide();
-    //   }, 500);
-    // });
-    // AdMobInterstitial.addEventListener("interstitialDidOpen", ()=> console.log("interstitialDidOpen"));
-    // AdMobInterstitial.addEventListener("interstitialDidClose", ()=> {
-    //   console.log("interstitialDidClose");
-    //   SplashScreen.hide();
-    // });
-    // AdMobInterstitial.addEventListener("interstitialWillLeaveApplication", ()=> console.log("interstitialWillLeaveApplication"));
-    // this.showInterstitialAd();
+    SplashScreen.preventAutoHide();
+    AdMobInterstitial.setAdUnitID('ca-app-pub-9088719879244214/4527962867');
+    AdMobInterstitial.setTestDeviceID('EMULATOR');
+    AdMobInterstitial.addEventListener("interstitialDidLoad", ()=> console.log("interstitialDidLoad"));
+    AdMobInterstitial.addEventListener("interstitialDidFailToLoad", (error)=> {
+      console.log(error)
+      setTimeout(() => {
+        SplashScreen.hide();
+      }, 500);
+    });
+    AdMobInterstitial.addEventListener("interstitialDidOpen", ()=> console.log("interstitialDidOpen"));
+    AdMobInterstitial.addEventListener("interstitialDidClose", ()=> {
+      console.log("interstitialDidClose");
+      SplashScreen.hide();
+    });
+    AdMobInterstitial.addEventListener("interstitialWillLeaveApplication", ()=> console.log("interstitialWillLeaveApplication"));
+    this.showInterstitialAd();
     // FacebookAds.InterstitialAdManager.showAd("2462718770617970_2463730270516820")
     //   .then(didClick => {console.log("didclick")})
     //   .catch(error => {console.log(error)});
