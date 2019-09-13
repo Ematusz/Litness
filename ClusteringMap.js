@@ -33,7 +33,6 @@ export default class ClusteringMap extends React.Component {
     }
 
     pressMarker(marker) {
-      console.log(marker)
       if (this.props.userLocation.longitude != undefined) {
         if (marker.location.address in this.state.markerToRef) {
           this.state.markerToRef[marker.location.address].showCallout();
