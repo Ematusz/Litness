@@ -5149,6 +5149,14 @@ expo-ads-admob@~6.0.0:
   dependencies:
     prop-types "^15.6.2"
 
+expo-ads-facebook@~6.0.0:
+  version "6.0.0"
+  resolved "https://registry.yarnpkg.com/expo-ads-facebook/-/expo-ads-facebook-6.0.0.tgz#8aa24977fa2072dd00c510660aca7f279b4a015b"
+  integrity sha512-ByG1vOZ2BBWkVvE5LsEvUx7Zz/k55UWwRXrx7PfBjhHPAUtNirZLjng/uTW3xF/xbiMAUJ0hSt82+CArIeiubw==
+  dependencies:
+    fbemitter "^2.1.1"
+    nullthrows "^1.1.0"
+
 expo-app-loader-provider@~6.0.0:
   version "6.0.0"
   resolved "https://registry.yarnpkg.com/expo-app-loader-provider/-/expo-app-loader-provider-6.0.0.tgz#c187a39942ac27cfaec3b394a5c9851d3f39678b"

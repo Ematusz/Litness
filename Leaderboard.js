@@ -7,6 +7,11 @@ import { getDistance } from 'geolib';
 import * as math from 'mathjs';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 import Dimensions from 'Dimensions';
+import FacebookNativeAd from './FacebookNativeAd.js';
+import * as FacebookAds from 'expo-ads-facebook';
+
+// const adsManager = new FacebookAds.NativeAdsManager("472839326604609_472840103271198", 3);
+
 
 export default class Leaderboard extends React.Component {
     constructor(props) {
@@ -224,6 +229,7 @@ export default class Leaderboard extends React.Component {
             <Text style = {{color:'black',fontSize:Dimensions.get('window').width*0.0483, fontWeight:'bold'}}>{item.hub.stats.cost}</Text>
           </View>
         </TouchableOpacity>
+        
       )
     }
   
@@ -241,6 +247,7 @@ export default class Leaderboard extends React.Component {
     };
   
     render() {
+      console.log(adsManager)
       return (
         <View style={[styles.leaderboard,this.props.style]}>
             <TouchableOpacity onPress={this.props.toggleLeaderBoard} style = {styles.closeBar}>
@@ -251,6 +258,10 @@ export default class Leaderboard extends React.Component {
                 {renderRefresh()}
             </TouchableOpacity>
   
+            {/* <View style = {{height: 40, width: '90%'}} >
+              <FacebookNativeAd adsManager={adsManager} />
+            </View> */}
+
             <Text style = {{...styles.locationText, fontSize:Dimensions.get('window').width*0.0725, fontWeight:'bold'}}>
               Leaderboard
             </Text>
