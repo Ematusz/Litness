@@ -52,7 +52,7 @@ export default StyleSheet.create({
   errorBanner: {
     height: '10%',
     width: '90%',
-    top:"5%",
+    top:"3%",
     alignSelf:'center',
     position: 'absolute',
     borderColor:'black',
