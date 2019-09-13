@@ -120,11 +120,13 @@ export default class MasterView extends React.Component {
     }
     // change selectedAddress to the new address if the selected marker is not at selectedAddress
     else {
-      if(marker.location.address in userLocation.userAddressDictionary) {
-        this.setState({showVotingButtons: true})
+      if (userLocation.userAddressDictionary == null) {
+        this.setState({showVotingButtons: false});
+      } else if (marker.location.address in userLocation.userAddressDictionary) {
+        this.setState({showVotingButtons: true});
         console.log(true);
       } else {
-        this.setState({showVotingButtons: false})
+        this.setState({showVotingButtons: false});
         console.log(false);
       }
 
@@ -189,7 +191,7 @@ export default class MasterView extends React.Component {
   }
 
   getAddress(latitude,longitude,marker) {
-    if (this.state.userLocation.userAddressDictionary == null) {
+    if ((this.state.userLocation.userAddressDictionary == null) && (this.state.userLocation.speed < 5)) {
       let timeout = setTimeout(()=>{
         if (this.state.bannerErrorState != "locked") {
           this.setState({bannerErrorState: true});
@@ -276,24 +278,32 @@ export default class MasterView extends React.Component {
             this.openTab(marker,userCoordinates));
         }
       })
-    } else {
-      if( marker == null) {
+    } else if (this.state.userLocation.speed < 5) {
+      if (marker == null) {
         this.setGhost(latitude, longitude, this.state.userLocation);
       } else {
         this.openTab(marker, this.state.userLocation)
+      }
+    } else {
+      if (marker == null) {
+        this.bannerErrorHandler({state: true, message: "Hey! Looks like you're driving. Slow down and check out a place before you judge it!"})
+      } else {
+        this.openTab(marker, this.state.userLocation);
       }
     }
 
   }
 
   success = async(position) => {
-    let { latitude, longitude } = position.coords;
+    let { latitude, longitude, /*speed*/ } = position.coords;
+    let speed = 5;
     // let latitude = 42.296919;
     // let longitude = -83.721103;
     const userCoordinates = {
         userAddressDictionary: null,
         longitude,
-        latitude
+        latitude,
+        speed
     }
     this.setState({userLocation: userCoordinates});
     this.setState({refreshingPosition: false})
