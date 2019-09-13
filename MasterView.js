@@ -266,7 +266,8 @@ export default class MasterView extends React.Component {
         const userCoordinates = {
           userAddressDictionary,
           latitude,
-          longitude
+          longitude,
+          speed: this.state.userLocation.speed
         };
         // sets new userLocation based on previously created coordinate object
         if (marker == null) {
@@ -295,6 +296,7 @@ export default class MasterView extends React.Component {
 
   success = async(position) => {
     let { latitude, longitude, speed } = position.coords;
+    console.log(speed);
     // let latitude = 42.296919;
     // let longitude = -83.721103;
     const userCoordinates = {
