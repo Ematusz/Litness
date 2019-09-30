@@ -2,7 +2,6 @@ import React from 'react';
 import {Image,Text} from 'react-native';
 import styles from './styles.js';
 import Dimensions from 'Dimensions';
-import { requestReview } from 'expo/build/StoreReview/StoreReview';
 
 export function renderMarkerIcon(count) { 
     if (count < 0) {
