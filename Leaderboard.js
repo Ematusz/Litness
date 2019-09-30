@@ -10,7 +10,7 @@ import Dimensions from 'Dimensions';
 import FacebookNativeAd from './FacebookNativeAd.js';
 import * as FacebookAds from 'expo-ads-facebook';
 
-// const adsManager = new FacebookAds.NativeAdsManager("472839326604609_472840103271198", 3);
+const adsManager = new FacebookAds.NativeAdsManager("472839326604609_472840103271198", 3);
 
 
 export default class Leaderboard extends React.Component {
@@ -257,7 +257,7 @@ export default class Leaderboard extends React.Component {
                 {renderRefresh()}
             </TouchableOpacity>
   
-            {/* <View style = {{height: 40, width: '90%'}} >
+            {/* <View style = {{height: 100, width: '90%'}} >
               <FacebookNativeAd adsManager={adsManager} />
             </View> */}
 
