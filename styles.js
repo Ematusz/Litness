@@ -45,9 +45,9 @@ export default StyleSheet.create({
     backgroundColor: "#f5fcff"
   },
   emojiIcon: {
-    height: Dimensions.get('window').height*.0543,
+    height:Dimensions.get('window').width*0.0966,
+    width: Dimensions.get('window').width*0.0966,
     resizeMode: 'contain',
-    width: Dimensions.get('window').height*.0543,
   },
   errorBanner: {
     height: '10%',
@@ -108,8 +108,8 @@ export default StyleSheet.create({
     backgroundColor:'white'
   },
   LBinnerBox: {
-    height:Dimensions.get('window').height*.0408,
-    width: Dimensions.get('window').height*.0408,
+    height:Dimensions.get('window').width*0.0725,
+    width: Dimensions.get('window').width*0.0725,
     flexDirection:'row',
     justifyContent: 'center',
     alignItems: 'center',

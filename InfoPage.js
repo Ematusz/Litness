@@ -292,7 +292,7 @@ export default class InfoPage extends React.Component {
                             color: "black",
                             fill: "black",
                             fontSize: '10px',
-                            fontFamily: 'inherit',
+                            fontFamily: 'helvetica',
                             fillOpacity: 1,
                             margin: 0,
                             padding: 0
