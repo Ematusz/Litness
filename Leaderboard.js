@@ -10,8 +10,7 @@ import Dimensions from 'Dimensions';
 import FacebookNativeAd from './FacebookNativeAd.js';
 import * as FacebookAds from 'expo-ads-facebook';
 
-const adsManager = new FacebookAds.NativeAdsManager("472839326604609_472840103271198", 3);
-
+const adsManager = new FacebookAds.NativeAdsManager("2462718770617970_2482202108669636", 5);
 
 export default class Leaderboard extends React.Component {
     constructor(props) {
@@ -74,7 +73,8 @@ export default class Leaderboard extends React.Component {
            
            let counter = 1;
            if (leaderBoardSnapshot.empty) {
-             this._isMounted && this.setState({ processedData: data },()=>this.setState({ showLeaderboard: true,refreshing:false }));
+              data.push({ad:true,key:counter.toString()});
+              this._isMounted && this.setState({ processedData: data },()=>this.setState({ showLeaderboard: true,refreshing:false }));
            }
            leaderBoardSnapshot.forEach( leaderBoardHub => {
              hubs.doc(leaderBoardHub.id).get().then( doc => {
@@ -104,6 +104,14 @@ export default class Leaderboard extends React.Component {
                  doc.id,
                )
                data.push({hub:hub,key:counter.toString()});
+               console.log("length",leaderBoardSnapshot.size)
+               console.log("counter", counter)
+               console.log("modulo",counter%5)
+               if ((leaderBoardSnapshot.size <= 5)&&(counter == leaderBoardSnapshot.size)) {
+                data.push({ad:true,key:counter.toString()});
+               } else if (counter%5 == 0) {
+                data.push({ad:true,key:counter.toString()});
+               }
                counter = counter + 1;
                this._isMounted && this.setState({ processedData: data },()=>this.setState({ showLeaderboard: true,refreshing:false }));
              }).catch( error => {console.log(error)});
@@ -216,21 +224,30 @@ export default class Leaderboard extends React.Component {
     }
 
     renderLeaderboardCell =  ({item}) => {
-      return (
-        <TouchableOpacity style = {styles.leaderBoardCell} onPress={()=>this.props.toggleInfoPage(item.hub)}>
-          <Text style = {{...styles.leaderboardText,fontWeight:'bold',color:"black"}}> {item.key} </Text>
-              {renderMarkerIcon(item.hub.stats.cost)}
-          <View style = {{display:'flex', flexDirection:'column'}}>
-            <Text style = {styles.leaderboardText}> {item.hub.location.number} {item.hub.location.street} </Text>
-            <Text style = {{...styles.leaderboardText, fontSize: Dimensions.get('window').width*0.0290, color:'grey'}}> {this.distanceFromUser(item.hub)} </Text>
+      if (item.ad === undefined) {
+        return (
+          <TouchableOpacity style = {styles.leaderBoardCell} onPress={()=>this.props.toggleInfoPage(item.hub)}>
+            <Text style = {{...styles.leaderboardText,fontWeight:'bold',color:"black"}}> {item.key} </Text>
+                {renderMarkerIcon(item.hub.stats.cost)}
+            <View style = {{display:'flex', flexDirection:'column'}}>
+              <Text style = {styles.leaderboardText}> {item.hub.location.number} {item.hub.location.street} </Text>
+              <Text style = {{fontSize: Dimensions.get('window').width*0.0290, color:'grey'}}> {this.distanceFromUser(item.hub)} </Text>
+            </View>
+    
+            <View style = {styles.LBinnerBox}>
+              <Text style = {{color:'black',fontSize:Dimensions.get('window').width*0.0483, fontWeight:'bold'}}>{item.hub.stats.cost}</Text>
+            </View>
+          </TouchableOpacity>
+          
+        )
+      } else {
+        return(
+          <View>
+            <FacebookNativeAd adsManager={adsManager}/>
           </View>
-  
-          <View style = {styles.LBinnerBox}>
-            <Text style = {{color:'black',fontSize:Dimensions.get('window').width*0.0483, fontWeight:'bold'}}>{item.hub.stats.cost}</Text>
-          </View>
-        </TouchableOpacity>
-        
-      )
+        )
+      }
+      
     }
   
     renderSeparator = () => {
@@ -256,10 +273,6 @@ export default class Leaderboard extends React.Component {
             <TouchableOpacity onPress={this.refresh} style={styles.refresh}>
                 {renderRefresh()}
             </TouchableOpacity>
-  
-            {/* <View style = {{height: 100, width: '90%'}} >
-              <FacebookNativeAd adsManager={adsManager} />
-            </View> */}
 
             <Text style = {{...styles.locationText, fontSize:Dimensions.get('window').width*0.0725, fontWeight:'bold'}}>
               Leaderboard
