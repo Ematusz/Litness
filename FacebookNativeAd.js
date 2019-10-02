@@ -24,7 +24,7 @@ class FacebookNativeAd extends React.Component {
                     width: Dimensions.get('window').height*0.109,
                     backgroundColor:"#ffa500",
                 }}>
-                    <Text>{this.props.nativeAd.callToActionText}</Text>
+                    <Text style={{fontSize: Dimensions.get('window').width*0.0362}}>{this.props.nativeAd.callToActionText}</Text>
                 </AdTriggerView>
             </View>
         );
