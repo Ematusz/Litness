@@ -296,7 +296,6 @@ export default class MasterView extends React.Component {
 
   success = async(position) => {
     let { latitude, longitude, speed } = position.coords;
-    console.log(speed);
     // let latitude = 42.296919;
     // let longitude = -83.721103;
     const userCoordinates = {
@@ -760,7 +759,6 @@ export default class MasterView extends React.Component {
 
       hubs.doc(marker.location.address).get()
         .then( doc => {
-          console.log(doc.exists)
           // if the document doesnt yet exist, add a new one with base stats.
           if (!doc.exists) {
             hubs.doc(marker.location.address).set({
@@ -797,7 +795,6 @@ export default class MasterView extends React.Component {
         // Do not let user vote multiple times but allow them to update an old vote
         if (voteDoc.exists) {
           // change vote to the opposite of the previous vote
-          console.log(voteDoc.data())
           if (voteDoc.data().vote != vote) {
             hubs.doc(marker.location.address).collection('votes').doc(uniqueId).update({
               coordinates: new firebase.firestore.GeoPoint(10, 20),

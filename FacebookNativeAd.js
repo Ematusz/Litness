@@ -8,7 +8,6 @@ const { AdTriggerView, AdIconView, AdMediaView } = FacebookAds;
 
 class FacebookNativeAd extends React.Component {
     render() {
-        console.log(this.props.nativeAd)
         return (
             <View style={{...styles.leaderBoardCell, paddingBottom: '1.5%', backgroundColor: '#d3d3d3'}}>
                 <AdMediaView style={{height:1,width:1}}/>
@@ -20,8 +19,8 @@ class FacebookNativeAd extends React.Component {
                 </View>
                 <AdTriggerView style={{
                     ...styles.LBinnerBox,
-                    height: Dimensions.get('window').width*0.0725,
-                    width: Dimensions.get('window').height*0.109,
+                    height: Dimensions.get('window').height*0.0408,
+                    width: Dimensions.get('window').width*0.193,
                     backgroundColor:"#ffa500",
                 }}>
                     <Text style={{fontSize: Dimensions.get('window').width*0.0362}}>{this.props.nativeAd.callToActionText}</Text>

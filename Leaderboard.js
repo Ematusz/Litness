@@ -104,9 +104,7 @@ export default class Leaderboard extends React.Component {
                  doc.id,
                )
                data.push({hub:hub,key:counter.toString()});
-               console.log("length",leaderBoardSnapshot.size)
-               console.log("counter", counter)
-               console.log("modulo",counter%5)
+
                if ((leaderBoardSnapshot.size <= 5)&&(counter == leaderBoardSnapshot.size)) {
                 data.push({ad:true,key:counter.toString()});
                } else if (counter%5 == 0) {

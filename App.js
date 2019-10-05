@@ -11,7 +11,7 @@ import {AdMobInterstitial} from 'expo-ads-admob';
 import { SplashScreen } from 'expo';
 import * as FacebookAds from 'expo-ads-facebook';
 
-FacebookAds.AdSettings.addTestDevice(FacebookAds.AdSettings.currentDeviceHash);
+// FacebookAds.AdSettings.addTestDevice(FacebookAds.AdSettings.currentDeviceHash);
 
 // Initialize Firebase
 global.firebaseConfig = {
