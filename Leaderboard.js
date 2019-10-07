@@ -10,13 +10,14 @@ import Dimensions from 'Dimensions';
 import FacebookNativeAd from './FacebookNativeAd.js';
 import * as FacebookAds from 'expo-ads-facebook';
 
-const adsManager = new FacebookAds.NativeAdsManager("2462718770617970_2482202108669636", 5);
+const adsManager = new FacebookAds.NativeAdsManager("2462718770617970_2482202108669636", 0);
 
 export default class Leaderboard extends React.Component {
     constructor(props) {
         super(props);
         this._isMounted = false;
         this.state = {
+          adsManager: adsManager,
           processedData:[],
           refreshing: true,
           showLeaderboard: false,
@@ -114,6 +115,15 @@ export default class Leaderboard extends React.Component {
                this._isMounted && this.setState({ processedData: data },()=>this.setState({ showLeaderboard: true,refreshing:false }));
              }).catch( error => {console.log(error)});
            })
+           let numads = math.floor(counter/5);
+           if (numads < 1) {
+             numads = 1;
+           } else if (numads > 5) {
+             numads = 5;
+           }
+           let adsManager = new FacebookAds.NativeAdsManager("2462718770617970_2482202108669636", numads);
+           this.setState({adsManager});
+           console.log(adsManager);
          }).catch( error =>{
            console.log(error)
          })
