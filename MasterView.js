@@ -1,5 +1,5 @@
 import React from 'react';
-import {Animated, View ,AppState, Platform, Text} from 'react-native';
+import {Animated, View ,AppState, Platform, Button, Text} from 'react-native';
 import ErrorBanner from './ErrorBanner.js';
 import SideTab from './SideTab.js';
 import InfoPage from './InfoPage.js';
@@ -17,12 +17,10 @@ import ClusteringMap from './ClusteringMap.js';
 import styles from './styles.js';
 import * as Location from 'expo-location';
 import Dimensions from 'Dimensions';
-import { SplashScreen } from 'expo';
 import uberLink from './uberLink';
 import googleMapsLink from './googleMapsLink.js';
 import MoveToLocationButton from './MoveToLocationButton.js';
-import AdBanner from './AdBanner.js';
-import {AdMobInterstitial} from 'expo-ads-admob';
+import PrivacyPolicyButton from './PrivacyPolicyButton.js';
 import lyftLink from './lyftLink.js';
 
 function getRandomInt(min,max) {
@@ -899,6 +897,9 @@ export default class MasterView extends React.Component {
 
           {<MoveToLocationButton
             animateToLocation={() => this.animateToLocation()}
+          />}
+          {<PrivacyPolicyButton
+            
           />}
         </View>
     );
