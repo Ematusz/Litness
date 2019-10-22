@@ -190,7 +190,7 @@ export default StyleSheet.create({
   },
   privacyPolicyButton: {
     position: 'absolute',
-    bottom: '1%',
+    bottom: Dimensions.get('window').height*.01,
     right: '2%',
     backgroundColor: 'transparent',
   },
