@@ -737,8 +737,8 @@ export default class MasterView extends React.Component {
     // Adds one positive or negative vote whether lit or shit is voted
   changeLit(marker,vote) {
     // recieve the ID from the user
-    // let uniqueId = this.state.uniqueID
-    let uniqueId = Math.random().toString();
+    let uniqueId = this.state.uniqueID
+    // let uniqueId = Math.random().toString();
     // collect timestamp.
     let time = new Date();
     
@@ -898,7 +898,6 @@ export default class MasterView extends React.Component {
           {<MoveToLocationButton
             animateToLocation={() => this.animateToLocation()}
           />}
-          {/* <PrivacyPolicyButton/> */}
         </View>
     );
   }

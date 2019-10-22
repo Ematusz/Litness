@@ -1,5 +1,5 @@
 import React from 'react';
-import {View, Text,SafeAreaView} from 'react-native';
+import {View, SafeAreaView} from 'react-native';
 import MasterView from './MasterView.js';
 import * as firebase from 'firebase';
 import 'firebase/firestore';
@@ -36,8 +36,6 @@ const geofirestore = new GeoFirestore(db);
 
 global.hubs = geofirestore.collection('hubs')
 
-//import Panel from './components/Panel';  // Step 1
-
 export default class App extends React.Component {
   constructor(props) {
     super(props);
@@ -57,26 +55,23 @@ export default class App extends React.Component {
   }
 
   componentDidMount() {
-    // SplashScreen.preventAutoHide();
-    // AdMobInterstitial.setAdUnitID('ca-app-pub-9088719879244214/4527962867');
-    // AdMobInterstitial.setTestDeviceID('EMULATOR');
-    // AdMobInterstitial.addEventListener("interstitialDidLoad", ()=> console.log("interstitialDidLoad"));
-    // AdMobInterstitial.addEventListener("interstitialDidFailToLoad", (error)=> {
-    //   console.log(error)
-    //   setTimeout(() => {
-    //     SplashScreen.hide();
-    //   }, 500);
-    // });
-    // AdMobInterstitial.addEventListener("interstitialDidOpen", ()=> console.log("interstitialDidOpen"));
-    // AdMobInterstitial.addEventListener("interstitialDidClose", ()=> {
-    //   console.log("interstitialDidClose");
-    //   SplashScreen.hide();
-    // });
-    // AdMobInterstitial.addEventListener("interstitialWillLeaveApplication", ()=> console.log("interstitialWillLeaveApplication"));
-    // this.showInterstitialAd();
-    // FacebookAds.InterstitialAdManager.showAd("2462718770617970_2463730270516820")
-    //   .then(didClick => {console.log("didclick")})
-    //   .catch(error => {console.log(error)});
+    SplashScreen.preventAutoHide();
+    AdMobInterstitial.setAdUnitID('ca-app-pub-9088719879244214/4527962867');
+    AdMobInterstitial.setTestDeviceID('EMULATOR');
+    AdMobInterstitial.addEventListener("interstitialDidLoad", ()=> console.log("interstitialDidLoad"));
+    AdMobInterstitial.addEventListener("interstitialDidFailToLoad", (error)=> {
+      console.log(error)
+      setTimeout(() => {
+        SplashScreen.hide();
+      }, 500);
+    });
+    AdMobInterstitial.addEventListener("interstitialDidOpen", ()=> console.log("interstitialDidOpen"));
+    AdMobInterstitial.addEventListener("interstitialDidClose", ()=> {
+      console.log("interstitialDidClose");
+      SplashScreen.hide();
+    });
+    AdMobInterstitial.addEventListener("interstitialWillLeaveApplication", ()=> console.log("interstitialWillLeaveApplication"));
+    this.showInterstitialAd();
   }
 
   componentWillUnmount() {
