@@ -898,9 +898,7 @@ export default class MasterView extends React.Component {
           {<MoveToLocationButton
             animateToLocation={() => this.animateToLocation()}
           />}
-          {<PrivacyPolicyButton
-            
-          />}
+          {/* <PrivacyPolicyButton/> */}
         </View>
     );
   }

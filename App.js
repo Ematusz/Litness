@@ -1,5 +1,5 @@
 import React from 'react';
-import {View, SafeAreaView} from 'react-native';
+import {View, Text,SafeAreaView} from 'react-native';
 import MasterView from './MasterView.js';
 import * as firebase from 'firebase';
 import 'firebase/firestore';
@@ -8,6 +8,7 @@ import { GeoFirestore} from 'geofirestore';
 import * as Location from 'expo-location';
 import ErrorPage from './ErrorPage'
 import {AdMobInterstitial} from 'expo-ads-admob';
+import PrivacyPolicyButton from './PrivacyPolicyButton.js';
 import { SplashScreen } from 'expo';
 import * as FacebookAds from 'expo-ads-facebook';
 
@@ -56,23 +57,23 @@ export default class App extends React.Component {
   }
 
   componentDidMount() {
-    SplashScreen.preventAutoHide();
-    AdMobInterstitial.setAdUnitID('ca-app-pub-9088719879244214/4527962867');
-    AdMobInterstitial.setTestDeviceID('EMULATOR');
-    AdMobInterstitial.addEventListener("interstitialDidLoad", ()=> console.log("interstitialDidLoad"));
-    AdMobInterstitial.addEventListener("interstitialDidFailToLoad", (error)=> {
-      console.log(error)
-      setTimeout(() => {
-        SplashScreen.hide();
-      }, 500);
-    });
-    AdMobInterstitial.addEventListener("interstitialDidOpen", ()=> console.log("interstitialDidOpen"));
-    AdMobInterstitial.addEventListener("interstitialDidClose", ()=> {
-      console.log("interstitialDidClose");
-      SplashScreen.hide();
-    });
-    AdMobInterstitial.addEventListener("interstitialWillLeaveApplication", ()=> console.log("interstitialWillLeaveApplication"));
-    this.showInterstitialAd();
+    // SplashScreen.preventAutoHide();
+    // AdMobInterstitial.setAdUnitID('ca-app-pub-9088719879244214/4527962867');
+    // AdMobInterstitial.setTestDeviceID('EMULATOR');
+    // AdMobInterstitial.addEventListener("interstitialDidLoad", ()=> console.log("interstitialDidLoad"));
+    // AdMobInterstitial.addEventListener("interstitialDidFailToLoad", (error)=> {
+    //   console.log(error)
+    //   setTimeout(() => {
+    //     SplashScreen.hide();
+    //   }, 500);
+    // });
+    // AdMobInterstitial.addEventListener("interstitialDidOpen", ()=> console.log("interstitialDidOpen"));
+    // AdMobInterstitial.addEventListener("interstitialDidClose", ()=> {
+    //   console.log("interstitialDidClose");
+    //   SplashScreen.hide();
+    // });
+    // AdMobInterstitial.addEventListener("interstitialWillLeaveApplication", ()=> console.log("interstitialWillLeaveApplication"));
+    // this.showInterstitialAd();
     // FacebookAds.InterstitialAdManager.showAd("2462718770617970_2463730270516820")
     //   .then(didClick => {console.log("didclick")})
     //   .catch(error => {console.log(error)});
@@ -100,7 +101,12 @@ export default class App extends React.Component {
           {!this.state.pageErrorState && <MasterView
             pageErrorHandler={this.pageErrorHandler}
             showInterstitialAd={this.showInterstitialAd}
-          />}    
+          />}
+          {!this.state.pageErrorState && <SafeAreaView style={{flex:1,backgroundColor:'transparent',position:'absolute',top:'92%',height:'8%',width:'100%'}}>
+            <View style= {{height:'100%',width:'100%'}}>
+              <PrivacyPolicyButton/>
+            </View>
+          </SafeAreaView>}  
         </View>    
     );
   }
