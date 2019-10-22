@@ -188,6 +188,12 @@ export default StyleSheet.create({
     flexDirection:'column',
     justifyContent:'flex-start'
   },
+  privacyPolicyButton: {
+    position: 'absolute',
+    bottom: '1%',
+    right: '2%',
+    backgroundColor: 'transparent',
+  },
   refresh: {
     position: 'absolute',
     right: ".5%",
