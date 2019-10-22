@@ -239,8 +239,7 @@ export default class Leaderboard extends React.Component {
           </TouchableOpacity>
           
         )
-      } else {
-        // console.log(adsManager)
+      } else if (item.hub !== undefined) {
         return(
           <View>
             <TouchableOpacity style = {styles.leaderBoardCell} onPress={()=>this.props.toggleInfoPage(item.hub)}>
@@ -255,6 +254,12 @@ export default class Leaderboard extends React.Component {
                 <Text style = {{color:'black',fontSize:Dimensions.get('window').width*0.0483, fontWeight:'bold'}}>{item.hub.stats.cost}</Text>
               </View>
             </TouchableOpacity>
+            <FacebookNativeAd adsManager={adsManager}/>
+          </View>
+        )
+      } else {
+        return (
+          <View>
             <FacebookNativeAd adsManager={adsManager}/>
           </View>
         )
