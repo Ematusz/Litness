@@ -23,6 +23,9 @@
       "**/*"
     ],
     "ios": {
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "We need to determine your location to make sure you are close enough to a location before voting."
+      },
       "supportsTablet": false,
       "bundleIdentifier": "com.litness.lit",
       "config": {
