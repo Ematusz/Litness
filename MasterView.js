@@ -95,6 +95,7 @@ export default class MasterView extends React.Component {
     this.connectionTypeHandler = this.connectionTypeHandler.bind(this);
 
     this._addListener = this._addListener.bind(this);
+    this.checkHubs = this.checkHubs.bind(this);
     this.addListenerHandler = this.addListenerHandler.bind(this);
     this.componentDidMount = this.componentDidMount.bind(this);
     this.changeLit = this.changeLit.bind(this);
@@ -181,6 +182,7 @@ export default class MasterView extends React.Component {
     if (nextAppState == 'active') {
       this.setState({timesOpened: this.state.timesOpened + 1});
       this._addWatchPosition()
+      this.checkHubs()
       if (this.state.timesOpened%5 == 0) {
         this.props.showInterstitialAd();
       }
@@ -409,6 +411,29 @@ export default class MasterView extends React.Component {
         }
         this.setState({hubs: newHubsDictionary});
       })
+    })
+  }
+
+  checkHubs = async() => {
+    console.log("checkHubs")
+    let newHubsDictionary = {...this.state.hubs};
+    let counter = 0;
+    let hubsKeys = Object.keys(newHubsDictionary);
+    hubsKeys.forEach(address => {
+      hubs.doc(address).get()
+        .then( doc => {
+          if(!doc.exists) {
+            delete newHubsDictionary[address];
+          } else {
+            newHubsDictionary[address].stats.cost = doc.data().count;
+            newHubsDictionary[address].stats.upVotes = doc.data().upVotes;
+            newHubsDictionary[address].stats.downVotes = doc.data().downVotes;
+          }
+          counter++;
+          if (counter == hubsKeys.length) {
+            this.setState({hubs: newHubsDictionary});
+          }
+        })
     })
   }
   
