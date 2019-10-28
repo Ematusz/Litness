@@ -104,13 +104,13 @@ export default class Leaderboard extends React.Component {
                  doc.id,
                )
 
-               if ((leaderBoardSnapshot.size <= 5)&&(counter == leaderBoardSnapshot.size)) {
-                data.push({hub:hub,ad:true,key:counter.toString()});
-               } else if (counter%5 == 0) {
-                data.push({hub:hub,ad:true,key:counter.toString()});
-               } else {
+              //  if ((leaderBoardSnapshot.size <= 5)&&(counter == leaderBoardSnapshot.size)) {
+              //   data.push({hub:hub,ad:true,key:counter.toString()});
+              //  } else if (counter%5 == 0) {
+              //   data.push({hub:hub,ad:true,key:counter.toString()});
+              //  } else {
                 data.push({hub:hub,key:counter.toString()});
-               }
+              //  }
                counter = counter + 1;
                this._isMounted && this.setState({ processedData: data },()=>this.setState({ showLeaderboard: true,refreshing:false }));
              }).catch( error => {console.log(error)});
