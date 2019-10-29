@@ -73,7 +73,7 @@ export default class Leaderboard extends React.Component {
            
            let counter = 1;
            if (leaderBoardSnapshot.empty) {
-              data.push({ad:true,key:counter.toString()});
+              // data.push({ad:true,key:counter.toString()});
               this._isMounted && this.setState({ processedData: data },()=>this.setState({ showLeaderboard: true,refreshing:false }));
            }
            leaderBoardSnapshot.forEach( leaderBoardHub => {
