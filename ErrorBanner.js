@@ -29,7 +29,7 @@ export default class Leaderboard extends React.Component {
                         paddingRight:10,
                         paddingLeft:10
                     }} >
-                    <Text>{this.props.error}</Text>
+                    <Text style = {{fontSize:Dimensions.get('window').height*.0204}}>{this.props.error}</Text>
                 </View>
                 <TouchableOpacity 
                     style={{
