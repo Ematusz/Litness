@@ -209,9 +209,30 @@ export default class ClusteringMap extends React.Component {
           <ClusteredMapView
           style={{flex: 1}}
           ref={ref => {this.map = ref;}} 
+            customMapStyle = {[
+              {
+                "featureType": "road.arterial",
+                "elementType": "labels",
+                "stylers": [
+                  {
+                    "visibility": "off"
+                  }
+                ]
+              },
+              {
+                "featureType": "road.highway",
+                "elementType": "labels",
+                "stylers": [
+                  {
+                    "visibility": "off"
+                  }
+                ]
+              },
+            ]}
             clusteringEnabled={this.props.clustering} 
             minZoomLevel = {7}
             maxZoomLevel = {19}
+            showsTraffic = {false}
             showsMyLocationButton = {false}          
             zoomEnabled = {true}
             provider = {PROVIDER_GOOGLE}
