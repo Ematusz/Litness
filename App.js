@@ -42,10 +42,12 @@ export default class App extends React.Component {
     this.state = { 
       pageErrorState: false,
       pageErrorMessage: "Oops! We can't seem to reach our servers. Please check your connection and try again.",
+      tabState:false,
     };
     this.pageErrorHandler = this.pageErrorHandler.bind(this);
     this.componentDidMount = this.componentDidMount.bind(this);
     this.componentWillUnmount = this.componentWillUnmount.bind(this);
+    this.tabOpenHandler = this.tabOpenHandler.bind(this);
     this.showInterstitialAd = this.showInterstitialAd.bind(this);
   }
 
@@ -86,6 +88,12 @@ export default class App extends React.Component {
     });
   }
 
+  tabOpenHandler(someValue) {
+    this.setState({
+      tabState: someValue
+    });
+  }
+
   // renders the onscreen info
   render() {
     return (
@@ -96,8 +104,9 @@ export default class App extends React.Component {
           {!this.state.pageErrorState && <MasterView
             pageErrorHandler={this.pageErrorHandler}
             showInterstitialAd={this.showInterstitialAd}
+            tabOpenHandler={this.tabOpenHandler}
           />}
-          {!this.state.pageErrorState && <SafeAreaView style={{flex:1,backgroundColor:'transparent',position:'absolute',top:'92%',height:'8%',width:'100%'}}>
+          {!this.state.pageErrorState && !this.state.tabState && <SafeAreaView style={{flex:1,backgroundColor:'transparent',position:'absolute',top:'92%',height:'8%',width:'100%'}}>
             <View style= {{height:'100%',width:'100%'}}>
               <PrivacyPolicyButton/>
             </View>

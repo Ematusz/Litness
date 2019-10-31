@@ -124,10 +124,8 @@ export default class MasterView extends React.Component {
         this.setState({showVotingButtons: false});
       } else if (marker.location.address in userLocation.userAddressDictionary) {
         this.setState({showVotingButtons: true});
-        console.log(true);
       } else {
         this.setState({showVotingButtons: false});
-        console.log(false);
       }
 
       if (!this.state.tabVal) {
@@ -542,6 +540,7 @@ export default class MasterView extends React.Component {
           duration: 200
         }).start(),
       )
+      this.props.tabOpenHandler(true);
     } else {
       this.setState({tutorialPage: false});
       Animated.parallel(
@@ -561,6 +560,7 @@ export default class MasterView extends React.Component {
           duration: 300
         }).start()
       )
+      this.props.tabOpenHandler(false);
     }
   }
 
@@ -580,6 +580,7 @@ export default class MasterView extends React.Component {
           duration: 300
         }).start(),
       )
+      this.props.tabOpenHandler(true);
     } else {
       Animated.parallel(
         Animated.timing(this.state.animatedTop, {
@@ -592,6 +593,9 @@ export default class MasterView extends React.Component {
           duration: 300
         }).start(),
       )
+      if (!this.state.leaderBoard) {
+        this.props.tabOpenHandler(false);
+      }
     }
     // closes the vote tab when the info page is up so that its not distracting.
     if (this.state.infoPage && !this.state.leaderBoard) {
@@ -627,7 +631,7 @@ export default class MasterView extends React.Component {
           duration: 300
         }).start(),
       ) 
-
+      this.props.tabOpenHandler(true);
     } else {
       Animated.parallel(
         Animated.timing(this.state.animatedLeaderboard, {
@@ -648,6 +652,7 @@ export default class MasterView extends React.Component {
           duration: 300
         }).start()
       )
+      this.props.tabOpenHandler(false);
     }
   }
     // Initializes the ghost marker to closest location in possible current locations

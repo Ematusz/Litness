@@ -11,7 +11,7 @@ export default class PrivacyPolicyButton extends React.Component {
         return (
             <View style= {styles.privacyPolicyButton}>
                  <TouchableOpacity onPress={() => Linking.openURL('https://lit-apps.com/wp-content/uploads/2019/10/Privacy-Policy.pdf')}>
-                    <Text style={{color: 'blue'}}>Privacy</Text>
+                    <Text style={{color: 'black'}}>Privacy</Text>
                 </TouchableOpacity>
             </View>
         );
