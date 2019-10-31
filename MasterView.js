@@ -133,7 +133,7 @@ export default class MasterView extends React.Component {
         Animated.timing(this.state.animatedTab, {
           toValue: 0,
           friction: 100,
-          duration: 200
+          duration: 300
         }).start();
       }
 
@@ -146,8 +146,8 @@ export default class MasterView extends React.Component {
       this.setState({tabVal:false});
       Animated.timing(this.state.animatedTab, {
         toValue: -50,
-        friction: 200,
-        duration: 200
+        friction: 100,
+        duration: 300
       }).start();
     }
     
@@ -486,7 +486,7 @@ export default class MasterView extends React.Component {
     Animated.timing(this.state.animatedTab, {
       toValue: 0,
       friction: 100,
-      duration: 200
+      duration: 300
       }).start();
 
     this.setState(previousState => (
@@ -537,7 +537,7 @@ export default class MasterView extends React.Component {
         Animated.timing(this.state.animatedTab, {
           toValue: -50,
           friction: 100,
-          duration: 200
+          duration: 300
         }).start(),
       )
       this.props.tabOpenHandler(true);
