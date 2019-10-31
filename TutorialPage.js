@@ -31,7 +31,6 @@ export default class TutorialPage extends React.Component {
     loadTutorialData() {
         console.log("loaded")
         let data_ = [];
-        let list = []
         let counter = 0;
         data_.push({title: SettingANewHubTitle ,body: SettingANewHubInstructions, key: counter});
         counter += 1;
@@ -42,7 +41,6 @@ export default class TutorialPage extends React.Component {
         data_.push({renderGif: "https://media.giphy.com/media/Plfa4hA977Dvu41wrG/giphy.gif", key: counter});
         counter += 1;
         data_.push({title: TipsGuidelinesTitle, list: TipsGuidelinesList, key: counter});
-        counter += 1;
         this.setState({data: data_});
     }
 
