@@ -32,15 +32,15 @@ export default class TutorialPage extends React.Component {
         console.log("loaded")
         let data_ = [];
         let counter = 0;
-        data_.push({title: SettingANewHubTitle ,body: SettingANewHubInstructions, key: counter});
+        data_.push({title: SettingANewHubTitle ,body: SettingANewHubInstructions, key: String(counter)});
         counter += 1;
-        data_.push({renderGif: "https://media.giphy.com/media/LOXJRpvR5bve7xMSgh/giphy.gif", key: counter});
+        data_.push({renderGif: "https://media.giphy.com/media/LOXJRpvR5bve7xMSgh/giphy.gif", key: String(counter)});
         counter += 1;
-        data_.push({title: VotingOnAnExistingHubTitle, body: VotingOnExistingHubInstructions, key: counter});
+        data_.push({title: VotingOnAnExistingHubTitle, body: VotingOnExistingHubInstructions, key: String(counter)});
         counter += 1;
-        data_.push({renderGif: "https://media.giphy.com/media/Plfa4hA977Dvu41wrG/giphy.gif", key: counter});
+        data_.push({renderGif: "https://media.giphy.com/media/Plfa4hA977Dvu41wrG/giphy.gif", key: String(counter)});
         counter += 1;
-        data_.push({title: TipsGuidelinesTitle, list: TipsGuidelinesList, key: counter});
+        data_.push({title: TipsGuidelinesTitle, list: TipsGuidelinesList, key: String(counter)});
         this.setState({data: data_});
     }
 
@@ -56,7 +56,7 @@ export default class TutorialPage extends React.Component {
     renderTutorialPageCell = ({item}) => {
         if (item.renderGif !== undefined) {
             return(
-                <Image style = {{height: Dimensions.get('window').height * .679, resizeMode: 'contain', resizeMethod: 'auto'}}
+                <Image style = {{height: Dimensions.get('window').height * .679, resizeMode: 'contain', /*resizeMethod: 'auto'*/}}
                     source={{uri: item.renderGif}}
                 />
             )
@@ -74,6 +74,7 @@ export default class TutorialPage extends React.Component {
                     <FlatList
                         data={item.list}
                         renderItem={this.renderGuidelinesCell}
+                        keyExtractor={(item, index) => index.toString()}
                     />
                 </View>
             )
