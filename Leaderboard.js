@@ -10,7 +10,7 @@ import Dimensions from 'Dimensions';
 import FacebookNativeAd from './FacebookNativeAd.js';
 import * as FacebookAds from 'expo-ads-facebook';
 
-const adsManager = new FacebookAds.NativeAdsManager("2462718770617970_2482202108669636", 5);
+// const adsManager = new FacebookAds.NativeAdsManager("2462718770617970_2482202108669636", 5);
 
 export default class Leaderboard extends React.Component {
     constructor(props) {
@@ -73,7 +73,7 @@ export default class Leaderboard extends React.Component {
            
            let counter = 1;
            if (leaderBoardSnapshot.empty) {
-              // data.push({ad:true,key:counter.toString()});
+              data.push({ad:true,key:counter.toString()});
               this._isMounted && this.setState({ processedData: data },()=>this.setState({ showLeaderboard: true,refreshing:false }));
            }
            leaderBoardSnapshot.forEach( leaderBoardHub => {
@@ -240,6 +240,7 @@ export default class Leaderboard extends React.Component {
           
         )
       } else if (item.hub !== undefined) {
+        // console.log(adsManager)
         return(
           <View>
             <TouchableOpacity style = {styles.leaderBoardCell} onPress={()=>this.props.toggleInfoPage(item.hub)}>
@@ -254,13 +255,14 @@ export default class Leaderboard extends React.Component {
                 <Text style = {{color:'black',fontSize:Dimensions.get('window').width*0.0483, fontWeight:'bold'}}>{item.hub.stats.cost}</Text>
               </View>
             </TouchableOpacity>
-            <FacebookNativeAd adsManager={adsManager}/>
+            {/* <FacebookNativeAd adsManager={adsManager}/> */}
           </View>
         )
       } else {
+        // console.log(adsManager)
         return (
           <View>
-            <FacebookNativeAd adsManager={adsManager}/>
+            {/* <FacebookNativeAd adsManager={adsManager}/> */}
           </View>
         )
       }
