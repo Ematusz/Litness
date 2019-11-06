@@ -29,7 +29,7 @@
       "supportsTablet": false,
       "bundleIdentifier": "com.litness.lit",
       "config": {
-        "googleMapsApiKey":  "AIzaSyBkwazID1O1ryFhdC6mgSR4hJY2-GdVPmE"
+        "googleMapsApiKey": "AIzaSyBkwazID1O1ryFhdC6mgSR4hJY2-GdVPmE"
       }
     },
     "facebookAppId": "2462718770617970",

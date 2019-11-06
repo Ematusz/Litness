@@ -9,6 +9,7 @@ import * as Location from 'expo-location';
 import ErrorPage from './ErrorPage'
 import {AdMobInterstitial} from 'expo-ads-admob';
 import PrivacyPolicyButton from './PrivacyPolicyButton.js';
+import { YellowBox } from 'react-native';
 import { SplashScreen } from 'expo';
 import * as FacebookAds from 'expo-ads-facebook';
 
@@ -36,8 +37,11 @@ const geofirestore = new GeoFirestore(db);
 
 global.hubs = geofirestore.collection('hubs')
 
+console.ignoredYellowBox = ['Setting a timer'];
+
 export default class App extends React.Component {
   constructor(props) {
+    YellowBox.ignoreWarnings(['Setting a timer']);
     super(props);
     this.state = { 
       pageErrorState: false,
