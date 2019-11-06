@@ -14,14 +14,14 @@
     "expo-ads-admob": "~7.0.0",
     "expo-ads-facebook": "~7.0.0",
     "expo-cli": "^3.4.1",
-    "firebase": "^5.8.3",
+    "firebase": "^7.2.3",
     "geofirestore": "^3.3.1",
     "geolib": "^3.0.4",
     "global": "^4.4.0",
     "google-maps-react": "^2.0.2",
     "grpc": "^1.20.2",
     "location": "^0.0.1",
-    "lottie-react-native": "^2.6.1",
+    "lottie-react-native": "~2.6.1",
     "mathjs": "^5.4.2",
     "ngeohash": "^0.6.3",
     "permissions": "^0.1.0",
@@ -36,11 +36,11 @@
     "react-native-haptic-feedback": "^1.8.0",
     "react-native-maps": "~0.25.0",
     "react-native-maps-super-cluster": "^1.5.0",
-    "react-native-svg": "^9.5.3",
-    "victory-native": "^32.0.2"
+    "react-native-svg": "~9.9.2",
+    "victory-native": "^33.0.0"
   },
   "devDependencies": {
-    "babel-preset-expo": "^5.0.0",
+    "babel-preset-expo": "^7.0.0",
     "eslint-plugin-promise": "^4.1.1"
   },
   "private": true
