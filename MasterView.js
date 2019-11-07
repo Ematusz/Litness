@@ -879,7 +879,7 @@ export default class MasterView extends React.Component {
                 bannerErrorHandler={this.bannerErrorHandler}
           />}
 
-          {this.state.infoPage && <AnimatedInfoPage style = {{top:this.state.animatedTop.interpolate({inputRange: [-100,5], outputRange: ["-100%","5%"]})}}
+          {this.state.infoPage && <AnimatedInfoPage style = {{top: this.state.leaderBoard? '5%':this.state.animatedTop.interpolate({inputRange: [-100,5], outputRange: ["-100%","5%"]})}}
                 toggleInfoPage={this.toggleInfoPage}
                 infoPageMarker={this.state.infoPageMarker}
                 data_={this.state.data_}
@@ -906,7 +906,7 @@ export default class MasterView extends React.Component {
                 showVotingButtons={this.state.showVotingButtons}
           />}
 
-          {this.state.leaderBoard && <AnimatedLeaderboard style = {{top: this.state.animatedLeaderboard.interpolate({inputRange: [-100,5], outputRange: ["-100%","5%"]})}} 
+          {!this.state.infoPage && this.state.leaderBoard && <AnimatedLeaderboard style = {{top: this.state.animatedLeaderboard.interpolate({inputRange: [-100,5], outputRange: ["-100%","5%"]})}} 
                 toggleLeaderBoard= {this.toggleLeaderBoard}
                 leaderBoard_={this.state.leaderBoard_}
                 toggleInfoPage={this.toggleInfoPage}
@@ -925,7 +925,7 @@ export default class MasterView extends React.Component {
                 toggleTutorialPage={this.toggleTutorialPage}
           />}
 
-          {<MoveToLocationButton
+          {!this.props.tabState && <MoveToLocationButton
             animateToLocation={() => this.animateToLocation()}
           />}
         </View>

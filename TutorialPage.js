@@ -1,7 +1,6 @@
 import React from 'react';
-import {View,Text,Image, TouchableOpacity} from 'react-native';
+import {View,Text,Image, TouchableOpacity, FlatList, SectionList} from 'react-native';
 import styles from './styles.js'
-import { FlatList } from 'react-native-gesture-handler';
 import { SettingANewHubTitle } from './Text.json';
 import { SettingANewHubInstructions } from './Text.json';
 import { VotingOnAnExistingHubTitle } from './Text.json';
@@ -20,7 +19,6 @@ export default class TutorialPage extends React.Component {
         this.loadTutorialData = this.loadTutorialData.bind(this);
         this.renderTutorialPageCell = this.renderTutorialPageCell.bind(this);
         this.renderSeparator = this.renderSeparator.bind(this);
-        this.renderGuidelinesCell = this.renderGuidelinesCell.bind(this);
     }
 
     componentDidMount() {
@@ -31,53 +29,49 @@ export default class TutorialPage extends React.Component {
     loadTutorialData() {
         console.log("loaded")
         let data_ = [];
-        let counter = 0;
-        data_.push({title: SettingANewHubTitle ,body: SettingANewHubInstructions, key: String(counter)});
-        counter += 1;
-        data_.push({renderGif: "https://media.giphy.com/media/LOXJRpvR5bve7xMSgh/giphy.gif", key: String(counter)});
-        counter += 1;
-        data_.push({title: VotingOnAnExistingHubTitle, body: VotingOnExistingHubInstructions, key: String(counter)});
-        counter += 1;
-        data_.push({renderGif: "https://media.giphy.com/media/Plfa4hA977Dvu41wrG/giphy.gif", key: String(counter)});
-        counter += 1;
-        data_.push({title: TipsGuidelinesTitle, list: TipsGuidelinesList, key: String(counter)});
+        data_.push({title: SettingANewHubTitle ,data: [SettingANewHubInstructions]});
+        data_.push({title: "", data: ["https://media.giphy.com/media/LOXJRpvR5bve7xMSgh/giphy.gif"]});
+        data_.push({title: VotingOnAnExistingHubTitle, data: [VotingOnExistingHubInstructions]});
+        data_.push({title: "", data: ["https://media.giphy.com/media/Plfa4hA977Dvu41wrG/giphy.gif"]});
+        data_.push({title: TipsGuidelinesTitle, data: TipsGuidelinesList});
         this.setState({data: data_});
     }
 
-    renderGuidelinesCell = ({item}) => {
-        return(
-            <View style={{flexDirection: 'row',width:"95%%"}}>
-                <Text style={{fontSize:Dimensions.get('window').width*0.0411,}}>{'\u2022'}  </Text>
-                <Text style={{fontSize:Dimensions.get('window').width*0.0411}}>{item}</Text>
-            </View>
-        )
-    }
-
-    renderTutorialPageCell = ({item}) => {
-        if (item.renderGif !== undefined) {
-            return(
-                <Image style = {{height: Dimensions.get('window').height * .679, resizeMode: 'contain', /*resizeMethod: 'auto'*/}}
-                    source={{uri: item.renderGif}}
-                />
-            )
-        } else if (item.body !== undefined) {
-            return (
-                <View>
-                    <Text style={{fontSize:Dimensions.get('window').width*0.0411, fontWeight:'bold'}}>{item.title}</Text>
-                    <Text style={{fontSize:Dimensions.get('window').width*0.0411}}>{item.body}</Text>
-                </View>
-            )
-        } else {
-            return (
-                <View>
-                    <Text style={{fontSize:Dimensions.get('window').width*0.0411, fontWeight:'bold'}}>{item.title}</Text>
-                    <FlatList
-                        data={item.list}
-                        renderItem={this.renderGuidelinesCell}
-                        keyExtractor={(item, index) => index.toString()}
+    renderTutorialPageCell = ({item, index, section, separators}) => {
+        if (section.data.length === 1) {
+            if (item.includes("https")) {
+                return(
+                    <Image style = {{height: Dimensions.get('window').height * .679, resizeMode: 'contain'}}
+                        source={{uri: item}}
                     />
-                </View>
-            )
+                )
+            } else {
+                return (
+                    <View>
+                        <Text style={{fontSize:Dimensions.get('window').width*0.0411, fontWeight:'bold'}}>{section.title}</Text>
+                        <Text style={{fontSize:Dimensions.get('window').width*0.0411}}>{item}</Text>
+                    </View>
+                ) 
+            }
+        } else {
+            if (index == 0) {
+                return (
+                    <View>
+                        <Text style={{fontSize:Dimensions.get('window').width*0.0411, fontWeight:'bold'}}>{section.title}</Text>
+                        <View style={{flexDirection: 'row',width:"95%"}}>
+                            <Text style={{fontSize:Dimensions.get('window').width*0.0411,}}>{'\u2022'}  </Text>
+                            <Text style={{fontSize:Dimensions.get('window').width*0.0411}}>{item}</Text>
+                        </View>
+                    </View>
+                ) 
+            } else {
+                return (
+                    <View style={{flexDirection: 'row',width:"95%"}}>
+                        <Text style={{fontSize:Dimensions.get('window').width*0.0411,}}>{'\u2022'}  </Text>
+                        <Text style={{fontSize:Dimensions.get('window').width*0.0411}}>{item}</Text>
+                    </View>
+                ) 
+            }
         }
     }
 
@@ -104,11 +98,12 @@ export default class TutorialPage extends React.Component {
                 <TouchableOpacity onPress={this.props.toggleTutorialPage} style = {styles.closeBar}>
                     <Text style = {{color:'white',fontWeight:'bold'}}>X</Text>
                 </TouchableOpacity>
-                <FlatList
-                    ItemSeparatorComponent={this.renderSeparator}
-                    data={this.state.data}
+                <SectionList
+                    SectionSeparatorComponent={({leadingSection}) => leadingSection?this.renderSeparator(leadingSection):null}
                     style={styles.flatListContainer}
                     renderItem={this.renderTutorialPageCell}
+                    sections={this.state.data}
+                    keyExtractor={(index) => index}
                 />
             </View>
         );

@@ -61,27 +61,27 @@ export default class App extends React.Component {
   }
 
   componentDidMount() {
-    SplashScreen.preventAutoHide();
-    AdMobInterstitial.setAdUnitID('ca-app-pub-9088719879244214/4527962867');
-    AdMobInterstitial.setTestDeviceID('EMULATOR');
-    AdMobInterstitial.addEventListener("interstitialDidLoad", ()=> console.log("interstitialDidLoad"));
-    AdMobInterstitial.addEventListener("interstitialDidFailToLoad", (error)=> {
-      console.log(error)
-      setTimeout(() => {
-        SplashScreen.hide();
-      }, 500);
-    });
-    AdMobInterstitial.addEventListener("interstitialDidOpen", ()=> console.log("interstitialDidOpen"));
-    AdMobInterstitial.addEventListener("interstitialDidClose", ()=> {
-      console.log("interstitialDidClose");
-      SplashScreen.hide();
-    });
-    AdMobInterstitial.addEventListener("interstitialWillLeaveApplication", ()=> console.log("interstitialWillLeaveApplication"));
-    this.showInterstitialAd();
+    // SplashScreen.preventAutoHide();
+    // AdMobInterstitial.setAdUnitID('ca-app-pub-9088719879244214/4527962867');
+    // AdMobInterstitial.setTestDeviceID('EMULATOR');
+    // AdMobInterstitial.addEventListener("interstitialDidLoad", ()=> console.log("interstitialDidLoad"));
+    // AdMobInterstitial.addEventListener("interstitialDidFailToLoad", (error)=> {
+    //   console.log(error)
+    //   setTimeout(() => {
+    //     SplashScreen.hide();
+    //   }, 500);
+    // });
+    // AdMobInterstitial.addEventListener("interstitialDidOpen", ()=> console.log("interstitialDidOpen"));
+    // AdMobInterstitial.addEventListener("interstitialDidClose", ()=> {
+    //   console.log("interstitialDidClose");
+    //   SplashScreen.hide();
+    // });
+    // AdMobInterstitial.addEventListener("interstitialWillLeaveApplication", ()=> console.log("interstitialWillLeaveApplication"));
+    // this.showInterstitialAd();
   }
 
   componentWillUnmount() {
-    AdMobInterstitial.removeAllListeners();
+    // AdMobInterstitial.removeAllListeners();
   }
   pageErrorHandler(someValue) {
     this.setState({
@@ -109,6 +109,7 @@ export default class App extends React.Component {
             pageErrorHandler={this.pageErrorHandler}
             showInterstitialAd={this.showInterstitialAd}
             tabOpenHandler={this.tabOpenHandler}
+            tabState={this.state.tabState}
           />}
           {!this.state.pageErrorState && !this.state.tabState && <SafeAreaView style={{flex:1,backgroundColor:'transparent',position:'absolute',top:'92%',height:'8%',width:'100%'}}>
             <View style= {{height:'100%',width:'100%'}}>
