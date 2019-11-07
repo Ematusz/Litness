@@ -925,7 +925,7 @@ export default class MasterView extends React.Component {
                 toggleTutorialPage={this.toggleTutorialPage}
           />}
 
-          {<MoveToLocationButton
+          {!this.props.tabState && <MoveToLocationButton
             animateToLocation={() => this.animateToLocation()}
           />}
         </View>

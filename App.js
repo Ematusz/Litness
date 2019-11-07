@@ -109,6 +109,7 @@ export default class App extends React.Component {
             pageErrorHandler={this.pageErrorHandler}
             showInterstitialAd={this.showInterstitialAd}
             tabOpenHandler={this.tabOpenHandler}
+            tabState={this.state.tabState}
           />}
           {!this.state.pageErrorState && !this.state.tabState && <SafeAreaView style={{flex:1,backgroundColor:'transparent',position:'absolute',top:'92%',height:'8%',width:'100%'}}>
             <View style= {{height:'100%',width:'100%'}}>
