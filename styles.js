@@ -63,7 +63,7 @@ export default StyleSheet.create({
     flexDirection:'column',
     justifyContent:'center',
     alignItems:'center',
-    zIndex: 20
+    zIndex: 3
   },
   errorPage: {
     marginLeft:'10%',
@@ -99,7 +99,7 @@ export default StyleSheet.create({
     flexDirection:'column',
     justifyContent:'flex-start',
     alignItems:'center',
-    zIndex:4,
+    zIndex:2
   },
   infoPageIcons: {
     height: Dimensions.get('window').height*.0272,
@@ -131,7 +131,7 @@ export default StyleSheet.create({
     flexDirection:'column',
     justifyContent:'flex-start',
     alignItems:'center',
-    zIndex:1,
+    zIndex:0
   },
   leaderboardButton: {
     backgroundColor:"white",
@@ -239,7 +239,7 @@ export default StyleSheet.create({
     flexDirection:'column',
     justifyContent:'flex-start',
     alignItems:'center',
-    zIndex:1,
+    zIndex:0
   },
   tutorialPageButton: {
     backgroundColor:"white",
