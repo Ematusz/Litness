@@ -20,7 +20,6 @@ import Dimensions from 'Dimensions';
 import uberLink from './uberLink';
 import googleMapsLink from './googleMapsLink.js';
 import MoveToLocationButton from './MoveToLocationButton.js';
-import PrivacyPolicyButton from './PrivacyPolicyButton.js';
 import lyftLink from './lyftLink.js';
 
 function getRandomInt(min,max) {
@@ -69,6 +68,7 @@ export default class MasterView extends React.Component {
         longitude: null,
         longitudeDelta: null
       },
+      OS: null,
       refreshingPosition: true,
       selectedMarker: null,
       showVotingButtons: true,
@@ -161,6 +161,7 @@ export default class MasterView extends React.Component {
   componentDidMount() {
     console.log("Dimensions", Dimensions.get('window').height, Dimensions.get('window').width)
     console.log("componentDidMount")
+    this.setState({OS: Platform.OS === 'ios' ? true : false});
     AppState.addEventListener('change', this._handleAppStateChange)
   }
 
@@ -906,7 +907,8 @@ export default class MasterView extends React.Component {
                 showVotingButtons={this.state.showVotingButtons}
           />}
 
-          {!this.state.infoPage && this.state.leaderBoard && <AnimatedLeaderboard style = {{top: this.state.animatedLeaderboard.interpolate({inputRange: [-100,5], outputRange: ["-100%","5%"]})}} 
+                {/* this is redundant code but my ternary opperator wasnt working. Revisit this later */}
+          {!this.state.OS && !this.state.infoPage && this.state.leaderBoard && <AnimatedLeaderboard style = {{top: this.state.animatedLeaderboard.interpolate({inputRange: [-100,5], outputRange: ["-100%","5%"]})}} 
                 toggleLeaderBoard= {this.toggleLeaderBoard}
                 leaderBoard_={this.state.leaderBoard_}
                 toggleInfoPage={this.toggleInfoPage}
@@ -915,6 +917,17 @@ export default class MasterView extends React.Component {
                 bannerErrorHandler = {this.bannerErrorHandler}
                 bannerErrorState = {this.bannerErrorState}
           />}
+
+          {this.state.OS && this.state.leaderBoard && <AnimatedLeaderboard style = {{top: this.state.animatedLeaderboard.interpolate({inputRange: [-100,5], outputRange: ["-100%","5%"]})}} 
+                toggleLeaderBoard= {this.toggleLeaderBoard}
+                leaderBoard_={this.state.leaderBoard_}
+                toggleInfoPage={this.toggleInfoPage}
+                mapRegion = {this.state.mapRegion}
+                userLocation = {this.state.userLocation}
+                bannerErrorHandler = {this.bannerErrorHandler}
+                bannerErrorState = {this.bannerErrorState}
+          />}
+
           {this.state.tutorialPage && <AnimatedTutorialPage style = {{top: this.state.animatedTutorialPage.interpolate({inputRange: [-100,5], outputRange: ["-100%","5%"]})}} 
                 toggleTutorialPage={this.toggleTutorialPage}
           />}
