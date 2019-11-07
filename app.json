@@ -32,6 +32,9 @@
         "googleMapsApiKey": "AIzaSyBkwazID1O1ryFhdC6mgSR4hJY2-GdVPmE"
       }
     },
+    "android": {
+      "package": "com.litapps.lit"
+    },
     "facebookAppId": "2462718770617970",
     "facebookDisplayName": "Lit?"
   }
