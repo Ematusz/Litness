@@ -37,8 +37,7 @@ export default class ClusteringMap extends React.Component {
     pressMarker(marker) {
       if (this.props.userLocation.longitude != undefined) {
         if (marker.location.address in this.state.markerToRef) {
-          console.log(marker.location.address);
-          // this.state.markerToRef[marker.location.address].showCallout();
+          this.state.markerToRef[marker.location.address].showCallout();
           this.props.getAddress(this.props.userLocation.latitude,this.props.userLocation.longitude,marker);
         }
       } else {
@@ -77,14 +76,17 @@ export default class ClusteringMap extends React.Component {
 
     animateToSpecificMarker(locationObj) {
       this.map.getMapRef().animateToRegion(locationObj.coordinates,1);
-      if (locationObj.address != undefined) {
-        setTimeout(() => {
-          console.log("address", this.state.markerToRef[locationObj.address]);
-          // this.state.markerToRef[locationObj.address].showCallout();
-        }, 1000);
-      } else {
-        console.log("address is undefined")
-      }
+      setTimeout(() => {
+        if (this.state.markerToRef[locationObj.address] != undefined) {
+          this.state.markerToRef[locationObj.address].showCallout();
+        } else {
+          setTimeout(() => {
+            if (this.state.markerToRef[locationObj.address] != undefined) {
+              this.state.markerToRef[locationObj.address].showCallout();
+            }
+          }, 1500)
+        }
+      }, 500);
     }
 
     renderCluster = (cluster, onPress) => {
