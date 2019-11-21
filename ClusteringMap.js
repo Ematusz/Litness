@@ -1,5 +1,5 @@
 import React from 'react';
-import {Text, View} from 'react-native';
+import {Text, View, Image} from 'react-native';
 import styles from './styles.js'
 import MapView,{ Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import ClusteredMapView from 'react-native-maps-super-cluster';
@@ -37,7 +37,8 @@ export default class ClusteringMap extends React.Component {
     pressMarker(marker) {
       if (this.props.userLocation.longitude != undefined) {
         if (marker.location.address in this.state.markerToRef) {
-          this.state.markerToRef[marker.location.address].showCallout();
+          console.log(marker.location.address);
+          // this.state.markerToRef[marker.location.address].showCallout();
           this.props.getAddress(this.props.userLocation.latitude,this.props.userLocation.longitude,marker);
         }
       } else {
@@ -76,10 +77,13 @@ export default class ClusteringMap extends React.Component {
 
     animateToSpecificMarker(locationObj) {
       this.map.getMapRef().animateToRegion(locationObj.coordinates,1);
-      if (locationObj.address) {
+      if (locationObj.address != undefined) {
         setTimeout(() => {
-          this.state.markerToRef[locationObj.address].showCallout();
-        }, 500);
+          console.log("address", this.state.markerToRef[locationObj.address]);
+          // this.state.markerToRef[locationObj.address].showCallout();
+        }, 1000);
+      } else {
+        console.log("address is undefined")
       }
     }
 

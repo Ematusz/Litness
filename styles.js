@@ -1,4 +1,4 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Platform } from 'react-native';
 import Dimensions from 'Dimensions';
 export default StyleSheet.create({
   addHubButton: {
@@ -163,14 +163,15 @@ export default StyleSheet.create({
     justifyContent:'center'
   },
   locationText: {
-    marginTop:Dimensions.get('window').height*.0136,
+    marginTop:(Platform.OS === 'ios' ? Dimensions.get('window').height*.0136 : 0),
     alignSelf: 'center',
     display:'flex',
     justifyContent:'space-evenly',
     flexDirection:"row"
   },
   marker: {
-    position: 'absolute',
+    height:Dimensions.get('window').width*0.0966,
+    width: Dimensions.get('window').width*0.0966,
     alignItems:'center',
     justifyContent:'center',
   },

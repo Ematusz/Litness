@@ -354,12 +354,11 @@ export default class InfoPage extends React.Component {
                     </View>
                     
                     <TouchableOpacity onPress={this.goToMarker}>
-                        <Text style = {{...styles.locationText, fontSize: Dimensions.get('window').width*0.0362}}>
+                        <Text style = {{...styles.locationText, textAlign: 'center', fontSize: Dimensions.get('window').width*0.0362}}>
                             {this.props.infoPageMarker.location.address}
                         </Text>
                     </TouchableOpacity>
                 </View>}
-
                 {this.state.showChart&&<TouchableOpacity onPress={this.closeInfoPage} style = {styles.closeBar}>
                     <Text style = {{color:'white',fontWeight:'bold'}}>{exitOption}</Text>
                 </TouchableOpacity>}
