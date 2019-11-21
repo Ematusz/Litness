@@ -114,12 +114,15 @@ export default class MasterView extends React.Component {
   }
 
   openTab(marker,userLocation) {
+    console.log("opentab")
     // Checks if marker is a ghost. if a ghostMarker is clicked then call hideTab()
     if(!Object.keys(this.state.hubs).includes(marker.location.address)) {
+      console.log("includes")
       this.closeTab(true);
     }
     // change selectedAddress to the new address if the selected marker is not at selectedAddress
     else {
+      console.log("else")
       if (userLocation.userAddressDictionary == null) {
         this.setState({showVotingButtons: false});
       } else if (marker.location.address in userLocation.userAddressDictionary) {
@@ -346,7 +349,17 @@ export default class MasterView extends React.Component {
 
     
     this.clusterMap.animateToSpecificMarker(locationObj);
-    this.getAddress(this.state.userLocation.latitude,this.state.userLocation.longitude,marker)
+    setTimeout(() => {
+      if (Object.keys(this.state.hubs).includes(marker.location.address)){
+        this.getAddress(this.state.userLocation.latitude,this.state.userLocation.longitude,marker)
+      } else {
+        setTimeout(() => {
+          if (Object.keys(this.state.hubs).includes(marker.location.address)) {
+            this.getAddress(this.state.userLocation.latitude,this.state.userLocation.longitude,marker)
+          }
+        }, 1500)
+      }
+    }, 500)
   }
 
   _addListener = async(mapRegion) => {
