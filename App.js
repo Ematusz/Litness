@@ -1,5 +1,5 @@
 import React from 'react';
-import {View, SafeAreaView} from 'react-native';
+import {View, SafeAreaView, Platform, Text} from 'react-native';
 import MasterView from './MasterView.js';
 import * as firebase from 'firebase';
 import 'firebase/firestore';
@@ -25,7 +25,7 @@ global.firebaseConfig = {
     //messagingSenderId: "862420802331"
 };
 
-global.apiKey = 'AIzaSyD2YhfO1TBYNOAWSxGwXQocAikqLuCRl7Q';
+global.apiKey = /*Platform.OS === 'ios'? */'AIzaSyD2YhfO1TBYNOAWSxGwXQocAikqLuCRl7Q'/* : 'AIzaSyD9M9o4soakpTJXdLojSWEst6VL3ppGKi8'*/;
 
 // set API key for location
 Location.setApiKey(apiKey)
@@ -62,8 +62,8 @@ export default class App extends React.Component {
 
   componentDidMount() {
     SplashScreen.preventAutoHide();
-    AdMobInterstitial.setAdUnitID('ca-app-pub-9088719879244214/4527962867');
-    AdMobInterstitial.setTestDeviceID('EMULATOR');
+    AdMobInterstitial.setAdUnitID(Platform === 'ios' ? 'ca-app-pub-9088719879244214/4527962867' : 'ca-app-pub-9088719879244214/6250276442');
+    // AdMobInterstitial.setTestDeviceID('EMULATOR');
     AdMobInterstitial.addEventListener("interstitialDidLoad", ()=> console.log("interstitialDidLoad"));
     AdMobInterstitial.addEventListener("interstitialDidFailToLoad", (error)=> {
       console.log(error)
@@ -73,8 +73,8 @@ export default class App extends React.Component {
     });
     AdMobInterstitial.addEventListener("interstitialDidOpen", ()=> console.log("interstitialDidOpen"));
     AdMobInterstitial.addEventListener("interstitialDidClose", ()=> {
-      console.log("interstitialDidClose");
       SplashScreen.hide();
+      console.log("interstitialDidClose");
     });
     AdMobInterstitial.addEventListener("interstitialWillLeaveApplication", ()=> console.log("interstitialWillLeaveApplication"));
     this.showInterstitialAd();
@@ -101,7 +101,7 @@ export default class App extends React.Component {
   // renders the onscreen info
   render() {
     return (
-        <View style = {styles.bigContainer}>   
+        <View style = {styles.bigContainer}> 
           {this.state.pageErrorState && <ErrorPage
             error={this.state.pageErrorMessage}
           />} 

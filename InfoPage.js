@@ -181,7 +181,7 @@ export default class InfoPage extends React.Component {
         let min = Math.min.apply(Math, data.map(function(o) { return o.value; }))
         this.setState({ maxValue: max});
         this.setState({ minValue: min});
-        if ((data.length == 2)) {
+        if ((data.length > 1)) {
             this.setState({ processedData: data, selectedValue: data[data.length-1].value, selectedTime: data[data.length-1].time,timeToLit:timetoLit, timeToShit:timetoShit},()=>this.setState({ showChart: true, showLine:true }));
         }
     }

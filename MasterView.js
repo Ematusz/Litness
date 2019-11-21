@@ -160,6 +160,7 @@ export default class MasterView extends React.Component {
 
   componentDidMount() {
     console.log("Dimensions", Dimensions.get('window').height, Dimensions.get('window').width)
+    console.log("api key", apiKey)
     console.log("componentDidMount")
     this.setState({OS: Platform.OS === 'ios' ? true : false});
     AppState.addEventListener('change', this._handleAppStateChange)
@@ -207,7 +208,7 @@ export default class MasterView extends React.Component {
       .then((responseJson) => {
         clearTimeout(timeout)
         let status = JSON.parse(JSON.stringify(responseJson)).status;
-        console.log(status);
+        console.log("status",status);
         if (this.state.bannerErrorState != "locked") {
           if (status == "ZERO_RESULTS") {
             this.setState({bannerErrorState: true});
@@ -658,6 +659,7 @@ export default class MasterView extends React.Component {
   }
     // Initializes the ghost marker to closest location in possible current locations
   setGhost(referenceLatitude, referenceLongitude, userCoordinates) {
+    console.log("references",referenceLatitude,referenceLongitude)
     if(!this.state.tabVal) {
       let ghostAddress = null;
       let currentDistance = null;
@@ -844,7 +846,7 @@ export default class MasterView extends React.Component {
     // renders the onscreen info
   render() {
     return (
-      <View style = {styles.bigContainer}>  
+      <View style = {styles.bigContainer}> 
           {<ClusteringMap onRef={ref => (this.clusterMap = ref)}
                 geoHashGrid={this.state.geoHashGrid}
                 hubs = {this.state.hubs}
