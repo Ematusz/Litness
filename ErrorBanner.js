@@ -13,7 +13,6 @@ export default class Leaderboard extends React.Component {
 
     refreshPositionToggle(connectionType) {
         if (connectionType == "wifi" || connectionType == "cellular") {
-            console.log(connectionType);
             this.props.bannerErrorHandler({state: false, message: null})
             this.props.animateToLocation()
         }

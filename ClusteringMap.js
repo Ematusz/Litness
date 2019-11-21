@@ -1,5 +1,5 @@
 import React from 'react';
-import {Text, View} from 'react-native';
+import {Text, View, Image} from 'react-native';
 import styles from './styles.js'
 import MapView,{ Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import ClusteredMapView from 'react-native-maps-super-cluster';
@@ -13,9 +13,11 @@ export default class ClusteringMap extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
+          data:[],
           dragging: false,
           error: null,
           interaction: true,
+          initialRegion: null,
           locationResult:null,
           markerToRef: {},
           pins: [],
@@ -35,7 +37,8 @@ export default class ClusteringMap extends React.Component {
     pressMarker(marker) {
       if (this.props.userLocation.longitude != undefined) {
         if (marker.location.address in this.state.markerToRef) {
-          this.state.markerToRef[marker.location.address].showCallout();
+          console.log(marker.location.address);
+          // this.state.markerToRef[marker.location.address].showCallout();
           this.props.getAddress(this.props.userLocation.latitude,this.props.userLocation.longitude,marker);
         }
       } else {
@@ -48,7 +51,7 @@ export default class ClusteringMap extends React.Component {
     };
     componentWillMount() {
       NetInfo.getConnectionInfo().then( connectionInfo => {
-        console.log(connectionInfo)
+        console.log("connectionInfo",connectionInfo)
         if (connectionInfo.type != "none") {
           NetInfo.addEventListener('connectionChange', this.handleConnectionChange)
           this._getLocationAsync();          
@@ -74,10 +77,13 @@ export default class ClusteringMap extends React.Component {
 
     animateToSpecificMarker(locationObj) {
       this.map.getMapRef().animateToRegion(locationObj.coordinates,1);
-      if (locationObj.address) {
+      if (locationObj.address != undefined) {
         setTimeout(() => {
-          this.state.markerToRef[locationObj.address].showCallout();
-        }, 500);
+          console.log("address", this.state.markerToRef[locationObj.address]);
+          // this.state.markerToRef[locationObj.address].showCallout();
+        }, 1000);
+      } else {
+        console.log("address is undefined")
       }
     }
 
@@ -176,12 +182,12 @@ export default class ClusteringMap extends React.Component {
       // this.map.getMapRef().animateToRegion(initialRegion,1);
       setTimeout(() => {
         // console.log(this.map.getMapRef());
-        this.map.getMapRef().animateToRegion(initialRegion,1);
+        this.setState({initialRegion:initialRegion}/*,SplashScreen.hide()*/)
+        // this.map.getMapRef().animateToRegion(initialRegion,1000);
         console.log(initialRegion);
       }, 500);
     }
 
-    // Initializes the ghost marker to closest location in possible current locations
     _getLocationAsync = async() => {
       let{ status } = await Permissions.askAsync(Permissions.LOCATION);
       if (status !== 'granted') {
@@ -206,52 +212,48 @@ export default class ClusteringMap extends React.Component {
 
     render() {
         return (
-          <ClusteredMapView
-          style={{flex: 1}}
-          ref={ref => {this.map = ref;}} 
-            customMapStyle = {[
-              {
-                "featureType": "road.arterial",
-                "elementType": "labels",
-                "stylers": [
+          <View style = {{flex: 1}}>
+            {this.state.initialRegion != null && <ClusteredMapView
+              ref={ref => {this.map = ref;}} 
+                customMapStyle = {[
                   {
-                    "visibility": "off"
-                  }
-                ]
-              },
-              {
-                "featureType": "road.highway",
-                "elementType": "labels",
-                "stylers": [
+                    "featureType": "road.arterial",
+                    "elementType": "labels",
+                    "stylers": [
+                      {
+                        "visibility": "off"
+                      }
+                    ]
+                  },
                   {
-                    "visibility": "off"
-                  }
-                ]
-              },
-            ]}
-            clusteringEnabled={this.props.clustering} 
-            minZoomLevel = {7}
-            maxZoomLevel = {19}
-            showsTraffic = {false}
-            showsMyLocationButton = {false}          
-            zoomEnabled = {true}
-            provider = {PROVIDER_GOOGLE}
-            showsUserLocation = {true}
-            showsBuildings = {true}
-            loadingEnabled={true}
-            onPress = {this.toggleTabMapPress}
-            onRegionChangeComplete = {this.onRegionChangeComplete}
-            style={styles.container}
-            initialRegion = {{
-                latitude:37.7884459,
-                longitude:-122.4066252,
-                latitudeDelta: 0.01,
-                longitudeDelta: 0.01,
-            }}
-          data = {Object.values(this.props.hubs).map(x => x).flat().concat(this.props.ghostMarker).concat(this.props.possibleLocationMarker)}
-          renderMarker={this.renderMarker}
-          renderCluster={this.renderCluster}
-          />
+                    "featureType": "road.highway",
+                    "elementType": "labels",
+                    "stylers": [
+                      {
+                        "visibility": "off"
+                      }
+                    ]
+                  },
+                ]}
+                clusteringEnabled={this.props.clustering} 
+                minZoomLevel = {7}
+                maxZoomLevel = {19}
+                showsTraffic = {false}
+                showsMyLocationButton = {false}          
+                zoomEnabled = {true}
+                provider = {PROVIDER_GOOGLE}
+                showsUserLocation = {true}
+                showsBuildings = {true}
+                loadingEnabled={true}
+                onPress = {this.toggleTabMapPress}
+                onRegionChangeComplete = {this.onRegionChangeComplete}
+                style={styles.container}
+                initialRegion = {this.state.initialRegion}
+                data = {Object.values(this.props.hubs).map(x => x).flat().concat(this.props.ghostMarker).concat(this.props.possibleLocationMarker)}
+                renderMarker={this.renderMarker}
+                renderCluster={this.renderCluster}
+              />}
+          </View>
         );
     }
 }

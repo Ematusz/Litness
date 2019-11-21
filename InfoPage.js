@@ -181,7 +181,7 @@ export default class InfoPage extends React.Component {
         let min = Math.min.apply(Math, data.map(function(o) { return o.value; }))
         this.setState({ maxValue: max});
         this.setState({ minValue: min});
-        if ((data.length == 2)) {
+        if ((data.length > 1)) {
             this.setState({ processedData: data, selectedValue: data[data.length-1].value, selectedTime: data[data.length-1].time,timeToLit:timetoLit, timeToShit:timetoShit},()=>this.setState({ showChart: true, showLine:true }));
         }
     }
@@ -354,12 +354,11 @@ export default class InfoPage extends React.Component {
                     </View>
                     
                     <TouchableOpacity onPress={this.goToMarker}>
-                        <Text style = {{...styles.locationText, fontSize: Dimensions.get('window').width*0.0362}}>
+                        <Text style = {{...styles.locationText, textAlign: 'center', fontSize: Dimensions.get('window').width*0.0362}}>
                             {this.props.infoPageMarker.location.address}
                         </Text>
                     </TouchableOpacity>
                 </View>}
-
                 {this.state.showChart&&<TouchableOpacity onPress={this.closeInfoPage} style = {styles.closeBar}>
                     <Text style = {{color:'white',fontWeight:'bold'}}>{exitOption}</Text>
                 </TouchableOpacity>}
