@@ -53,6 +53,7 @@ export default class MasterView extends React.Component {
       connectionType: null,
       currentGrid: [],
       data_: [],
+      delayVoting: false,
       geoHashGrid: {},
       ghostMarker: [],
       possibleLocationMarker: [],
@@ -114,7 +115,6 @@ export default class MasterView extends React.Component {
   }
 
   openTab(marker,userLocation) {
-    console.log("opentab")
     // Checks if marker is a ghost. if a ghostMarker is clicked then call hideTab()
     if(!Object.keys(this.state.hubs).includes(marker.location.address)) {
       console.log("includes")
@@ -122,7 +122,6 @@ export default class MasterView extends React.Component {
     }
     // change selectedAddress to the new address if the selected marker is not at selectedAddress
     else {
-      console.log("else")
       if (userLocation.userAddressDictionary == null) {
         this.setState({showVotingButtons: false});
       } else if (marker.location.address in userLocation.userAddressDictionary) {
@@ -782,6 +781,10 @@ export default class MasterView extends React.Component {
 
     // Adds one positive or negative vote whether lit or shit is voted
   changeLit(marker,vote) {
+    this.setState({delayVoting: true});
+    setTimeout(() => {
+      this.setState({delayVoting: false});
+    }, 5000)
     // recieve the ID from the user
     let uniqueId = this.state.uniqueID
     // let uniqueId = Math.random().toString();
@@ -917,8 +920,8 @@ export default class MasterView extends React.Component {
 
           {<AnimatedSideTab style = {{right:this.state.animatedTab.interpolate({inputRange: [-50,0], outputRange: ["-50%","0%"]})}} 
                 clickInfo = {()=>this.toggleInfoPage(this.state.selectedMarker)} 
-                clickFire={()=>this.changeLit(this.state.selectedMarker,1)}
-                clickShit={()=>this.changeLit(this.state.selectedMarker,-1)}
+                clickFire={()=>this.state.delayVoting ? console.log("voting delayed") : this.changeLit(this.state.selectedMarker,1)}
+                clickShit={()=>this.state.delayVoting ? console.log("voting delayed") : this.changeLit(this.state.selectedMarker,-1)}
                 showVotingButtons={this.state.showVotingButtons}
           />}
 
