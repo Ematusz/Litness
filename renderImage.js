@@ -9,7 +9,8 @@ export function renderMarkerIcon(count) {
                 style = {styles.emojiIcon}
                 source={{uri:"https://media.giphy.com/media/WnNzIz5cTKYyVcVZxM/giphy.gif"}}
                 />;
-    } else if(count < 3) {
+// temporarily remove logs to go straight to fire other than 0
+    } else if(count == 0) {
         return <Image
                 style = {{...styles.emojiIcon}}
                 source={require('./assets/logs.png')}
