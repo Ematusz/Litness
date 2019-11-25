@@ -81,7 +81,7 @@ export default StyleSheet.create({
   ghostMarker: {
     borderWidth: Dimensions.get('window').height*.00272,
     borderColor: "transparent",
-    position: 'absolute',
+    position: Platform.OS !== 'ios' ? 'relative' : 'absolute',
     alignItems:'center',
     justifyContent:'center',
   },        
@@ -174,6 +174,7 @@ export default StyleSheet.create({
     width: Dimensions.get('window').width*0.0966,
     alignItems:'center',
     justifyContent:'center',
+    position: Platform.OS !== 'ios' ? 'relative' : 'absolute'
   },
   markerCost: {
       color: "white",

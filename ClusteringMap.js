@@ -202,6 +202,7 @@ export default class ClusteringMap extends React.Component {
     };
 
     toggleTabMapPress = pressinfo => {
+      console.log("mappress")
       if(pressinfo.nativeEvent.action !== "marker-press") {
         this.props.closeTab(true);
       }
