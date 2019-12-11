@@ -62,7 +62,7 @@ export default class App extends React.Component {
 
   componentDidMount() {
     SplashScreen.preventAutoHide();
-    AdMobInterstitial.setAdUnitID(Platform === 'ios' ? 'ca-app-pub-9088719879244214/4527962867' : 'ca-app-pub-9088719879244214/6250276442');
+    AdMobInterstitial.setAdUnitID(Platform.OS === 'ios' ? 'ca-app-pub-9088719879244214/4527962867' : 'ca-app-pub-9088719879244214/6250276442');
     // AdMobInterstitial.setTestDeviceID('EMULATOR');
     AdMobInterstitial.addEventListener("interstitialDidLoad", ()=> console.log("interstitialDidLoad"));
     AdMobInterstitial.addEventListener("interstitialDidFailToLoad", (error)=> {
