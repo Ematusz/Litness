@@ -11,6 +11,8 @@ import {AdMobInterstitial} from 'expo-ads-admob';
 import PrivacyPolicyButton from './PrivacyPolicyButton.js';
 import { YellowBox } from 'react-native';
 import { SplashScreen } from 'expo';
+import CheckIfFirstLaunch from './CheckIfFirstLaunch';
+import { AsyncStorage } from 'react-native';
 import * as FacebookAds from 'expo-ads-facebook';
 
 // FacebookAds.AdSettings.addTestDevice(FacebookAds.AdSettings.currentDeviceHash);
@@ -44,6 +46,8 @@ export default class App extends React.Component {
     YellowBox.ignoreWarnings(['Setting a timer']);
     super(props);
     this.state = { 
+      isFirstLaunch: false,
+      hasCheckedAsyncStorage: false,
       pageErrorState: false,
       pageErrorMessage: "Oops! We can't seem to reach our servers. Please check your connection and try again.",
       tabState:false,
@@ -60,8 +64,10 @@ export default class App extends React.Component {
     await AdMobInterstitial.showAdAsync()
   }
 
-  componentDidMount() {
+  async componentDidMount() {
     SplashScreen.preventAutoHide();
+    const isFirstLaunch = await CheckIfFirstLaunch();
+    this.setState({isFirstLaunch,hasCheckedAsyncStorage: true});
     AdMobInterstitial.setAdUnitID(Platform.OS === 'ios' ? 'ca-app-pub-9088719879244214/4527962867' : 'ca-app-pub-9088719879244214/6250276442');
     // AdMobInterstitial.setTestDeviceID('EMULATOR');
     AdMobInterstitial.addEventListener("interstitialDidLoad", ()=> console.log("interstitialDidLoad"));
@@ -77,7 +83,12 @@ export default class App extends React.Component {
       console.log("interstitialDidClose");
     });
     AdMobInterstitial.addEventListener("interstitialWillLeaveApplication", ()=> console.log("interstitialWillLeaveApplication"));
-    this.showInterstitialAd();
+    if (!isFirstLaunch) {
+      this.showInterstitialAd();
+      // AsyncStorage.removeItem('hasLaunched', console.log("removed"));
+    } else {
+      SplashScreen.hide();
+    }
   }
 
   componentWillUnmount() {
@@ -110,6 +121,8 @@ export default class App extends React.Component {
             showInterstitialAd={this.showInterstitialAd}
             tabOpenHandler={this.tabOpenHandler}
             tabState={this.state.tabState}
+            isFirstLaunch={this.state.isFirstLaunch}
+            hasCheckedAsyncStorage={this.state.hasCheckedAsyncStorage}
           />}
           {!this.state.pageErrorState && !this.state.tabState && <SafeAreaView style={{flex:1,backgroundColor:'transparent',position:'absolute',top:'92%',height:'8%',width:'100%'}}>
             <View style= {{height:'100%',width:'100%'}}>

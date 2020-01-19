@@ -21,6 +21,7 @@ import uberLink from './uberLink';
 import googleMapsLink from './googleMapsLink.js';
 import MoveToLocationButton from './MoveToLocationButton.js';
 import lyftLink from './lyftLink.js';
+import CheckIfFirstLaunch from './CheckIfFirstLaunch';
 
 function getRandomInt(min,max) {
   min = Math.ceil(min);
@@ -160,23 +161,25 @@ export default class MasterView extends React.Component {
     }
   }
 
-  componentDidMount() {
+  async componentDidMount() {
+    const isFirstLaunch = await CheckIfFirstLaunch();
+    this.setState({isFirstLaunch,hasCheckedAsyncStorage: true});
+    this._addWatchPosition()
+    this._getDeviceInfoAsync();
     console.log("Dimensions", Dimensions.get('window').height, Dimensions.get('window').width)
     console.log("api key", apiKey)
     console.log("componentDidMount")
     this.setState({OS: Platform.OS === 'ios' ? true : false});
     AppState.addEventListener('change', this._handleAppStateChange)
+    if(isFirstLaunch) {
+      this.toggleTutorialPage();
+    }
   }
 
   componentWillUnmount() {
     // navigator.geolocation.clearWatch(this.watchId);
     this.state.watchID;
     AppState.removeEventListener('change',this._handleAppStateChange)
-  }
-
-  componentWillMount() {
-    this._addWatchPosition()
-    this._getDeviceInfoAsync();
   }
 
   _handleAppStateChange = (nextAppState) => {
